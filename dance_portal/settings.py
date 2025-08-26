@@ -10,11 +10,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["209.74.87.118", "5678danceportal.com", "www.5678danceportal.com"]
 
-ANGUAGE_CODE = "en"
+LANGUAGE_CODE = "en"
 
 LANGUAGES = [
     ("en", _("English")),
-    ('sr-latn', 'Srpski'),
+    ("sr-latn", "Srpski"),
 ]
 
 USE_I18N = True
@@ -32,11 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_countries',
-
-    'core',  # Your app
+    'core',
 ]
 
-#  Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -48,14 +46,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-#  URL config
 ROOT_URLCONF = 'dance_portal.urls'
 
-#  Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # optional for custom templates
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,62 +65,54 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = 'dance_portal.wsgi.application'
 
+# Redirects
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
+# Static files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'core/static']
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-#  WSGI
-WSGI_APPLICATION = 'dance_portal.wsgi.application'
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'danceportal',      # your database name
+        'USER': 'django',           # database user
+        'PASSWORD': 'yourpassword', # database user password
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
-#  Password validators
+# Password validators
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-#  Localization
-LANGUAGE_CODE = 'en-us'
+# Localization
 TIME_ZONE = 'UTC'
-USE_I18N = True
 USE_TZ = True
 
-#  Static files
-STATIC_URL = 'static/'
-
-#  Default primary key field
+# Default primary key field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Development: prints emails to console
+# Email (⚠️ should use environment variables in production!)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
-# These should come from environment variables in production!
 EMAIL_HOST_USER = "mihailo.serbia@gmail.com"
-EMAIL_HOST_PASSWORD = "ucop wjps bidd xciz"  # not your normal Gmail password
+EMAIL_HOST_PASSWORD = "ucop wjps bidd xciz"  # Gmail App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
