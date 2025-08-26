@@ -25,17 +25,19 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+    # Static files (collected via collectstatic)
     location /static/ {
-        root /home/django/dance_portal_starter;
+        alias /home/django/dance_portal_starter/staticfiles/;
     }
 
+    # Media files (user uploads)
     location /media/ {
-        root /home/django/dance_portal_starter;
+        alias /home/django/dance_portal_starter/media/;
     }
 
+    # Proxy all other requests to Gunicorn
     location / {
         include proxy_params;
         proxy_pass http://unix:/run/gunicorn/danceportal.sock;
     }
 }
-
