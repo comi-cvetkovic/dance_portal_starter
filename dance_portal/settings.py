@@ -85,8 +85,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'danceportal',      # your database name
-        'USER': 'django',           # database user
-        'PASSWORD': 'yourpassword', # database user password
+        'USER': 'danceuser',           # database user
+        'PASSWORD': 'StrongPass123!', # database user password
         'HOST': 'localhost',
         'PORT': '5432',
     }
