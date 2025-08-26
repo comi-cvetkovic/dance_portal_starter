@@ -1,0 +1,124 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% load custom_tags %}
+{% block title %}{% trans "Judge" %} – {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Judging" %} – {{ event.name }}</h2>
+
+{% if all_scored %}
+  <p><strong>{% trans "All entries have been scored!" %}</strong></p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" name="review" class="btn btn-edit">{% trans "Review Scores" %}</button>
+  </form>
+
+{% elif current_key %}
+  <h3>{{ current_key.0 }} – {{ current_key.1 }} – {{ current_key.2 }} – {{ current_key.3 }}</h3>
+  <p><em>{% trans "Showing Category" %} {{ current_index|add:1 }} {% trans "of" %} {{ total_categories }}</em></p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% for p in current_entries %}
+      <div style="margin-bottom:1.5em; border:1px solid #ddd; padding:1em; border-radius:8px;">
+        <p><strong>{% trans "Club" %}:</strong> {{ p.dancer_links.first.dancer.club.club_name }}</p>
+        <p><strong>{% trans "Choreography" %}:</strong> {{ p.choreography_name }}</p>
+        <p><strong>{% trans "Choreographer" %}:</strong> {{ p.choreographer_name }}</p>
+        <p><strong>{% trans "Dancer(s)" %}:</strong>
+          {% if p.group_name %}
+            {{ p.group_name }}
+          {% else %}
+            {% if p.dancer_links.all %}
+              {{ p.dancer_links.all|join:", " }}
+            {% else %}
+              <em>{% trans "No dancers registered" %}</em>
+            {% endif %}
+          {% endif %}
+        </p>
+
+        <!-- Technique -->
+        <label>{% trans "Technique (T)" %}:</label><br>
+        <input type="range" name="technique_{{ p.id }}" min="1" max="10" step="0.25"
+               value="{{ existing_scores|get_item:p.id|get_item:'technique'|default:5 }}"
+               class="score-slider" data-output="technique_output_{{ p.id }}">
+        <button type="button" class="btn-xs btn-default stepper" data-target="technique_{{ p.id }}" data-step="-0.25">-</button>
+        <output id="technique_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'technique'|default:5 }}</output>
+        <button type="button" class="btn-xs btn-default stepper" data-target="technique_{{ p.id }}" data-step="0.25">+</button>
+        <br><br>
+
+        <!-- Composition -->
+        <label>{% trans "Composition (C)" %}:</label><br>
+        <input type="range" name="composition_{{ p.id }}" min="1" max="10" step="0.25"
+               value="{{ existing_scores|get_item:p.id|get_item:'composition'|default:5 }}"
+               class="score-slider" data-output="composition_output_{{ p.id }}">
+        <button type="button" class="btn-xs btn-default stepper" data-target="composition_{{ p.id }}" data-step="-0.25">-</button>
+        <output id="composition_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'composition'|default:5 }}</output>
+        <button type="button" class="btn-xs btn-default stepper" data-target="composition_{{ p.id }}" data-step="0.25">+</button>
+        <br><br>
+
+        <!-- Image -->
+        <label>{% trans "Image (I)" %}:</label><br>
+        <input type="range" name="image_{{ p.id }}" min="1" max="10" step="0.25"
+               value="{{ existing_scores|get_item:p.id|get_item:'image'|default:5 }}"
+               class="score-slider" data-output="image_output_{{ p.id }}">
+        <button type="button" class="btn-xs btn-default stepper" data-target="image_{{ p.id }}" data-step="-0.25">-</button>
+        <output id="image_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'image'|default:5 }}</output>
+        <button type="button" class="btn-xs btn-default stepper" data-target="image_{{ p.id }}" data-step="0.25">+</button>
+        <br><br>
+
+        <!-- Show Value (only for Show Dance) -->
+        {% if p.style.name == "Show Dance" %}
+        <label>{% trans "Show Value (S)" %}:</label><br>
+        <input type="range" name="show_value_{{ p.id }}" min="1" max="10" step="0.25"
+               value="{{ existing_scores|get_item:p.id|get_item:'show_value'|default:5 }}"
+               class="score-slider" data-output="show_value_output_{{ p.id }}">
+        <button type="button" class="btn-xs btn-default stepper" data-target="show_value_{{ p.id }}" data-step="-0.25">-</button>
+        <output id="show_value_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'show_value'|default:5 }}</output>
+        <button type="button" class="btn-xs btn-default stepper" data-target="show_value_{{ p.id }}" data-step="0.25">+</button>
+        <br><br>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <div style="margin-top:1.5em;">
+      {% if has_prev %}
+        <button type="submit" name="prev" class="btn btn-default">← {% trans "Previous" %}</button>
+      {% endif %}
+      {% if has_next %}
+        <button type="submit" name="next" class="btn btn-green">{% trans "Save & Next" %} →</button>
+      {% else %}
+        <button type="submit" name="save_last" class="btn btn-green">{% trans "Save" %}</button>
+      {% endif %}
+    </div>
+  </form>
+
+{% else %}
+  <p>{% trans "No categories available for judging." %}</p>
+{% endif %}
+
+<script>
+document.querySelectorAll('.score-slider').forEach(slider => {
+  const output = document.getElementById(slider.dataset.output);
+  if (output) {
+    output.textContent = slider.value;
+    slider.addEventListener('input', () => {
+      output.textContent = slider.value;
+    });
+  }
+});
+
+document.querySelectorAll('.stepper').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = document.getElementsByName(btn.dataset.target)[0];
+    if (target) {
+      let step = parseFloat(btn.dataset.step);
+      let newVal = Math.min(Math.max(parseFloat(target.value) + step, parseFloat(target.min)), parseFloat(target.max));
+      target.value = newVal.toFixed(2);
+      const output = document.getElementById(target.dataset.output);
+      if (output) output.textContent = target.value;
+    }
+  });
+});
+</script>
+{% endblock %}

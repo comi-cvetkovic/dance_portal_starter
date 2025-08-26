@@ -1,0 +1,80 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Participants | Dance Portal" %}{% endblock %}
+
+
+{% block content %}
+<h2>{% trans "Participants for " %}{{ event.city }} ({{ event.date }})</h2>
+
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if grouped_participations %}
+<table>
+    <thead>
+        {% if user.is_superuser %}
+        <form method="get" action="">
+            <button type="submit" name="view" value="summary" class="btn-default">{% trans "View Registered by Club" %}</button>
+        </form>
+        {% endif %}
+        <tr>
+            <th>{% trans "# Dancers" %}</th>
+            <th>{% trans "Dancer(s)" %}</th>
+            <th>{% trans "Club" %}</th>
+            <th>{% trans "Style" %}</th>
+            <th>{% trans "Difficulty" %}</th>
+            <th>{% trans "Group Type" %}</th>
+            <th>{% trans "Age Group" %}</th>
+            <th>{% trans "Choreographer" %}</th>
+            <th>{% trans "Choreography" %}</th>
+            <th>{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for group in grouped_participations %}
+        <tr style="vertical-align: top;">
+            <td>{{ group.dancers|length }}</td>
+            <td>
+                {% for dancer in group.dancers %}
+                {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>{{ group.dancers.0.club.club_name }}</td>
+            <td>{{ group.style.name }}</td>
+            <td>{{ group.difficulty }}</td>
+            <td>{{ group.group_type }}</td>
+            <td>{{ group.age_group }}</td>
+            <td>{{ group.choreographer_name }}</td>
+            <td>{{ group.choreography_name|default:"Untitled" }}</td>
+            <td>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <form method="get" action="{% url 'edit_participation' group.participation_id %}">
+                        <button type="submit" class="btn-edit">{% trans "Edit" %}</button>
+                    </form>
+                    <form method="post" action="{% url 'delete_participation_group' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <input type="hidden" name="style_id" value="{{ group.style.id }}">
+                        <input type="hidden" name="group_type" value="{{ group.group_type }}">
+                        <input type="hidden" name="age_group" value="{{ group.age_group }}">
+                        <input type="hidden" name="difficulty" value="{{ group.difficulty }}">
+                        <input type="hidden" name="choreographer_name" value="{{ group.choreographer_name }}">
+                        <button type="submit" class="btn-delete"
+                            onclick="return confirm('Are you sure you want to delete this group?');">{% trans "Delete" %}</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>{% trans "No participants yet." %}</p>
+{% endif %}
+
+{% endblock %}

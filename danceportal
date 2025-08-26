@@ -1,0 +1,41 @@
+# Redirect bare domain -> www
+server {
+    listen 80;
+    listen [::]:80;
+    server_name 5678danceportal.com;
+    return 301 https://www.5678danceportal.com$request_uri;
+}
+
+# Redirect HTTP www -> HTTPS www
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.5678danceportal.com;
+    return 301 https://www.5678danceportal.com$request_uri;
+}
+
+# Main HTTPS block
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name www.5678danceportal.com;
+
+    ssl_certificate /etc/letsencrypt/live/5678danceportal.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/5678danceportal.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location /static/ {
+        root /home/django/dance_portal_starter;
+    }
+
+    location /media/ {
+        root /home/django/dance_portal_starter;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn/danceportal.sock;
+    }
+}
+

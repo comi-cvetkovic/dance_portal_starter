@@ -1,0 +1,28 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Manage Event" %} | {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Manage Event:" %} {{ event.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn-green">{% trans "Save Changes" %}</button>
+</form>
+
+<hr style="margin: 2em 0;">
+
+<!-- Delete Event button -->
+<form method="post" action="{% url 'delete_event' event.id %}"
+      onsubmit="return confirm('{% blocktrans %}Are you sure you want to delete this event? All participations, styles, and scores will be removed.{% endblocktrans %}');">
+    {% csrf_token %}
+    <button type="submit" class="btn-delete">{% trans "Delete Event" %}</button>
+</form>
+
+
+<form method="get" action="{% url 'event_list' %}" style="margin-top: 1em;">
+    <button type="submit" class="btn-default">{% trans "Back to Events" %}</button>
+</form>
+{% endblock %}
+

@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Edit Dancer | Dance Portal{% endblock %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% trans "Edit Dancer" %}</title>
+
+{% block content %}
+    <h2>{% trans "Edit Dancer" %}: {{ dancer.first_name }} {{ dancer.last_name }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class = "btn-edit">{% trans "Save Changes" %}</button>
+    </form>
+
+{% endblock %}
+

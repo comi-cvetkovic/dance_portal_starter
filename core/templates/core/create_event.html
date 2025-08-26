@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Create Event | Dance Portal{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Create Competition Event" %}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class = "btn-green">{% trans "Create Event" %}</button>
+    </form>
+
+
+{% endblock %}
+
+

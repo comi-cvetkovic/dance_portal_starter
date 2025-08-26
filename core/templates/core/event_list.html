@@ -1,0 +1,199 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Events{% endblock %}
+
+{% block content %}
+<h2>{% trans "Upcoming Events" %}</h2>
+
+<div class="event-grid">
+    {% for event in events %}
+    <div class="event-card">
+        <div class="event-header">
+            <div>
+                <h3 class="event-title">{{ event.name }}</h3>
+                <div class="event-meta">
+                    <span>📍 {{ event.city }} — {{ event.location }}</span>
+                    <span>📅 {{ event.date }}</span>
+                    {% if event.start_time %}
+                    <span>🕒 {{ event.start_time }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="status-chips">
+                {% if event.is_published %}
+                <span class="chip chip-green" title="Start list is published">{% trans "Published" %}</span>
+                {% else %}
+                <span class="chip">{% trans "Unpublished" %}</span>
+                {% endif %}
+
+                {% if event.has_judges %}
+                <span class="chip chip-blue" title="Judge accounts exist">{% trans "Judges" %}</span>
+                {% else %}
+                <span class="chip chip-muted">{% trans "No Judges" %}</span>
+                {% endif %}
+
+                {% if event.results_published %}
+                <span class="chip chip-gold" title="Results are public">{% trans "Results" %}</span>
+                {% else %}
+                <span class="chip chip-muted">{% trans "No Results Published" %}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="event-actions">
+            <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
+            <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
+            {% if user.is_superuser %}
+            <a href="{% url 'manage_start_list' event.id %}" class="btn btn-default">{% trans "Manage Start List" %}</a>
+            {% else %}
+            <a href="{% url 'start_list' event.id %}" class="btn btn-default">{% trans "Start List" %}</a>
+            {% endif %}
+
+            {% if user.is_superuser %}
+            <details class="more-actions">
+                <summary class="btn btn-edit">{% trans "More" %}</summary>
+                <div class="more-actions-panel">
+                    <a href="{% url 'manage_styles' event.id %}" class="btn btn-default">{% trans "Manage Style Categories" %}</a>
+                    <a href="{% url 'event_music' event.id %}" class="btn btn-default">{% trans "Event Music" %}</a>
+                    <a href="{% url 'manage_judges' event.id %}" class="btn btn-default">{% trans "Judges" %}</a>
+                    <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Awards" %}</a>
+                    <a href="{% url 'edit_event' event.id %}" class="btn btn-default">{% trans "Manage Event" %}</a>
+                    <a href="{% url 'notify_clubs' event.id %}" class="btn btn-default">{% trans "Notify Clubs" %}</a>
+                </div>
+            </details>
+            {% else %}
+            {% if event.results_published %}
+            <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Results" %}</a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <p>{% trans "No events yet." %}</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* Grid of cards */
+    .event-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .event-card {
+        background: #fafafa;
+        border-radius: 12px;
+        padding: 1.25rem 1.25rem 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .event-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .event-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .event-title {
+        margin: 0 0 .25rem 0;
+    }
+
+    .event-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        color: #666;
+        font-size: .95rem;
+    }
+
+    /* Chips */
+    .status-chips {
+        display: flex;
+        gap: .4rem;
+        flex-wrap: wrap;
+    }
+
+    .chip {
+        display: inline-block;
+        padding: .25rem .5rem;
+        border-radius: 999px;
+        font-size: .75rem;
+        background: #eee;
+        color: #444;
+        white-space: nowrap;
+    }
+
+    .chip-green {
+        background: #e6f4ea;
+        color: #1e7e34;
+    }
+
+    .chip-blue {
+        background: #e7f0ff;
+        color: #0b5ed7;
+    }
+
+    .chip-gold {
+        background: #fff5d6;
+        color: #8a6d00;
+    }
+
+    .chip-muted {
+        background: #f0f0f0;
+        color: #777;
+    }
+
+    /* Actions */
+    .event-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: 1rem;
+    }
+
+    /* “More” disclosure styled like a button */
+    .more-actions {
+        position: relative;
+    }
+
+    .summary-like {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .more-actions summary {
+        list-style: none;
+    }
+
+    .more-actions summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .more-actions[open] .summary-like {
+        filter: brightness(0.95);
+    }
+
+    .more-actions-panel {
+        margin-top: .5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    /* Make long button rows wrap nicely on narrow screens */
+    @media (max-width: 520px) {
+        .event-meta {
+            font-size: .9rem;
+        }
+    }
+</style>
+{% endblock %}

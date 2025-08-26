@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Register Dance Club" %} | Dance Portal{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Register Your Dance Club" %}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class = "btn-green">{% trans "Register" %}</button>
+    </form>
+{% endblock %}
+
+

@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Club Summary" %} | {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Participants Summary by Club" %} – {{ event.city }} ({{ event.date }})</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>{% trans "Club" %}</th>
+            <th>Solo</th>
+            <th>Duo</th>
+            <th>Trio</th>
+            <th>Group</th>
+            <th>Formation</th>
+            <th>Production</th>
+            <th>{% trans "Competitors" %}</th>
+            <th>{% trans "Performances" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in summary_data %}
+        <tr>
+            <td>{{ row.club.club_name }}</td>
+            <td>{{ row.group_type_counts.Solo|default:"0" }}</td>
+            <td>{{ row.group_type_counts.Duo|default:"0" }}</td>
+            <td>{{ row.group_type_counts.Trio|default:"0" }}</td>
+            <td>{{ row.group_type_counts.Group|default:"0" }}</td>
+            <td>{{ row.group_type_counts.Formation|default:"0" }}</td>
+            <td>{{ row.group_type_counts.Production|default:"0" }}</td>
+            <td>{{ row.unique_dancer_count }}</td>
+            <td>{{ row.total_dancer_count }}</td>
+        </tr>
+        {% endfor %}
+        <tr style="font-weight: bold; background-color: #f9f9f9;">
+            <td>Total</td>
+            <td>{{ total_counts.Solo }}</td>
+            <td>{{ total_counts.Duo }}</td>
+            <td>{{ total_counts.Trio }}</td>
+            <td>{{ total_counts.Group }}</td>
+            <td>{{ total_counts.Formation }}</td>
+            <td>{{ total_counts.Production }}</td>
+            <td>{{ total_counts.unique_dancer_count }}</td>
+            <td>{{ total_counts.total_dancer_count }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>
+<form method="get" action="{% url 'list_event_participants' event.id %}">
+    <button type="submit" value="summary" class="btn-default">{% trans "Back to Participants" %}</button>
+</form>
+</p>
+
+{% endblock %}

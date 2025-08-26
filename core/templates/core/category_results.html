@@ -1,0 +1,71 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Results " %}– {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Results" %} – {{ event.name }} ({{ event.date }})</h2>
+<h3>{{ category.0 }} – {{ category.1 }} – {{ category.2 }} – {{ category.3 }}</h3>
+
+{% if request.user.is_superuser %}
+<form method="get" action="{% url 'manage_start_list' event.id %}" style="margin-bottom: 1em;">
+    <button type="submit" class="btn-default">← {% trans "Back to Start List" %}</button>
+</form>
+{% else %}
+<form method="get" action="{% url 'start_list' event.id %}" style="margin-bottom: 1em;">
+    <button type="submit" class="btn-default">← {% trans "Back to Start List" %}</button>
+</form>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            <th>{% trans "Position" %}</th>
+            <th>{% trans "Dancer(s)" %}</th>
+            <th>{% trans "Choreography" %}</th>
+            <th>{% trans "Club" %}</th>
+            <th>{% trans "Judge Scores" %}</th>
+            <th>{% trans "Avg" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in results %}
+        <tr>
+            <td>
+                {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈
+                {% elif forloop.counter == 3 %}🥉{% endif %}
+                {{ forloop.counter }}
+            </td>
+            <td>
+                {% if entry.participation.group_name and entry.dancers|length >= 4 %}
+                {{ entry.participation.group_name }}
+                {% else %}
+                {% for d in entry.dancers %}
+                {{ d.first_name }} {{ d.last_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+            </td>
+            <td>{{ entry.participation.choreography_name }}</td>
+            <td>
+                {% if entry.dancers %}
+                {{ entry.dancers.0.club.club_name }}
+                {% else %}
+                {% trans "Unknown" %}
+                {% endif %}
+            </td>
+            <td>
+                <ul>
+                    {% for s in entry.scores %}
+                    <li>
+                        <strong>{{ s.judge.first_name }} {{ s.judge.last_name }}</strong>:
+                        T={{ s.technicality }}, C={{ s.creativity }},
+                        S={{ s.synchronization }}, O={{ s.overall }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>{{ entry.average }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

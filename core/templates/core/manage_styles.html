@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Manage Styles" %} | {{ event.name }}{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Manage Styles for" %} "{{ event.name }}" ({{ event.city }} – {{ event.date }})</h2>
+
+    <form method="post" onsubmit="prepareForm()" style="margin-bottom: 2em;">
+        {% csrf_token %}
+        <p>
+            <label>{% trans "Select existing style" %}:</label><br>
+            <select id="style_select">
+                <option value="" selected>-- {% trans "Choose existing style" %} --</option>
+                {% for name in all_style_names %}
+                <option value="{{ name }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <p>
+            <label>{% trans "Or enter a new style" %}:</label><br>
+            <input type="text" id="style_input" placeholder="New style (optional)">
+        </p>
+
+        <input type="hidden" name="style_name" id="style_name_final">
+        <button type="submit" class = "btn-green">{% trans "Add Style" %}</button>
+    </form>
+
+    <h3>{% trans "Existing Styles for this Event" %}:</h3>
+    {% if styles %}
+    <ul>
+        {% for style in styles %}
+        <li>
+            {{ style.name }}
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="delete_style_id" value="{{ style.id }}">
+                <button type="submit" class = "btn-delete" onclick="return confirm('Are you sure you want to remove this style?');">{% trans "Remove" %}</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>{% trans "No styles added for this event yet." %}</p>
+    {% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function prepareForm() {
+        const selected = document.getElementById("style_select").value;
+        const entered = document.getElementById("style_input").value;
+        const final = entered.trim() !== "" ? entered : selected;
+        document.getElementById("style_name_final").value = final;
+    }
+</script>
+{% endblock %}
+

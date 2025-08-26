@@ -1,0 +1,86 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Music Playback" %} | {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Music Playback" %} – {{ event.name }} ({{ event.date }})</h2>
+
+{% for group_key, entries in grouped_entries.items %}
+    {% with group_key|join:"|" as group_key_str %}
+        {% if group_key_str == current_key %}
+        <h3 class="highlighted-category">
+            {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
+        </h3>
+        <p><em>{% trans "Showing Category" %} {{ current_index|add:1 }} {% trans "of" %} {{ total_categories }}</em></p>
+
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% trans "Dancer(s)" %}</th>
+                        <th>{% trans "Choreography" %}</th>
+                        <th>{% trans "Choreographer" %}</th>
+                        <th>{% trans "Music" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if entry.group_name and entry.num_dancers >= 4 %}
+                                {{ entry.group_name }}
+                            {% else %}
+                                {% for dancer in entry.dancers %}
+                                    {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>{{ entry.choreography_name }}</td>
+                        <td>{{ entry.choreographer }}</td>
+                        <td>
+                            <strong>{{ entry.music_file_name }}</strong><br>
+                            {% if entry.music_file_url %}
+                            <audio controls>
+                                <source src="{{ entry.music_file_url }}" type="audio/mpeg">
+                                {% trans "Your browser does not support the audio element." %}
+                            </audio>
+                            {% else %}
+                            <em>{% trans "No file uploaded" %}</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div style="margin-top: 2em; display: flex; gap: 1em;">
+                {% if current_index > 0 %}
+                <form method="get" style="display: inline;">
+                    <input type="hidden" name="group" value="{{ current_index|add:-1 }}">
+                    <button type="submit" class="btn-default">← {% trans "Previous Category" %}</button>
+                </form>
+                {% endif %}
+
+                {% if has_next %}
+                <form method="get" style="display: inline;">
+                    <input type="hidden" name="group" value="{{ current_index|add:1 }}">
+                    <button type="submit" class="btn-edit">{% trans "Next Category" %} →</button>
+                </form>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endwith %}
+{% endfor %}
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .highlighted-category {
+        background-color: #fff7d6;
+        padding: 12px;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Notify Clubs" %} | {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Notify Clubs about " %}{{ event.name }} ({{ event.date }})</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <p><strong>{% trans "Select Clubs" %}:</strong></p>
+    {{ form.clubs }}
+
+    <p><strong>{% trans "Subject:" %}</strong></p>
+    {{ form.subject }}
+
+    <p><strong>{% trans "Message" %}:</strong></p>
+    {{ form.message }}
+
+    <button type="submit" class="btn-green">{% trans "Send Emails" %}</button>
+</form>
+{% endblock %}

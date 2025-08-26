@@ -1,0 +1,399 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% trans "Dance Portal" %}{% endblock %}</title>
+    {% load static %}
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            scroll-behavior: smooth;
+            overflow: hidden;
+            /* Prevent page scroll; we scroll only .container */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+        }
+
+        /* Background overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("{% static 'images/background.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            background-color: #333;
+            color: white;
+            padding: 1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+
+        nav .nav-left,
+        nav .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        nav .nav-right span {
+            margin-left: 10px;
+            font-weight: normal;
+            font-size: 0.9em;
+            color: #ddd;
+        }
+
+        .badge-circle {
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+            line-height: 1;
+            padding: 2px 6px;
+            border-radius: 999px;
+            /* margin-left: 3px; */
+            vertical-align: middle;
+            display: inline-block;
+            min-width: 16px;
+            text-align: center;
+            box-shadow: 0 0 0 2px #333;
+            /* optional: outline to separate from nav bg */
+        }
+
+
+        /* Page content container */
+        .container {
+            position: absolute;
+            top: 80px;
+            /* below navbar */
+            bottom: 0;
+            left: 0;
+            right: 0;
+            overflow-y: auto;
+            padding: 2em;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        #sticky-toolbar {
+            position: fixed;
+            top: 60px;
+            /* Just under the navbar */
+            right: 30px;
+            z-index: 998;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #444;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #ccc;
+            margin: 2em 0;
+        }
+
+        /* ==== Unified buttons (buttons, links, summary) ==== */
+        /* Base styles for all buttons (button, anchor, summary) */
+        button,
+        a.btn,
+        a[class^="btn-"],
+        a[class*=" btn-"],
+        summary.btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .35rem;
+            min-width: 0;
+            height: 32px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, .18);
+            color: #fff !important;
+            font: 600 13px/1 'Roboto', sans-serif;
+            text-decoration: none !important;
+            cursor: pointer;
+            transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .08s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+            margin: 4px 6px;
+        }
+
+        button:active,
+        a.btn:active,
+        summary.btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Size modifiers */
+        .btn-sm {
+            height: 30px;
+            padding: 3px 9px;
+            font-size: 12.5px;
+        }
+
+        .btn-xs {
+            height: 26px;
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+
+        /* Variants */
+        .btn-default {
+            background: #444;
+            border-color: #333;
+        }
+
+        .btn-default:hover {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+        }
+
+        .btn-edit {
+            background: #007bff;
+            border-color: #0056b3;
+        }
+
+        .btn-edit:hover {
+            background: #0056b3;
+            border-color: #00408d;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            border-color: #a71d2a;
+        }
+
+        .btn-delete:hover {
+            background: #a71d2a;
+            border-color: #7a1420;
+        }
+
+        .btn-green {
+            background: #28a745;
+            border-color: #1f7a36;
+        }
+
+        .btn-green:hover {
+            background: #1f7a36;
+            border-color: #175c29;
+        }
+
+        /* Outline (for “More”) */
+        .btn-outline {
+            background: transparent;
+            color: #222 !important;
+            border-color: rgba(0, 0, 0, .28);
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 0, 0, .05);
+            border-color: rgba(0, 0, 0, .38);
+        }
+
+        /* More dropdown styles */
+        .more-actions {
+            display: inline-block;
+        }
+
+        .more-actions summary {
+            list-style: none;
+            display: inline-block;
+            margin: 4px 6px;
+        }
+
+        .more-actions summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .more-actions .summary-like::after {
+            content: "▾";
+            margin-left: .35rem;
+            font-size: .9em;
+        }
+
+        .more-actions[open] .summary-like::after {
+            content: "▴";
+        }
+
+        .more-actions-panel {
+            margin-top: .5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        badge-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: 4px 8px;
+            font: 600 12.5px 'Roboto', sans-serif;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 0, 0, .15);
+            text-decoration: none !important;
+            transition: background .2s ease, border .2s ease;
+        }
+
+        .badge-btn-green {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .badge-btn-green:hover {
+            background: #c3e6cb;
+        }
+
+        .badge-btn-red {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .badge-btn-red:hover {
+            background: #f5c6cb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        ul {
+            padding-left: 1.2em;
+        }
+
+        li {
+            margin-bottom: 0.5em;
+        }
+
+        .group-header {
+            background: #f0f0f0;
+            padding: 0.5em;
+            border-radius: 6px;
+        }
+
+        .dragging-group {
+            opacity: 0.7;
+            background-color: #ddd;
+        }
+    </style>
+
+    {% block extra_styles %}{% endblock %}
+</head>
+
+<body>
+    <nav>
+        <div class="nav-left">
+            {% if user.is_authenticated %}
+            {% if user.username|slice:":5" == "judge" %}
+            <!-- Judge: only show logout -->
+            <a href="{% url 'logout' %}">{% trans "Logout" %}</a>
+
+            {% elif user.is_superuser %}
+            <!-- Admin -->
+            <a href="{% url 'club_dashboard' %}">{% trans "Clubs" %}</a>
+            <a href="{% url 'event_list' %}">{% trans "Events" %}</a>
+
+            <a href="{% url 'pending_club_requests' %}" class="pending-club-link" style="position: relative;">
+                {% trans "Pending Clubs" %}
+                {% if clubs_pending_count > 0 %}
+                <span class="badge-circle">{{ clubs_pending_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'logout' %}">{% trans "Logout" %}</a>
+
+            {% else %}
+            <!-- Regular club user -->
+            <a href="{% url 'club_dashboard' %}">{% trans "My Club" %}</a>
+            <a href="{% url 'list_dancers' %}">{% trans "Dancers" %}</a>
+            <a href="{% url 'event_list' %}">{% trans "Events" %}</a>
+            <a href="{% url 'logout' %}">{% trans "Logout" %}</a>
+            {% endif %}
+            {% else %}
+            <!-- Public/anonymous -->
+            <a href="{% url 'home' %}">{% trans "Home" %}</a>
+            <a href="{% url 'login' %}">{% trans "Login" %}</a>
+            <a href="{% url 'register_club' %}">{% trans "Register Club" %}</a>
+            <a href="{% url 'event_list_public' %}">{% trans "Events" %}</a>
+            <a href="#">{% trans "Contact" %}</a>
+            {% endif %}
+        </div>
+
+        <div class="nav-right">
+            <!-- Language switcher -->
+            <form action="{% url 'set_language' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <select name="language" onchange="this.form.submit()" style="margin-right: 10px;">
+                    {% get_current_language as LANGUAGE_CODE %}
+                    {% get_available_languages as LANGUAGES %}
+                    {% for lang_code, lang_name in LANGUAGES %}
+                    <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
+                        {{ lang_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            {% if user.is_authenticated %}
+            <span>{% trans "Logged in as: " %}{{ user.username }}</span>
+            {% endif %}
+        </div>
+    </nav>
+
+
+    <div class="container">
+        {% block content %}{% endblock %}
+        {% block extra_scripts %}{% endblock %}
+    </div>
+</body>
+
+</html>

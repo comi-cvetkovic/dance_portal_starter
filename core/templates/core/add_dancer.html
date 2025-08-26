@@ -1,0 +1,39 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Add Dancer | Dance Portal{% endblock %}
+
+{% block content %}
+    <h2>
+        {% if is_superuser %}
+            {% trans "Add Dancer for" %} {{ club.club_name }} 
+        {% else %}
+            {% trans "Add Dancer" %}
+        {% endif %}
+    </h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type ="submit" class = "btn-green">Add</button>
+    </form>
+
+    <!-- <div style="margin-top: 1.5em;">
+        {% if is_superuser %}
+            <form method="get" action="{% url 'admin_list_dancers' club.id %}" style="display:inline;">
+                <button type="submit" class = "btn-default">← Club Dancers</button>
+            </form>
+            <form method="get" action="{% url 'club_dashboard' %}" style="display:inline; margin-left: 1em;">
+                <button type="submit" class = "btn-default">← Back to Dashboard</button>
+            </form>
+        {% else %}
+            <form method="get" action="{% url 'list_dancers' %}" style="display:inline;">
+                <button type="submit" class = "btn-default">← Dancers List</button>
+            </form>
+            <form method="get" action="{% url 'club_dashboard' %}" style="display:inline; margin-left: 1em;">
+                <button type="submit" class = "btn-default">← Back to Dashboard</button>
+            </form>
+        {% endif %}
+    </div> -->
+{% endblock %}
+
+

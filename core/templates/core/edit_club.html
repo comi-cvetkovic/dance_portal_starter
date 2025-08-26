@@ -1,0 +1,51 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Edit Club | Dance Portal
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Edit Club:" %} {{ club.club_name }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <p>
+            <label for="id_club_name">{% trans "Club Name:" %}</label><br>
+            {{ form.club_name }}
+        </p>
+
+        <p>
+            <label for="id_country">{% trans "Country:" %}</label><br>
+            {{ form.country }}
+        </p>
+
+        <p>
+            <label for="id_city">{% trans "City:" %}</label><br>
+            {{ form.city }}
+        </p>
+
+        <p>
+            <label for="id_phone_number">{% trans "Phone Number:" %}</label><br>
+            {{ form.phone_number }}
+        </p>
+
+        <p>
+            <label for="id_representative_name">{% trans "Representative Name:" %}</label><br>
+            {{ form.representative_name }}
+        </p>
+
+        <p>
+            <label for="id_email">{% trans "Email (used as login)" %}:</label><br>
+            {{ form.email }}
+        </p>
+
+        <p>
+            <label for="id_password">{% trans "Password (leave blank to keep unchanged)" %}:</label><br>
+            {{ form.password }}
+        </p>
+
+        <button type="submit" class = "btn-edit">{% trans "Save Changes" %}</button>
+    </form>
+
+{% endblock %}
+

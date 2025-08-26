@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Upcoming Events | Dance Portal" %}{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Upcoming Dance Events" %}</h2>
+
+    {% if events %}
+    <ul>
+        {% for event in events %}
+        <li>
+            <strong>{{ event.name }}</strong> – {{ event.city }} on {{ event.date }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>{% trans "No upcoming events found." %}</p>
+    {% endif %}
+
+{% endblock %}
+

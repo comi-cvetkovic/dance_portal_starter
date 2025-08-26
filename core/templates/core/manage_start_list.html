@@ -1,0 +1,154 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Manage Start List | {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Manage Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
+
+<table class="start-group" id="group-container" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
+    <thead>
+        <tr>
+            <th></th>
+            <th>#</th>
+            <th>{% trans "Dancer(s)" %}</th>
+            <th>{% trans "Choreographer" %}</th>
+            <th>{% trans "Choreography" %}</th>
+            <th>{% trans "Club" %}</th>
+            <th>{% trans "City" %}</th>
+        </tr>
+    </thead>
+
+    {% with 0 as global_counter %}
+    {% for group_key, group_entries in grouped_entries.items %}
+    <tbody class="group-wrapper" data-group="{{ group_key.0 }}|{{ group_key.1 }}|{{ group_key.2 }}|{{ group_key.3 }}">
+
+        <tr class="group-header" style="background: #f0f0f0; cursor: grab;">
+            <td colspan="8" style="font-weight: bold;">
+                {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
+            </td>
+        </tr>
+
+        {% for entry in group_entries %}
+        {% with forloop.parentloop.counter0|add:forloop.counter as row_number %}
+        <tr data-id="{{ entry.id }}" class="draggable-row">
+            <td class="drag-handle">☰</td>
+            <td>
+                {{ entry.global_row_number }}
+                {% if entry.start_time %}
+                <br><span style="font-size: 0.85em; color: gray;">{{ entry.start_time }}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if entry.group_name|length > 0 and entry.num_dancers|add:0 >= 4 %}
+                {{ entry.group_name }}
+                {% else %}
+                {% for dancer in entry.dancers %}
+                {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+            </td>
+            <td>{{ entry.choreographer }}</td>
+            <td>{{ entry.choreography_name }}</td>
+            <td>{{ entry.club_name }}</td>
+            <td>{{ entry.club_city }}</td>
+        </tr>
+        {% endwith %}
+        {% endfor %}
+
+        {% with global_counter|add:group_entries|length as global_counter %}{% endwith %}
+    </tbody>
+    {% endfor %}
+    {% endwith %}
+</table>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    #sticky-toolbar {
+        position: fixed;
+        top: 60px;
+        right: 30px;
+        z-index: 998;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Sticky Toolbar -->
+<div id="sticky-toolbar">
+    <form id="publish-form" method="post" action="{% url 'publish_start_list' event.id %}" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="mode" id="publish-mode">
+        <input type="hidden" name="ordered_ids_json" id="ordered-ids-json">
+        <input type="hidden" name="source" value="manage">
+
+        <button type="button" class="btn-default" onclick="submitPublish('current', 'manage')">{% trans "Publish Start List" %}</button>
+        <button type="button" class="btn-default" onclick="submitPublish('default')">{% trans "Reset to Default Order" %}</button>
+    </form>
+
+    {% if event.is_published %}
+    <form method="post" action="{% url 'unpublish_start_list' event.id %}" style="display: inline;"
+        onsubmit="return confirm('Unpublish the start list?');">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete">{% trans "Unpublish" %}</button>
+    </form>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const groupContainer = document.getElementById("group-container");
+
+        // Drag entire groups
+        new Sortable(groupContainer, {
+            animation: 200,
+            handle: '.group-header',
+            ghostClass: 'dragging-group',
+            scroll: true,
+            scrollSensitivity: 100,
+            scrollSpeed: 30,
+            forceAutoScrollFallback: true,
+            scrollTarget: window
+        });
+
+        // Drag within groups
+        document.querySelectorAll("tbody.group-wrapper").forEach(tbody => {
+            new Sortable(tbody, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'dragging',
+                scroll: true,
+                scrollSensitivity: 100,
+                scrollSpeed: 30,
+                forceAutoScrollFallback: true,
+                scrollTarget: window,
+                draggable: "tr.draggable-row"
+            });
+        });
+
+        window.submitPublish = function (mode, source = null) {
+            const ids = [];
+            document.querySelectorAll("tbody.group-wrapper").forEach(wrapper => {
+                wrapper.querySelectorAll("tr.draggable-row").forEach(row => {
+                    ids.push(row.dataset.id);
+                });
+            });
+
+            document.getElementById("publish-mode").value = mode;
+            document.getElementById("ordered-ids-json").value = JSON.stringify(ids);
+            if (source) {
+                document.getElementById("publish-form").elements["source"].value = source;
+            }
+            document.getElementById("publish-form").submit();
+        };
+    });
+</script>
+{% endblock %}

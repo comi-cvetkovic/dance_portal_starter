@@ -1,0 +1,1066 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-20 11:41+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: core/forms.py:13 core/models.py:33
+msgid "Date of Birth"
+msgstr "Datum Rođenja"
+
+#: core/forms.py:20 core/forms.py:219 core/models.py:31
+msgid "First Name"
+msgstr "Ime"
+
+#: core/forms.py:21 core/forms.py:220 core/models.py:32
+msgid "Last Name"
+msgstr "Prezime"
+
+#: core/forms.py:26 core/templates/core/dashboard.html:16
+#: core/templates/core/pending_club_requests.html:16
+msgid "Email"
+msgstr "Email"
+
+#: core/forms.py:27 core/templates/core/dashboard.html:17
+msgid "Password"
+msgstr "Lozinka"
+
+#: core/forms.py:28 core/models.py:13 core/templates/core/dashboard.html:12
+#: core/templates/core/pending_club_requests.html:12
+msgid "Country"
+msgstr "Država"
+
+#: core/forms.py:34 core/models.py:12 core/templates/core/dashboard.html:11
+#: core/templates/core/pending_club_requests.html:11
+msgid "Club Name"
+msgstr "Klub"
+
+#: core/forms.py:35 core/forms.py:86 core/models.py:14 core/models.py:50
+#: core/templates/core/dashboard.html:13
+#: core/templates/core/manage_start_list.html:16
+#: core/templates/core/pending_club_requests.html:13
+#: core/templates/core/start_list.html:16
+msgid "City"
+msgstr "Grad"
+
+#: core/forms.py:36 core/models.py:15
+msgid "Phone Number"
+msgstr "Mobilni Broj"
+
+#: core/forms.py:37 core/models.py:16
+msgid "Representative Name"
+msgstr "Ime Reprezentativca"
+
+#: core/forms.py:43
+msgid "A club with this email already exists."
+msgstr "Klub sa ovim mejlom vec postoji"
+
+#: core/forms.py:77 core/models.py:54
+msgid "Start Time"
+msgstr ""
+
+#: core/forms.py:84 core/models.py:48
+msgid "Event Name"
+msgstr ""
+
+#: core/forms.py:85 core/models.py:49
+msgid "Location"
+msgstr ""
+
+#: core/forms.py:87 core/models.py:51
+msgid "Date"
+msgstr ""
+
+#: core/forms.py:108 core/forms.py:122 core/models.py:91
+#: core/templates/core/list_event_participants.html:28
+#: core/templates/core/register_dancer.html:63
+msgid "Style"
+msgstr ""
+
+#: core/forms.py:109 core/forms.py:130 core/models.py:93
+#: core/templates/core/list_event_participants.html:29
+#: core/templates/core/register_dancer.html:68
+msgid "Difficulty"
+msgstr ""
+
+#: core/forms.py:110 core/forms.py:128 core/models.py:90 core/models.py:113
+#: core/templates/core/list_event_participants.html:31
+msgid "Age Group"
+msgstr ""
+
+#: core/forms.py:111 core/forms.py:123 core/models.py:89 core/models.py:112
+#: core/templates/core/list_event_participants.html:30
+#: core/templates/core/register_dancer.html:48
+msgid "Group Type"
+msgstr ""
+
+#: core/forms.py:112 core/forms.py:131 core/models.py:92
+msgid "Choreographer Name"
+msgstr ""
+
+#: core/forms.py:120 core/models.py:44 core/templates/core/base.html:355
+#: core/templates/core/participation_scores.html:11
+msgid "Dancers"
+msgstr ""
+
+#: core/forms.py:132 core/models.py:95
+msgid "Choreography Name"
+msgstr ""
+
+#: core/forms.py:136 core/models.py:96
+msgid "Group Name"
+msgstr ""
+
+#: core/forms.py:137
+msgid "Enter group name (for groups of 4+)"
+msgstr ""
+
+#: core/forms.py:139 core/models.py:98
+msgid "Music File"
+msgstr ""
+
+#: core/forms.py:174
+#, python-brace-format
+msgid "{group_type} requires between {min_allowed} and {max_allowed} dancers "
+msgstr ""
+
+#: core/forms.py:179
+msgid "Group name is required for groups of 4 or more dancers."
+msgstr ""
+
+#: core/forms.py:191
+msgid "Only MP3 files are supported."
+msgstr ""
+
+#: core/forms.py:198
+msgid "Failed to process the uploaded MP3 file."
+msgstr ""
+
+#: core/forms.py:211
+msgid "File too long for {group_type}. Max is {limit // 60}:{limit % 60:02d}, "
+msgstr ""
+
+#: core/forms.py:231 core/models.py:168
+#: core/templates/core/event_awards.html:29
+#: core/templates/core/judge_view.html:39
+#: core/templates/core/participation_scores.html:25
+msgid "Score"
+msgstr ""
+
+#: core/models.py:10
+msgid "Raw Password"
+msgstr ""
+
+#: core/models.py:17
+msgid "Confirmed"
+msgstr ""
+
+#: core/models.py:26
+msgid "Dance Club"
+msgstr ""
+
+#: core/models.py:27
+msgid "Dance Clubs"
+msgstr ""
+
+#: core/models.py:36 core/templates/core/category_results.html:24
+#: core/templates/core/event_awards.html:28
+#: core/templates/core/judge_view.html:24
+#: core/templates/core/list_event_participants.html:27
+#: core/templates/core/manage_start_list.html:15
+#: core/templates/core/participant_summary_by_club.html:10
+#: core/templates/core/participation_scores.html:10
+#: core/templates/core/start_list.html:15
+msgid "Club"
+msgstr ""
+
+#: core/models.py:43 core/models.py:109 core/models.py:141
+msgid "Dancer"
+msgstr ""
+
+#: core/models.py:52
+msgid "Is Published"
+msgstr ""
+
+#: core/models.py:53
+msgid "Results Published"
+msgstr ""
+
+#: core/models.py:60 core/models.py:88 core/models.py:110 core/models.py:125
+#: core/models.py:152
+msgid "Event"
+msgstr ""
+
+#: core/models.py:61 core/templates/core/base.html:342
+#: core/templates/core/base.html:356 core/templates/core/base.html:364
+msgid "Events"
+msgstr ""
+
+#: core/models.py:66
+msgid "Solo"
+msgstr ""
+
+#: core/models.py:67
+msgid "Duo"
+msgstr ""
+
+#: core/models.py:68
+msgid "Trio"
+msgstr ""
+
+#: core/models.py:69
+msgid "Group (4-9)"
+msgstr ""
+
+#: core/models.py:70
+msgid "Formation (10-29)"
+msgstr ""
+
+#: core/models.py:71
+msgid "Production (30+)"
+msgstr ""
+
+#: core/models.py:75
+msgid "Baby (5-6)"
+msgstr ""
+
+#: core/models.py:76
+msgid "Mini Kids (7-8)"
+msgstr ""
+
+#: core/models.py:77
+msgid "Kids (9-11)"
+msgstr ""
+
+#: core/models.py:78
+msgid "Teen (12-14)"
+msgstr ""
+
+#: core/models.py:79
+msgid "Youth (15-17)"
+msgstr ""
+
+#: core/models.py:80
+msgid "Adult (18 and up)"
+msgstr ""
+
+#: core/models.py:84
+msgid "Advanced"
+msgstr ""
+
+#: core/models.py:85
+msgid "Beginner/Basic"
+msgstr ""
+
+#: core/models.py:94
+msgid "Display Order"
+msgstr ""
+
+#: core/models.py:95
+msgid "Untitled"
+msgstr ""
+
+#: core/models.py:97
+msgid "Group Display Order"
+msgstr ""
+
+#: core/models.py:104 core/models.py:139 core/models.py:161
+msgid "Participation"
+msgstr ""
+
+#: core/models.py:105
+msgid "Participations"
+msgstr ""
+
+#: core/models.py:111 core/models.py:129
+msgid "Style Category"
+msgstr ""
+
+#: core/models.py:119
+msgid "Event Registration"
+msgstr ""
+
+#: core/models.py:120
+msgid "Event Registrations"
+msgstr ""
+
+#: core/models.py:124
+msgid "Name"
+msgstr ""
+
+#: core/models.py:130
+msgid "Style Categories"
+msgstr ""
+
+#: core/models.py:147
+msgid "Dancer Participation"
+msgstr ""
+
+#: core/models.py:148
+msgid "Dancer Participations"
+msgstr ""
+
+#: core/models.py:153
+msgid "Current Highlight Key"
+msgstr ""
+
+#: core/models.py:156
+msgid "Event Playback State"
+msgstr ""
+
+#: core/models.py:157
+msgid "Event Playback States"
+msgstr ""
+
+#: core/models.py:162 core/templates/core/judge_view.html:3
+#: core/templates/core/participation_scores.html:24
+msgid "Judge"
+msgstr ""
+
+#: core/models.py:169
+msgid "Final score between 1.00 and 10.00 (step 0.25)"
+msgstr ""
+
+#: core/models.py:174
+msgid "Judge Score"
+msgstr ""
+
+#: core/models.py:175 core/templates/core/category_results.html:25
+msgid "Judge Scores"
+msgstr ""
+
+#: core/templates/core/add_dancer.html:7
+msgid "Add Dancer for"
+msgstr ""
+
+#: core/templates/core/add_dancer.html:9
+#: core/templates/core/list_dancers.html:16
+#: core/templates/core/list_dancers.html:20
+msgid "Add Dancer"
+msgstr ""
+
+#: core/templates/core/awaiting_confirmation.html:7
+msgid "Registration Pending"
+msgstr ""
+
+#: core/templates/core/awaiting_confirmation.html:8
+msgid "Your club registration is under review by the admin."
+msgstr ""
+
+#: core/templates/core/awaiting_confirmation.html:9
+msgid "You will be notified once your account is approved."
+msgstr ""
+
+#: core/templates/core/awaiting_confirmation.html:12
+msgid "Back to Home"
+msgstr ""
+
+#: core/templates/core/base.html:6
+msgid "Dance Portal"
+msgstr ""
+
+#: core/templates/core/base.html:337 core/templates/core/base.html:350
+#: core/templates/core/base.html:357
+msgid "Logout"
+msgstr ""
+
+#: core/templates/core/base.html:341
+msgid "Clubs"
+msgstr ""
+
+#: core/templates/core/base.html:345
+msgid "Pending Clubs"
+msgstr ""
+
+#: core/templates/core/base.html:354
+msgid "My Club"
+msgstr ""
+
+#: core/templates/core/base.html:361
+msgid "Home"
+msgstr ""
+
+#: core/templates/core/base.html:362 core/templates/registration/login.html:29
+msgid "Login"
+msgstr ""
+
+#: core/templates/core/base.html:363
+msgid "Register Club"
+msgstr ""
+
+#: core/templates/core/base.html:365
+msgid "Contact"
+msgstr ""
+
+#: core/templates/core/base.html:385
+msgid "Logged in as: "
+msgstr ""
+
+#: core/templates/core/category_results.html:2
+msgid "Results "
+msgstr ""
+
+#: core/templates/core/category_results.html:5
+#: core/templates/core/event_list.html:37
+#: core/templates/core/event_list.html:67
+msgid "Results"
+msgstr ""
+
+#: core/templates/core/category_results.html:10
+#: core/templates/core/category_results.html:14
+msgid "Back to Start List"
+msgstr ""
+
+#: core/templates/core/category_results.html:21
+#: core/templates/core/event_awards.html:25
+msgid "Position"
+msgstr ""
+
+#: core/templates/core/category_results.html:22
+#: core/templates/core/event_music.html:18
+#: core/templates/core/judge_view.html:27
+#: core/templates/core/list_event_participants.html:26
+#: core/templates/core/manage_start_list.html:12
+#: core/templates/core/start_list.html:12
+msgid "Dancer(s)"
+msgstr ""
+
+#: core/templates/core/category_results.html:23
+#: core/templates/core/event_awards.html:27
+#: core/templates/core/event_music.html:19
+#: core/templates/core/judge_view.html:25
+#: core/templates/core/list_event_participants.html:33
+#: core/templates/core/manage_start_list.html:14
+#: core/templates/core/participation_scores.html:8
+#: core/templates/core/start_list.html:14
+msgid "Choreography"
+msgstr ""
+
+#: core/templates/core/category_results.html:26
+msgid "Avg"
+msgstr ""
+
+#: core/templates/core/category_results.html:51
+msgid "Unknown"
+msgstr ""
+
+#: core/templates/core/create_event.html:8
+msgid "Create Competition Event"
+msgstr ""
+
+#: core/templates/core/create_event.html:13
+msgid "Create Event"
+msgstr ""
+
+#: core/templates/core/dashboard.html:7
+msgid "All Dance Clubs"
+msgstr ""
+
+#: core/templates/core/dashboard.html:14
+#: core/templates/core/pending_club_requests.html:14
+msgid "Phone"
+msgstr ""
+
+#: core/templates/core/dashboard.html:15
+#: core/templates/core/pending_club_requests.html:15
+msgid "Representative"
+msgstr ""
+
+#: core/templates/core/dashboard.html:18
+#: core/templates/core/list_event_participants.html:34
+#: core/templates/core/pending_club_requests.html:17
+msgid "Actions"
+msgstr ""
+
+#: core/templates/core/dashboard.html:33
+msgid "Manage Dancers"
+msgstr ""
+
+#: core/templates/core/dashboard.html:36
+msgid "Edit Club"
+msgstr ""
+
+#: core/templates/core/dashboard.html:39
+msgid "Delete Club"
+msgstr ""
+
+#: core/templates/core/dashboard.html:48
+msgid "Manage Start Lists"
+msgstr ""
+
+#: core/templates/core/dashboard.html:54 core/templates/core/event_list.html:48
+msgid "Manage Start List"
+msgstr ""
+
+#: core/templates/core/dashboard.html:65 core/templates/core/edit_club.html:11
+msgid "Club Name:"
+msgstr ""
+
+#: core/templates/core/dashboard.html:66 core/templates/core/edit_club.html:16
+msgid "Country:"
+msgstr ""
+
+#: core/templates/core/dashboard.html:67 core/templates/core/edit_club.html:21
+msgid "City:"
+msgstr ""
+
+#: core/templates/core/dashboard.html:68
+msgid "Email:"
+msgstr ""
+
+#: core/templates/core/dashboard.html:69
+msgid "Phone:"
+msgstr ""
+
+#: core/templates/core/dashboard.html:73
+msgid "Edit Club Details"
+msgstr ""
+
+#: core/templates/core/dashboard.html:83
+msgid "View Start List"
+msgstr ""
+
+#: core/templates/core/edit_club.html:5
+msgid "Edit Club:"
+msgstr ""
+
+#: core/templates/core/edit_club.html:26
+msgid "Phone Number:"
+msgstr ""
+
+#: core/templates/core/edit_club.html:31
+msgid "Representative Name:"
+msgstr ""
+
+#: core/templates/core/edit_club.html:36
+msgid "Email (used as login)"
+msgstr ""
+
+#: core/templates/core/edit_club.html:41
+msgid "Password (leave blank to keep unchanged)"
+msgstr ""
+
+#: core/templates/core/edit_club.html:45
+#: core/templates/core/edit_dancer.html:14
+#: core/templates/core/edit_participation.html:88
+msgid "Save Changes"
+msgstr ""
+
+#: core/templates/core/edit_dancer.html:4
+#: core/templates/core/edit_dancer.html:9
+msgid "Edit Dancer"
+msgstr ""
+
+#: core/templates/core/edit_event.html:5
+msgid "Edit Event:"
+msgstr ""
+
+#: core/templates/core/edit_event.html:10
+#: core/templates/core/judge_view.html:59
+msgid "Save"
+msgstr ""
+
+#: core/templates/core/edit_event.html:14
+msgid "Back to Events"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:5
+msgid "Edit Participation for "
+msgstr ""
+
+#: core/templates/core/edit_participation.html:29
+msgid "Group Type:"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:34
+msgid "Select Dancer(s):"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:39
+#: core/templates/core/register_dancer.html:58
+msgid "Group Name:"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:44
+msgid "Style:"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:49
+msgid "Difficulty:"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:54
+msgid "Age Group (auto-calculated)"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:60
+#: core/templates/core/register_dancer.html:81
+msgid "Choreographer Name:"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:65
+#: core/templates/core/register_dancer.html:86
+msgid "Choreography Name:"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:74
+msgid "Your browser does not support the audio tag"
+msgstr ""
+
+#: core/templates/core/edit_participation.html:81
+msgid "Replace Music File (optional):"
+msgstr ""
+
+#: core/templates/core/event_awards.html:2
+#: core/templates/core/event_awards.html:5
+#: core/templates/core/event_list.html:60
+msgid "Awards"
+msgstr ""
+
+#: core/templates/core/event_awards.html:14
+msgid "Unpublish Awards"
+msgstr ""
+
+#: core/templates/core/event_awards.html:16
+msgid "Publish Awards"
+msgstr ""
+
+#: core/templates/core/event_awards.html:26
+msgid "Dancer(s) / Group"
+msgstr ""
+
+#: core/templates/core/event_awards.html:55
+msgid "View Detailed Scores"
+msgstr ""
+
+#: core/templates/core/event_awards.html:63
+msgid "No results for this category yet."
+msgstr ""
+
+#: core/templates/core/event_awards.html:68
+#: core/templates/core/judge_view.html:54
+msgid "Previous"
+msgstr ""
+
+#: core/templates/core/event_awards.html:71
+msgid "Next"
+msgstr ""
+
+#: core/templates/core/event_awards.html:77
+msgid "No results available."
+msgstr ""
+
+#: core/templates/core/event_list.html:5
+msgid "Upcoming Events"
+msgstr ""
+
+#: core/templates/core/event_list.html:25
+msgid "Published"
+msgstr ""
+
+#: core/templates/core/event_list.html:27
+msgid "Unpublished"
+msgstr ""
+
+#: core/templates/core/event_list.html:31
+#: core/templates/core/event_list.html:59
+msgid "Judges"
+msgstr ""
+
+#: core/templates/core/event_list.html:33
+msgid "No Judges"
+msgstr ""
+
+#: core/templates/core/event_list.html:39
+msgid "No Results Published"
+msgstr ""
+
+#: core/templates/core/event_list.html:45
+#: core/templates/core/register_dancer.html:2
+msgid "Register Dancers"
+msgstr ""
+
+#: core/templates/core/event_list.html:46
+msgid "View Registered"
+msgstr ""
+
+#: core/templates/core/event_list.html:50
+msgid "Start List"
+msgstr ""
+
+#: core/templates/core/event_list.html:55
+msgid "More"
+msgstr ""
+
+#: core/templates/core/event_list.html:57
+msgid "Manage Style Categories"
+msgstr ""
+
+#: core/templates/core/event_list.html:58
+msgid "Event Music"
+msgstr ""
+
+#: core/templates/core/event_list.html:61
+msgid "Edit Event"
+msgstr ""
+
+#: core/templates/core/event_list.html:62
+#: core/templates/core/notify_clubs.html:2
+msgid "Notify Clubs"
+msgstr ""
+
+#: core/templates/core/event_list.html:73
+msgid "No events yet."
+msgstr ""
+
+#: core/templates/core/event_list_public.html:2
+msgid "Upcoming Events | Dance Portal"
+msgstr ""
+
+#: core/templates/core/event_list_public.html:5
+msgid "Upcoming Dance Events"
+msgstr ""
+
+#: core/templates/core/event_list_public.html:16
+msgid "No upcoming events found."
+msgstr ""
+
+#: core/templates/core/event_music.html:2
+#: core/templates/core/event_music.html:5
+msgid "Music Playback"
+msgstr ""
+
+#: core/templates/core/event_music.html:20
+#: core/templates/core/judge_view.html:26
+#: core/templates/core/list_event_participants.html:32
+#: core/templates/core/manage_start_list.html:13
+#: core/templates/core/participation_scores.html:9
+#: core/templates/core/start_list.html:13
+msgid "Choreographer"
+msgstr ""
+
+#: core/templates/core/event_music.html:21
+msgid "Music"
+msgstr ""
+
+#: core/templates/core/event_music.html:44
+msgid "Your browser does not support the audio element."
+msgstr ""
+
+#: core/templates/core/event_music.html:47
+msgid "No file uploaded"
+msgstr ""
+
+#: core/templates/core/event_music.html:59
+msgid "Previous Category"
+msgstr ""
+
+#: core/templates/core/event_music.html:66
+msgid "Next Category"
+msgstr ""
+
+#: core/templates/core/home.html:3
+msgid "Home | Dance Portal"
+msgstr ""
+
+#: core/templates/core/home.html:6
+msgid "Welcome to the Dance Portal"
+msgstr ""
+
+#: core/templates/core/home.html:7
+msgid ""
+"Here you can login, register your club and view events and their start lists"
+msgstr ""
+
+#: core/templates/core/judge_view.html:6
+msgid "Judging"
+msgstr ""
+
+#: core/templates/core/judge_view.html:9
+msgid "All entries have been scored!"
+msgstr ""
+
+#: core/templates/core/judge_view.html:12
+msgid "Review Scores"
+msgstr ""
+
+#: core/templates/core/judge_view.html:17
+msgid "Showing Category"
+msgstr ""
+
+#: core/templates/core/judge_view.html:17
+msgid "of"
+msgstr ""
+
+#: core/templates/core/judge_view.html:34
+msgid "No dancers registered"
+msgstr ""
+
+#: core/templates/core/judge_view.html:57
+msgid "Save & Next"
+msgstr ""
+
+#: core/templates/core/judge_view.html:65
+msgid "No categories available for judging."
+msgstr ""
+
+#: core/templates/core/list_dancers.html:2
+msgid "Dancers | Dance Portal"
+msgstr ""
+
+#: core/templates/core/list_dancers.html:7
+msgid "Dancers for"
+msgstr ""
+
+#: core/templates/core/list_dancers.html:9
+msgid "Your Dancers"
+msgstr ""
+
+#: core/templates/core/list_dancers.html:39
+#: core/templates/core/list_event_participants.html:56
+msgid "Edit"
+msgstr ""
+
+#: core/templates/core/list_dancers.html:43
+#: core/templates/core/list_dancers.html:47
+#: core/templates/core/list_event_participants.html:67
+msgid "Delete"
+msgstr ""
+
+#: core/templates/core/list_dancers.html:56
+msgid "No dancers yet"
+msgstr ""
+
+#: core/templates/core/list_event_participants.html:2
+msgid "Participants | Dance Portal"
+msgstr ""
+
+#: core/templates/core/list_event_participants.html:6
+msgid "Participants for "
+msgstr ""
+
+#: core/templates/core/list_event_participants.html:21
+msgid "View Registered by Club"
+msgstr ""
+
+#: core/templates/core/list_event_participants.html:25
+msgid "# Dancers"
+msgstr ""
+
+#: core/templates/core/list_event_participants.html:76
+msgid "No participants yet."
+msgstr ""
+
+#: core/templates/core/manage_judges.html:12
+msgid "Judges for "
+msgstr ""
+
+#: core/templates/core/manage_judges.html:21
+msgid "No judges have been added for this event yet"
+msgstr ""
+
+#: core/templates/core/manage_judges.html:26
+#: core/templates/core/manage_judges.html:31
+msgid "Add Judge"
+msgstr ""
+
+#: core/templates/core/manage_start_list.html:5
+msgid "Manage Start List for"
+msgstr ""
+
+#: core/templates/core/manage_start_list.html:91
+msgid "Publish Start List"
+msgstr ""
+
+#: core/templates/core/manage_start_list.html:92
+msgid "Reset to Default Order"
+msgstr ""
+
+#: core/templates/core/manage_start_list.html:99
+msgid "Unpublish"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:2
+msgid "Manage Styles"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:5
+msgid "Manage Styles for"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:10
+msgid "Select existing style"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:12
+msgid "Choose existing style"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:20
+msgid "Or enter a new style"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:25
+msgid "Add Style"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:28
+msgid "Existing Styles for this Event"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:37
+msgid "Remove"
+msgstr ""
+
+#: core/templates/core/manage_styles.html:43
+msgid "No styles added for this event yet."
+msgstr ""
+
+#: core/templates/core/notify_clubs.html:5
+msgid "Notify Clubs about "
+msgstr ""
+
+#: core/templates/core/notify_clubs.html:9
+msgid "Select Clubs"
+msgstr ""
+
+#: core/templates/core/notify_clubs.html:12
+msgid "Subject:"
+msgstr ""
+
+#: core/templates/core/notify_clubs.html:15
+msgid "Message"
+msgstr ""
+
+#: core/templates/core/notify_clubs.html:18
+msgid "Send Emails"
+msgstr ""
+
+#: core/templates/core/participant_summary_by_club.html:2
+msgid "Club Summary"
+msgstr ""
+
+#: core/templates/core/participant_summary_by_club.html:5
+msgid "Participants Summary by Club"
+msgstr ""
+
+#: core/templates/core/participant_summary_by_club.html:17
+msgid "Competitors"
+msgstr ""
+
+#: core/templates/core/participant_summary_by_club.html:18
+msgid "Performances"
+msgstr ""
+
+#: core/templates/core/participant_summary_by_club.html:51
+msgid "Back to Participants"
+msgstr ""
+
+#: core/templates/core/participation_scores.html:2
+msgid "Scores"
+msgstr ""
+
+#: core/templates/core/participation_scores.html:5
+msgid "Detailed Scores"
+msgstr ""
+
+#: core/templates/core/participation_scores.html:38
+msgid "Total Score (after discarding highest & lowest)"
+msgstr ""
+
+#: core/templates/core/participation_scores.html:40
+msgid "Back to Awards"
+msgstr ""
+
+#: core/templates/core/pending_club_requests.html:2
+msgid "Pending Club Requests"
+msgstr ""
+
+#: core/templates/core/pending_club_requests.html:5
+msgid "Pending Club Registrations"
+msgstr ""
+
+#: core/templates/core/pending_club_requests.html:33
+msgid "Accept"
+msgstr ""
+
+#: core/templates/core/pending_club_requests.html:34
+msgid "Decline"
+msgstr ""
+
+#: core/templates/core/pending_club_requests.html:42
+msgid "No pending clubs at the moment"
+msgstr ""
+
+#: core/templates/core/register_club.html:2
+msgid "Register Dance Club"
+msgstr ""
+
+#: core/templates/core/register_club.html:5
+msgid "Register Your Dance Club"
+msgstr ""
+
+#: core/templates/core/register_club.html:10
+#: core/templates/core/register_dancer.html:98
+#: core/templates/core/register_event.html:10
+msgid "Register"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:5
+msgid "Register Dancers for"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:17
+msgid "Select Club"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:19
+msgid "Select a club"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:31
+msgid "Registering dancers for"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:53
+msgid "Select Dancer(s)"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:73
+msgid "Age Group (auto-calculated):"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:76
+msgid "Average age"
+msgstr ""
+
+#: core/templates/core/register_dancer.html:91
+msgid "Upload Music File:"
+msgstr ""
+
+#: core/templates/core/register_event.html:2
+msgid "Register Dancer"
+msgstr ""
+
+#: core/templates/core/register_event.html:5
+msgid "Register Dancer for Event"
+msgstr ""
+
+#: core/templates/core/start_list.html:63
+msgid "The start list has not been published yet"
+msgstr ""

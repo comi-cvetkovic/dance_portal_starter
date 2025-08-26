@@ -1,0 +1,95 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Awards" %} – {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Awards" %} – {{ event.name }} ({{ event.date }})</h2>
+
+{% if current_key %}
+  <h3 style="margin-top: 1em;">
+    {{ current_key.0 }} – {{ current_key.1 }} – {{ current_key.2 }} – {{ current_key.3 }}
+  </h3>
+
+  {% if user.is_superuser %}
+    <form method="post" action="{% url 'publish_awards' event.id %}" style="margin-top:1.5em; margin-bottom:1.5em;">
+      {% csrf_token %}
+      {% if event.results_published %}
+        <button type="submit" class="btn btn-delete">{% trans "Unpublish Awards" %}</button>
+      {% else %}
+        <button type="submit" class="btn btn-green">{% trans "Publish Awards" %}</button>
+      {% endif %}
+    </form>
+  {% endif %}
+
+  {% if results %}
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
+      <thead>
+        <tr style="background-color: #f0f0f0;">
+          <th style="padding: 8px;">{% trans "Position" %}</th>
+          <th>{% trans "Dancer(s) / Group" %}</th>
+          <th>{% trans "Choreography" %}</th>
+          <th>{% trans "Club" %}</th>
+          <th>{% trans "Final Score" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in results %}
+        <tr
+          {% if forloop.counter == 1 %}
+            style="background:#fff8dc;"  {# Gold - light gold #}
+          {% elif forloop.counter == 2 %}
+            style="background:#f8f8f8;"  {# Silver - light gray #}
+          {% elif forloop.counter == 3 %}
+            style="background:#ffe4c4;"  {# Bronze - light bronze #}
+          {% endif %}
+        >
+          <td style="padding: 8px; font-weight:bold;">
+            {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% endif %}
+            {{ forloop.counter }}
+          </td>
+          <td>
+            {% if item.participation.group_name %}
+              {{ item.participation.group_name }}
+            {% else %}
+              {% for d in item.dancers %}
+                {{ d.first_name }} {{ d.last_name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td>{{ item.participation.choreography_name }}</td>
+          <td>
+            {% if item.dancers %}
+              {{ item.dancers.0.club.club_name }}
+            {% else %}
+              –
+            {% endif %}
+          </td>
+          <td><strong>{{ item.score }}</strong></td>
+          <td>
+            <a href="{% url 'participation_scores' item.participation.id %}?group={{ current_index }}"
+                class="btn btn-default btn-sm">
+                {% trans "View Detailed Scores" %}
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p><em>{% trans "No results for this category yet." %}</em></p>
+  {% endif %}
+
+  <div style="margin-top:1em;">
+    {% if has_prev %}
+      <a href="?group={{ current_index|add:-1 }}" class="btn btn-default">← {% trans "Previous" %}</a>
+    {% endif %}
+    {% if has_next %}
+      <a href="?group={{ current_index|add:1 }}" class="btn btn-default">{% trans "Next" %} →</a>
+    {% endif %}
+  </div>
+
+{% else %}
+  <p>{% trans "No results available." %}</p>
+{% endif %}
+{% endblock %}

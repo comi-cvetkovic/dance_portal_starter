@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Pending Club Requests" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Pending Club Registrations" %}</h1>
+
+{% if pending_clubs %}
+<table>
+    <thead>
+        <tr>
+            <th>{% trans "Club Name" %}</th>
+            <th>{% trans "Country" %}</th>
+            <th>{% trans "City" %}</th>
+            <th>{% trans "Phone" %}</th>
+            <th>{% trans "Representative" %}</th>
+            <th>{% trans "Email" %}</th>
+            <th>{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for club in pending_clubs %}
+        <tr>
+            <td>{{ club.club_name }}</td>
+            <td>{{ club.get_country_display }}</td>
+            <td>{{ club.city }}</td>
+            <td>{{ club.phone_number }}</td>
+            <td>{{ club.representative_name }}</td>
+            <td>{{ club.user.username }}</td>
+            <td>
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="club_id" value="{{ club.id }}">
+                    <button name="action" value="accept" class="btn-edit">{% trans "Accept" %}</button>
+                    <button name="action" value="decline" class="btn-delete" onclick="return confirm('Decline this registration?')">{% trans "Decline" %}</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>{% trans "No pending clubs at the moment" %}.</p>
+{% endif %}
+{% endblock %}

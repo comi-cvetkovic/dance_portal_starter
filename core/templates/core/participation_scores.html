@@ -1,0 +1,70 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{{ event.name }} – {% trans "Detailed Scores" %}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Detailed Scores" %} – {{ event.name }}</h2>
+
+<h3>
+  {{ participation.style.name }} – {{ participation.group_type }} – {{ participation.age_group }} – {{ participation.difficulty }}
+</h3>
+
+<p><strong>{% trans "Club" %}:</strong> {{ club.club_name }}</p>
+<p><strong>{% trans "Choreography" %}:</strong> {{ participation.choreography_name }}</p>
+<p><strong>{% trans "Choreographer" %}:</strong> {{ participation.choreographer_name }}</p>
+
+{% if dancers %}
+<p><strong>{% trans "Dancer(s)" %}:</strong>
+  {% if participation.group_name %}
+    {{ participation.group_name }}
+  {% else %}
+    {% for d in dancers %}
+      {{ d.first_name }} {{ d.last_name }}{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+  {% endif %}
+</p>
+{% endif %}
+
+<table style="width:100%; border-collapse:collapse; margin-top:1.5em;">
+  <thead>
+    <tr style="background:#f0f0f0;">
+      <th>{% trans "Judge" %}</th>
+      <th>{% trans "Technique (T)" %}</th>
+      <th>{% trans "Composition (C)" %}</th>
+      <th>{% trans "Image (I)" %}</th>
+      {% if participation.style.name == "Show Dance" %}
+        <th>{% trans "Show Value (S)" %}</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for js in judge_scores %}
+    <tr>
+      <td>{{ js.judge.first_name }} {{ js.judge.last_name }}</td>
+      <td {% if js.id in discarded_ids.technique %} style="color:#999;text-decoration:line-through;"{% endif %}>
+        {{ js.technique|default:"–" }}
+      </td>
+      <td {% if js.id in discarded_ids.composition %} style="color:#999;text-decoration:line-through;"{% endif %}>
+        {{ js.composition|default:"–" }}
+      </td>
+      <td {% if js.id in discarded_ids.image %} style="color:#999;text-decoration:line-through;"{% endif %}>
+        {{ js.image|default:"–" }}
+      </td>
+      {% if participation.style.name == "Show Dance" %}
+      <td {% if js.id in discarded_ids.show_value %} style="color:#999;text-decoration:line-through;"{% endif %}>
+        {{ js.show_value|default:"–" }}
+      </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3 style="margin-top:1.5em;">
+  {% trans "Final Score" %}: <span style="color:green;">{{ final_score }}</span>
+</h3>
+
+<a href="{% url 'event_awards' event.id %}?group={{ group_index }}" class="btn btn-default">
+  {% trans "Back to Awards" %}
+</a>
+{% endblock %}

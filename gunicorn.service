@@ -1,0 +1,15 @@
+[Unit]
+Description=gunicorn daemon for Dance Portal
+After=network.target
+
+[Service]
+User=django
+Group=www-data
+RuntimeDirectory=gunicorn
+RuntimeDirectoryMode=0755
+WorkingDirectory=/home/django/dance_portal_starter
+ExecStart=/home/django/dance_portal_starter/venv/bin/gunicorn --workers 3 --umask 007 --bind unix:/run/gunicorn/danceportal.sock dance_portal.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+

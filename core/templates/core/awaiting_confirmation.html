@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Awaiting Confirmation{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-top: 4em;">
+    <h2>{% trans "Registration Pending" %}</h2>
+    <p>{% trans "Your club registration is under review by the admin." %}</p>
+    <p>{% trans "You will be notified once your account is approved." %}</p>
+    <br>
+    <form method="get" action="{% url 'home' %}">
+        <button class="btn-default">{% trans "Back to Home" %}</button>
+    </form>
+</div>
+{% endblock %}

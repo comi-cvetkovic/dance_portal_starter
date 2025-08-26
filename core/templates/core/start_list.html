@@ -1,0 +1,76 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Start List | {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>Start List for {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
+
+{% if show_entries %}
+<table class="start-group" id="group-container" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>{% trans "Dancer(s)" %}</th>
+            <th>{% trans "Choreographer" %}</th>
+            <th>{% trans "Choreography" %}</th>
+            <th>{% trans "Club" %}</th>
+            <th>{% trans "City" %}</th>
+        </tr>
+    </thead>
+
+    {% for group_key, group_entries in grouped_entries.items %}
+    <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
+        <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
+            <td colspan="6">
+                <strong>
+                    {% if event.results_published %}
+                    <a href="{% url 'category_results' event.id group_key|join:'|' %}" style="text-decoration: none;">
+                        {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
+                    </a>
+                    {% else %}
+                    {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
+                    {% endif %}
+                </strong>
+            </td>
+        </tr>
+
+        {% for entry in group_entries %}
+        <tr>
+            <td>
+                {{ entry.global_row_number }}
+                {% if entry.start_time %}
+                <br><span style="font-size: 0.85em; color: gray;">{{ entry.start_time }}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if entry.dancers|stringformat:"s" == entry.dancers %}
+                {{ entry.dancers }}
+                {% else %}
+                {% for dancer in entry.dancers %}
+                {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+            </td>
+            <td>{{ entry.choreographer }}</td>
+            <td>{{ entry.choreography_name }}</td>
+            <td>{{ entry.club_name }}</td>
+            <td>{{ entry.club_city }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% endfor %}
+</table>
+{% else %}
+<p>{% trans "The start list has not been published yet" %}.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if is_admin %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    // same drag/drop + publish logic you already have in manage_start_list
+</script>
+{% endif %}
+{% endblock %}
+

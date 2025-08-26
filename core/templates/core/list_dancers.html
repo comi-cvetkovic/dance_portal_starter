@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Dancers | Dance Portal" %}{% endblock %}
+
+{% block content %}
+<h2>
+    {% if is_superuser %}
+    {% trans "Dancers for" %} {{ club.club_name }}
+    {% else %}
+    {% trans "Your Dancers" %}
+    {% endif %}
+</h2>
+
+<div style="margin-top: 2em;">
+    {% if is_superuser %}
+    <form method="get" action="{% url 'admin_add_dancer' club.id %}" style="display:inline;">
+        <button type="submit" class="btn-green">+ {% trans "Add Dancer" %}</button>
+    </form>
+    {% else %}
+    <form method="get" action="{% url 'add_dancer' %}" style="display:inline;">
+        <button type="submit" class="btn-green">+ {% trans "Add Dancer" %}</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if dancers %}
+<ul style="list-style: none; padding: 0;">
+    {% for dancer in dancers %}
+    <li style="
+            margin-bottom: 1em;
+            padding: 0.75em 1em;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fafafa;
+        ">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>{{ dancer.first_name }} {{ dancer.last_name }} – {{ dancer.date_of_birth }}</span>
+            <span style="display: flex; gap: 0.5em;">
+                <form method="get" action="{% url 'edit_dancer' dancer.id %}">
+                    <button type="submit" class="btn-edit">{% trans "Edit" %}</button>
+                </form>
+                {% if is_superuser %}
+                <form method="get" action="{% url 'delete_dancer_by_club' club.id dancer.id %}">
+                    <button type="submit" class="btn-delete">{% trans "Delete" %}</button>
+                </form>
+                {% else %}
+                <form method="get" action="{% url 'delete_dancer' dancer.id %}">
+                    <button type="submit" class="btn-delete">{% trans "Delete" %}</button>
+                </form>
+                {% endif %}
+            </span>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>{% trans "No dancers yet" %}.</p>
+{% endif %}
+{% endblock %}

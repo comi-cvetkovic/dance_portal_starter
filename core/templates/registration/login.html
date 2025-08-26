@@ -1,0 +1,31 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}Login | Dance Portal{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div style="color: red; margin-bottom: 1em;">
+      {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <p>
+    <label for="id_username">Username / Email</label><br>
+    <input type="text" name="username" id="id_username" required>
+  </p>
+
+  <p>
+    <label for="id_password">Password:</label><br>
+    <input type="password" name="password" id="id_password" required>
+  </p>
+
+  <button type="submit" class="btn-default">{% trans "Login" %}</button>
+</form>
+{% endblock %}
