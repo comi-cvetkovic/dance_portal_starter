@@ -3,7 +3,12 @@
 {% block title %}Events{% endblock %}
 
 {% block content %}
-<h2>{% trans "Upcoming Events" %}</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <h2>{% trans "Upcoming Events" %}</h2>
+    {% if user.is_superuser %}
+    <a href="{% url 'create_event' %}" class="btn btn-green">{% trans "Create Event" %}</a>
+    {% endif %}
+</div>
 
 <div class="event-grid">
     {% for event in events %}
