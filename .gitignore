@@ -1,7 +1,31 @@
-venv/
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.so
 *.pyd
+
+# Virtual environment
+venv/
+
+# SQLite DBs (local only, not production)
 *.sqlite3
 db.sqlite3
+
+# Django collectstatic output (generated on server)
+staticfiles/
+
+# Django user uploads
+media/
+
+# Logs
+*.log
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific
+.DS_Store
+Thumbs.db
