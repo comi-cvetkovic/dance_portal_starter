@@ -5,7 +5,7 @@
 {% block content %}
 <h2>{% trans "Manage Event:" %} {{ event.name }}</h2>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     <p>
@@ -33,12 +33,21 @@
         {{ form.start_time }}
     </p>
 
+    <p>
+        <label for="id_notice_image">{% trans "Event Poster / Notice (optional)" %}:</label><br>
+        {{ form.notice_image }}
+        {% if event.notice_image %}
+            <br>
+            <img src="{{ event.notice_image.url }}" alt="Poster"
+                 style="max-height:150px; margin-top:8px; border:1px solid #ccc; border-radius:6px;">
+        {% endif %}
+    </p>
+
     <button type="submit" class="btn-green">{% trans "Save Changes" %}</button>
 </form>
 
 <hr style="margin: 2em 0;">
 
-<!-- Delete Event button -->
 <form method="post" action="{% url 'delete_event' event.id %}"
       onsubmit="return confirm('{% blocktrans %}Are you sure you want to delete this event? All participations, styles, and scores will be removed.{% endblocktrans %}');">
     {% csrf_token %}

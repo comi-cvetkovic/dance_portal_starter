@@ -8,7 +8,7 @@
 {% for group_key, entries in grouped_entries.items %}
     {% with group_key|join:"|" as group_key_str %}
         {% if group_key_str == current_key %}
-        <h3 class="highlighted-category">
+        <h3>
             {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
         </h3>
         <p><em>{% trans "Showing Category" %} {{ current_index|add:1 }} {% trans "of" %} {{ total_categories }}</em></p>

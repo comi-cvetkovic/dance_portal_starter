@@ -5,11 +5,47 @@
 {% block content %}
     <h2>{% trans "Register Your Dance Club" %}</h2>
 
-    <form method="post">
+    <form method="post" class="register-form">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class = "btn-green">{% trans "Register" %}</button>
+        <button type="submit" class="btn-green">{% trans "Register" %}</button>
     </form>
 {% endblock %}
+
+{% block extra_styles %}
+<style>
+    .register-form {
+        max-width: 360px;   /* keeps things tighter but still readable */
+    }
+
+    .register-form p {
+        margin-bottom: 1rem;
+    }
+
+    .register-form label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.3rem;
+    }
+
+    .register-form input,
+    .register-form select,
+    .register-form textarea {
+        width: 90%;          /* smaller than full width */
+        padding: 0.35rem 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        box-sizing: border-box;
+    }
+
+    .btn-green {
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+
+
 
 

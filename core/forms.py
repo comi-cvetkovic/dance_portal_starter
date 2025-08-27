@@ -102,12 +102,13 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = Event
-        fields = ['name', 'location', 'city', 'date', 'start_time']
+        fields = ['name', 'location', 'city', 'date', 'start_time', 'notice_image']
         labels = {
             'name': _("Event Name"),
             'location': _("Location"),
             'city': _("City"),
             'date': _("Date"),
+            'notice_image': _("Event Poster / Notice (optional)"),
         }
 
 

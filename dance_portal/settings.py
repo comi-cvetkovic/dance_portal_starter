@@ -8,7 +8,8 @@ SECRET_KEY = '1234'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["209.74.87.118", "5678danceportal.com", "www.5678danceportal.com"]
+ALLOWED_HOSTS = ["209.74.87.118", "5678danceportal.com", "www.5678danceportal.com", "127.0.0.1",
+    "localhost",]
 
 LANGUAGE_CODE = "en"
 

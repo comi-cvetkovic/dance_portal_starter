@@ -5,7 +5,7 @@
 {% block content %}
 <h2>{% trans "Create Competition Event" %}</h2>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     <p>
@@ -33,9 +33,13 @@
         {{ form.start_time }}
     </p>
 
+    <p>
+        <label for="id_notice_image">{% trans "Event Poster / Notice (optional)" %}:</label><br>
+        {{ form.notice_image }}
+    </p>
+
     <button type="submit" class="btn-green">{% trans "Create Event" %}</button>
 </form>
-
 {% endblock %}
 
 

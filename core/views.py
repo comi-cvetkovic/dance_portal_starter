@@ -689,19 +689,38 @@ def custom_logout_view(request):
 @staff_member_required
 def create_event(request):
     if request.method == 'POST':
-        form = EventForm(request.POST)
+        # IMPORTANT: include request.FILES
+        form = EventForm(request.POST, request.FILES)
         if form.is_valid():
             event = form.save()
 
-            # Automatically add default styles to the new event
+            # Add default styles for this event
             for style_name in DEFAULT_STYLES:
                 StyleCategory.objects.get_or_create(event=event, name=style_name)
+
             messages.success(request, _("Event created successfully."))
             return redirect('event_list')
     else:
         form = EventForm()
+
     return render(request, 'core/create_event.html', {'form': form})
 
+
+@staff_member_required
+def edit_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    if request.method == 'POST':
+        # IMPORTANT: include request.FILES
+        form = EventForm(request.POST, request.FILES, instance=event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Event updated successfully."))
+            return redirect('event_list')
+    else:
+        form = EventForm(instance=event)
+
+    return render(request, 'core/edit_event.html', {'form': form, 'event': event})
 
 @login_required
 def event_list(request):
@@ -1429,21 +1448,6 @@ def publish_event_results(request, event_id):
     event.results_published = True
     event.save()
     return redirect("event_awards", event_id=event.id)  # ✅ Redirect back to awards
-
-@staff_member_required
-def edit_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-
-    if request.method == 'POST':
-        form = EventForm(request.POST, instance=event)
-        if form.is_valid():
-            form.save()
-            messages.success(request, _("Event updated successfully."))
-            return redirect('event_list')
-    else:
-        form = EventForm(instance=event)
-
-    return render(request, 'core/edit_event.html', {'form': form, 'event': event})
 
 @staff_member_required
 @require_POST

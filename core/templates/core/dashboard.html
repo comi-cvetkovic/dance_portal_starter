@@ -8,7 +8,7 @@
   <!-- ===================== ADMIN DASHBOARD ===================== -->
   <div class="dash-hero">
     <div>
-      <h2>{% trans "Admin Dashboard" %}</h2>
+      <h2 class="heading-dark">{% trans "Admin Dashboard" %}</h2>
       <p class="muted">{% trans "Manage clubs and events from a single place." %}</p>
     </div>
     <div class="hero-actions">
@@ -18,14 +18,6 @@
   </div>
 
   <div class="grid-2">
-    <div class="card">
-      <h3 class="card-title">🏆 {% trans "Quick Links" %}</h3>
-      <div class="chip-list">
-        <a href="{% url 'event_list' %}" class="chip chip-blue">{% trans "Events" %}</a>
-        <a href="{% url 'pending_club_requests' %}" class="chip chip-gold">{% trans "Pending Clubs" %}</a>
-      </div>
-      <p class="muted" style="margin-top:.5rem">{% trans "Jump to the tools you use most." %}</p>
-    </div>
 
     <div class="card">
       <h3 class="card-title">🏫 {% trans "All Clubs" %} <span class="badge">{{ clubs|length }}</span></h3>

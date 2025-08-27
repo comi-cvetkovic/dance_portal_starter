@@ -52,6 +52,12 @@ class Event(models.Model):
     is_published = models.BooleanField(default=False, verbose_name=_("Is Published"))
     results_published = models.BooleanField(default=False, verbose_name=_("Results Published"))
     start_time = models.TimeField(null=True, blank=True, verbose_name=_("Start Time"))
+    notice_image = models.ImageField(
+        upload_to='event_posters/',
+        blank=True,
+        null=True,
+        verbose_name="Event Poster / Notice"
+    )
 
     def __str__(self):
         return f"{self.name} - {self.city} ({self.date})"
