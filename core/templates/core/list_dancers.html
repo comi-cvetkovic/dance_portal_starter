@@ -32,9 +32,10 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             background-color: #fafafa;
+            color: #000;              /* 👈 ensure text is black */
         ">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span>{{ dancer.first_name }} {{ dancer.last_name }} – {{ dancer.date_of_birth }}</span>
+            <span style="color:#000;">{{ dancer.first_name }} {{ dancer.last_name }} – {{ dancer.date_of_birth }}</span>
             <span style="display: flex; gap: 0.5em;">
                 <form method="get" action="{% url 'edit_dancer' dancer.id %}">
                     <button type="submit" class="btn-edit">{% trans "Edit" %}</button>
