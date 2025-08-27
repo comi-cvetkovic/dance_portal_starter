@@ -86,22 +86,47 @@
 
 {% block extra_styles %}
 <style>
-  .award-category { margin-bottom: 3em; }
-  .category-title {
-    margin: 1.5em 0 0.8em;
-    padding: 8px 12px;
-    background: #f8f9fa;
-    border-left: 4px solid #007bff;
-    font-weight: bold;
+  .award-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;  /* ensures columns align */
   }
-  .award-table { width: 100%; border-collapse: collapse; }
-  .award-table th, .award-table td {
-    padding: 10px;
+
+  .award-table th,
+  .award-table td {
+    padding: 10px 12px;
     border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+    text-align: left;
   }
+
+  /* Column widths */
+  .award-table th:nth-child(1),
+  .award-table td:nth-child(1) { width: 8%; text-align: center; }
+  .award-table th:nth-child(2),
+  .award-table td:nth-child(2) { width: 30%; }
+  .award-table th:nth-child(3),
+  .award-table td:nth-child(3) { width: 25%; }
+  .award-table th:nth-child(4),
+  .award-table td:nth-child(4) { width: 20%; }
+  .award-table th:nth-child(5),
+  .award-table td:nth-child(5) { width: 10%; text-align: right; }
+  .award-table th:nth-child(6),
+  .award-table td:nth-child(6) { width: 12%; text-align: right; }
+
+  .award-table thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+  }
+
+  /* Row highlights */
   .placement-row.first-place { background: #fff8dc; }   /* gold */
   .placement-row.second-place { background: #f8f8f8; }  /* silver */
   .placement-row.third-place { background: #ffe4c4; }   /* bronze */
-  .placement { font-weight: bold; text-align: center; }
+
+  .placement {
+    font-weight: bold;
+    text-align: center;
+  }
 </style>
 {% endblock %}
