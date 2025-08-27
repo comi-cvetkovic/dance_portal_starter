@@ -68,7 +68,7 @@
   <!-- ===================== CLUB DASHBOARD ===================== -->
   <div class="dash-hero">
     <div>
-      <h2>{% trans "Welcome" %}, {{ club.representative_name|default:user.get_username }}</h2>
+      <h2 class="heading-dark">{% trans "Welcome" %}, {{ club.representative_name|default:user.get_username }}</h2>
       <p class="muted">{% trans "Here’s a quick overview of your club and useful shortcuts." %}</p>
     </div>
     <div class="hero-actions">
