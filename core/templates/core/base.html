@@ -326,31 +326,35 @@
             background-color: #ddd;
         }
 
-        /* Popup messages */
+        /* Centered popup messages */
         #messages-container {
         position: fixed;
-        top: 70px; /* just under navbar */
-        right: 20px;
-        z-index: 1000;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2000;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        align-items: center;
+        gap: 12px;
         }
 
         .message-popup {
-        padding: 12px 16px;
-        border-radius: 6px;
-        font-size: 14px;
+        padding: 14px 22px;
+        border-radius: 8px;
+        font-size: 15px;
         color: #fff;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        animation: fadeIn 0.4s ease;
+        font-weight: 500;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        animation: fadeIn 0.4s ease, fadeOut 0.4s ease 3.5s forwards;
         position: relative;
-        min-width: 220px;
+        min-width: 260px;
+        text-align: center;
         }
 
         .message-popup.success { background: #28a745; }   /* green */
         .message-popup.error   { background: #dc3545; }   /* red */
-        .message-popup.warning { background: #ffc107; color: #333; } /* yellow */
+        .message-popup.warning { background: #ffc107; color: #333; }
         .message-popup.info    { background: #17a2b8; }   /* blue */
 
         .message-popup .close-btn {
@@ -359,13 +363,16 @@
         right: 10px;
         font-weight: bold;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 18px;
         }
 
-        @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-        }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+@keyframes fadeOut {
+  to { opacity: 0; transform: translate(-50%, -40%); }
+}
     </style>
 
     {% block extra_styles %}{% endblock %}
