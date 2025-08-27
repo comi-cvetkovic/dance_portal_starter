@@ -1,93 +1,174 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
-{% block title %}Dashboard | Dance Portal{% endblock %}
+{% block title %}{% trans "Dashboard" %}{% endblock %}
 
 {% block content %}
-    {% if user.is_superuser %}
 
-    <h2>{% trans "All Dance Clubs" %}</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>{% trans "Club Name" %}</th>
-                <th>{% trans "Country" %}</th>
-                <th>{% trans "City" %}</th>
-                <th>{% trans "Phone" %}</th>
+{% if user.is_superuser %}
+  <!-- ===================== ADMIN DASHBOARD ===================== -->
+  <div class="dash-hero">
+    <div>
+      <h2>{% trans "Admin Dashboard" %}</h2>
+      <p class="muted">{% trans "Manage clubs and events from a single place." %}</p>
+    </div>
+    <div class="hero-actions">
+      <a href="{% url 'event_list' %}" class="btn btn-green">{% trans "Manage Events" %}</a>
+      <a href="{% url 'pending_club_requests' %}" class="btn btn-default">{% trans "Pending Club Requests" %}</a>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3 class="card-title">🏆 {% trans "Quick Links" %}</h3>
+      <div class="chip-list">
+        <a href="{% url 'event_list' %}" class="chip chip-blue">{% trans "Events" %}</a>
+        <a href="{% url 'pending_club_requests' %}" class="chip chip-gold">{% trans "Pending Clubs" %}</a>
+      </div>
+      <p class="muted" style="margin-top:.5rem">{% trans "Jump to the tools you use most." %}</p>
+    </div>
+
+    <div class="card">
+      <h3 class="card-title">🏫 {% trans "All Clubs" %} <span class="badge">{{ clubs|length }}</span></h3>
+      {% if clubs %}
+        <div class="table-wrap">
+          <table class="nice-table">
+            <thead>
+              <tr>
+                <th>{% trans "Club" %}</th>
                 <th>{% trans "Representative" %}</th>
-                <th>{% trans "Email" %}</th>
-                <th>{% trans "Password" %}</th>
-                <th>{% trans "Actions" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for club in clubs %}
-            <tr>
-                <td>{{ club.club_name }}</td>
-                <td>{{ club.get_country_display }}</td>
-                <td>{{ club.city }}</td>
-                <td>{{ club.phone_number }}</td>
-                <td>{{ club.representative_name }}</td>
-                <td>{{ club.user.username }}</td>
-                <td>{{ club.raw_password }}</td>
+                <th>{% trans "Status" %}</th>
+                <th class="right">{% trans "Actions" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for c in clubs %}
+              <tr>
+                <td>{{ c.club_name }}</td>
+                <td>{{ c.representative_name }}</td>
                 <td>
-                    <form method="get" action="{% url 'admin_list_dancers' club.id %}" style="display:inline;">
-                        <button type="submit" class = "btn-default">{% trans "Manage Dancers" %}</button>
-                    </form>
-                    <form method="get" action="{% url 'edit_club' club.id %}" style="display:inline;">
-                        <button type="submit" class = "btn-edit">{% trans "Edit Club" %}</button>
-                    </form>
-                    <form method="get" action="{% url 'delete_club' club.id %}" style="display:inline;">
-                        <button type="submit" class = "btn-delete">{% trans "Delete Club" %}</button>
-                    </form>
+                  {% if c.confirmed %}
+                    <span class="status-dot ok"></span> {% trans "Confirmed" %}
+                  {% else %}
+                    <span class="status-dot warn"></span> {% trans "Pending" %}
+                  {% endif %}
                 </td>
-            </tr>
+                <td class="right">
+                  <a class="btn btn-default btn-sm" href="{% url 'admin_list_dancers' c.id %}">{% trans "Dancers" %}</a>
+                  <a class="btn btn-default btn-sm" href="{% url 'edit_club' c.id %}">{% trans "Edit" %}</a>
+                 <a class="btn btn-delete btn-sm"
+                    href="{% url 'delete_club' c.id %}"
+                    onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
+                    {% trans "Delete" %}
+                </a>
+                </td>
+              </tr>
             {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="muted">{% trans "No clubs yet." %}</p>
+      {% endif %}
+    </div>
+  </div>
 
-    {% if events %}
-    <h3 style="margin-top: 2em;">{% trans "Manage Start Lists" %}</h3>
-    <ul>
-        {% for event in events %}
-        <li>
-            {{ event.name }} ({{ event.city }} – {{ event.date }})
-            <form method="get" action="{% url 'manage_start_list' event.id %}" style="display:inline;">
-                <button type="submit" class = "btn-default">{% trans "Manage Start List" %}</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+{% else %}
+  <!-- ===================== CLUB DASHBOARD ===================== -->
+  <div class="dash-hero">
+    <div>
+      <h2>{% trans "Welcome" %}, {{ club.representative_name|default:user.get_username }}</h2>
+      <p class="muted">{% trans "Here’s a quick overview of your club and useful shortcuts." %}</p>
+    </div>
+    <div class="hero-actions">
+      <a href="{% url 'edit_club' %}" class="btn btn-edit">{% trans "Edit Club Details" %}</a>
+      <a href="{% url 'event_list' %}" class="btn btn-green">{% trans "Browse Events" %}</a>
+    </div>
+  </div>
 
-    {% else %}
-    <h1>Welcome, {{ club.representative_name }}</h1>
+  <div class="grid-3">
+    <div class="card">
+      <h3 class="card-title">🏫 {% trans "Club Overview" %}</h3>
+      <ul class="kv">
+        <li><strong>{% trans "Club Name" %}:</strong> {{ club.club_name }}</li>
+        <li><strong>{% trans "Country" %}:</strong> {{ club.country.name }}</li>
+        <li><strong>{% trans "City" %}:</strong> {{ club.city }}</li>
+        <li><strong>{% trans "Email" %}:</strong> {{ club.user.email }}</li>
+        <li><strong>{% trans "Phone" %}:</strong> {{ club.phone_number }}</li>
+        <li><strong>{% trans "Dancers" %}:</strong> {{ club.dancers.count }}</li>
+      </ul>
+    </div>
 
-    <ul>
-        <li><strong>{% trans "Club Name:" %}</strong> {{ club.club_name }}</li>
-        <li><strong>{% trans "Country:" %}</strong> {{ club.get_country_display }}</li>
-        <li><strong>{% trans "City:" %}</strong> {{ club.city }}</li>
-        <li><strong>{% trans "Email:" %}</strong> {{ club.user.email }}</li>
-        <li><strong>{% trans "Phone:" %}</strong> {{ club.phone_number }}</li>
-    </ul>
+    <div class="card">
+      <h3 class="card-title">👯 {% trans "Dancers" %}</h3>
+      <p class="muted">{% trans "Add or manage the dancers in your club." %}</p>
+      <div class="btn-row">
+        <a href="{% url 'list_dancers' %}" class="btn btn-default">{% trans "Manage Dancers" %}</a>
+        <a href="{% url 'add_dancer' %}" class="btn btn-green">{% trans "Add Dancer" %}</a>
+      </div>
+    </div>
 
-    <form method="get" action="{% url 'edit_own_club' %}">
-        <button type="submit" class = "btn-edit">{% trans "Edit Club Details" %}</button>
-    </form>
+    <div class="card">
+      <h3 class="card-title">📅 {% trans "Events & Registration" %}</h3>
+      <p class="muted">{% trans "Find events, register dancers, and view start lists." %}</p>
+      <div class="btn-row">
+        <a href="{% url 'event_list' %}" class="btn btn-default">{% trans "All Events" %}</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
 
-    {% if events %}
-    <h3>Start Lists</h3>
-    <ul>
-        {% for event in events %}
-        <li>
-            {{ event.name }} ({{ event.city }} – {{ event.date }})
-            <form method="get" action="{% url 'start_list' event.id %}" style="display:inline;">
-                <button type="submit" class = "btn-default">{% trans "View Start List" %}</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endif %}
 {% endblock %}
+
+{% block extra_styles %}
+<style>
+  /* Layout */
+  .dash-hero{
+    background:#f8f9fa; border-radius:14px; padding:18px 22px; margin-bottom:18px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .hero-actions .btn{ margin-left:8px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
+  @media (max-width: 900px){ .grid-2,.grid-3{ grid-template-columns:1fr; } }
+
+  .card{
+    background:#fff; border:1px solid #e8e8e8; border-radius:14px; padding:18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+  }
+  .card-title{ margin:0 0 .6rem 0; font-size:1.1rem; display:flex; align-items:center; gap:.5rem; }
+
+  .muted{ color:#666; }
+
+  /* Key-value list */
+  .kv{ margin:0; padding-left:1rem; }
+  .kv li{ margin:.35rem 0; }
+
+  /* Buttons / chips */
+  .btn-row .btn{ margin-right:8px; margin-bottom:8px; }
+  .chip-list{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{ display:inline-block; padding:6px 10px; border-radius:999px; background:#eee; font-size:.9rem; }
+  .chip-blue{ background:#e7f1ff; }
+  .chip-gold{ background:#fff6db; }
+
+  .badge{
+    display:inline-block; background:#eef2ff; border-radius:10px;
+    padding:2px 8px; font-size:.85rem; margin-left:.4rem;
+  }
+
+  /* Table */
+  .table-wrap{ overflow:auto; }
+  .nice-table{ width:100%; border-collapse: collapse; }
+  .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; }
+  .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
+  .right{ text-align:right; }
+
+  /* Status dot */
+  .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
+  .status-dot.ok{ background:#28a745; }
+  .status-dot.warn{ background:#ffc107; }
+</style>
+{% endblock %}
+
 
 
