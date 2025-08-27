@@ -89,6 +89,11 @@ class DanceClubRegistrationForm(forms.ModelForm):
 
 
 class EventForm(forms.ModelForm):
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label=_("Date")
+    )
+
     start_time = forms.TimeField(
         required=False,
         widget=forms.TimeInput(attrs={'type': 'time'}),

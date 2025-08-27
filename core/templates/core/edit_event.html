@@ -7,7 +7,32 @@
 
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    <p>
+        <label for="id_name">{% trans "Event Name" %}:</label><br>
+        {{ form.name }}
+    </p>
+
+    <p>
+        <label for="id_location">{% trans "Location" %}:</label><br>
+        {{ form.location }}
+    </p>
+
+    <p>
+        <label for="id_city">{% trans "City" %}:</label><br>
+        {{ form.city }}
+    </p>
+
+    <p>
+        <label for="id_date">{% trans "Date" %}:</label><br>
+        {{ form.date }}
+    </p>
+
+    <p>
+        <label for="id_start_time">{% trans "Start Time (optional)" %}:</label><br>
+        {{ form.start_time }}
+    </p>
+
     <button type="submit" class="btn-green">{% trans "Save Changes" %}</button>
 </form>
 
@@ -20,9 +45,9 @@
     <button type="submit" class="btn-delete">{% trans "Delete Event" %}</button>
 </form>
 
-
 <form method="get" action="{% url 'event_list' %}" style="margin-top: 1em;">
     <button type="submit" class="btn-default">{% trans "Back to Events" %}</button>
 </form>
 {% endblock %}
+
 
