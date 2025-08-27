@@ -42,7 +42,12 @@
     z-index: 0;                      /* behind page content */
 }
 
-
+@media (max-width: 768px) {
+    body::before {
+        background-size: contain;
+        background-position: top center;
+    }
+}
 
     nav,
     .container {
