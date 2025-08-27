@@ -113,21 +113,25 @@
     border-radius: 10px; 
     border: 1px solid #cbd5e1; 
     padding: 6px 8px;
+    background: #fff;  /* ensure white background */
   }
+
   .select2-container--default .select2-selection--multiple .select2-selection__rendered {
     display: flex; 
     flex-wrap: wrap; 
     gap: 6px;
   }
+
   .select2-container--default .select2-selection--multiple .select2-selection__choice {
     position: relative; 
     background: #f3f4f6; 
     border: 1px solid #d1d5db;
-    color: #111827; 
+    color: #111827;       /* dark text for chips */
     border-radius: 16px; 
     padding: 6px 12px 6px 28px; 
     font-size: 14px;
   }
+
   /* More visible ❌ remove button */
   .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     position: absolute; 
@@ -148,15 +152,25 @@
   .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
     background: #b91c1c;   /* darker red on hover */
   }
+
+  /* Dropdown box */
   .select2-container .select2-dropdown { 
     border-radius: 8px; 
+    background: #fff;      /* white dropdown background */
+    color: #000;           /* dark text */
   }
+
+  /* Dropdown option text */
   .select2-results__option { 
     padding: 8px 12px; 
+    color: #000;           /* black text */
+    background: #fff; 
   }
+
+  /* Highlighted (hover/keyboard) option */
   .select2-results__option--highlighted { 
-    background: #1f2937 !important; 
-    color: #fff !important; 
+    background: #1f2937 !important;  /* dark gray/purple */
+    color: #fff !important;          /* white text */
   }
 
   /* Tiny utility buttons */
