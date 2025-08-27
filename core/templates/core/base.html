@@ -28,20 +28,15 @@
 
     /* --- Global subtle background image --- */
    body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: url("{% static 'images/background.jpg' %}");
-        background-size: cover;          /* ensures it always fills screen */
-        background-position: center;     /* keeps it centered */
-        background-repeat: no-repeat;    /* prevents tiling */
-        min-height: 100vh;               /* full viewport height */
-        z-index: -1;
-        pointer-events: none;
-    }
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: url("{% static 'images/5678.png' %}") center / contain no-repeat fixed;
+    background-color: #000;  /* optional: fill empty space with black/purple */
+    opacity: 0.9;              /* adjust for visibility */
+    pointer-events: none;
+    z-index: 0;
+}
 
 
     nav,
