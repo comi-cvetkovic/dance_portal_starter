@@ -54,7 +54,7 @@
                 </td>
                 <td class="right">
                   <a class="btn btn-default btn-sm" href="{% url 'admin_list_dancers' c.id %}">{% trans "Dancers" %}</a>
-                  <a class="btn btn-default btn-sm" href="{% url 'edit_club' c.id %}">{% trans "Edit" %}</a>
+                  <a href="{% url 'edit_club' club.id %}" class="btn btn-edit">{% trans "Edit Club Details" %}</a>
                  <a class="btn btn-delete btn-sm"
                     href="{% url 'delete_club' c.id %}"
                     onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
