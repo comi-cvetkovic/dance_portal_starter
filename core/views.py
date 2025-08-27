@@ -454,7 +454,7 @@ def publish_start_list(request, event_id):
         # ✅ Only publish if 'current'
         event.is_published = True
         event.save()
-
+        messages.success(request, _("Start list published successfully."))
     elif mode == "default":
         def group_sort_key(p):
             difficulty_rank = 0 if p.difficulty == 'A' else 1
@@ -495,6 +495,7 @@ def unpublish_start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     event.is_published = False
     event.save()
+    messages.info(request, _("Start list unpublished."))
     return redirect('manage_start_list', event_id=event.id)
 
 
@@ -507,6 +508,7 @@ def register_club(request):
         form = DanceClubRegistrationForm(request.POST)
         if form.is_valid():
             form.save(commit=True)  # This creates both User and DanceClub
+            messages.success(request, _("Club registered successfully. Awaiting admin approval."))
             return redirect('login')
     else:
         form = DanceClubRegistrationForm()
@@ -520,6 +522,7 @@ def delete_club(request, club_id):
     user = club.user  # get the associated User
     club.delete()     # delete the club
     user.delete()     # delete the User
+    messages.success(request, _("Club deleted successfully."))
     return redirect('club_dashboard')
 
 
@@ -559,10 +562,12 @@ def pending_club_requests(request):
         if action == "accept":
             club.confirmed = True
             club.save()
+            messages.success(request, _("Club approved successfully."))
         elif action == "decline":
             user = club.user
             club.delete()
             user.delete()
+            messages.info(request, _("Club declined and removed."))
         return redirect('pending_club_requests')
 
     return render(request, "core/pending_club_requests.html", {
@@ -583,6 +588,7 @@ def add_dancer(request, club_id=None):
             dancer = form.save(commit=False)
             dancer.club = club
             dancer.save()
+            messages.success(request, _("Dancer added successfully."))
             if request.user.is_superuser:
                 return redirect('admin_list_dancers', club_id=club.id)
             else:
@@ -596,7 +602,32 @@ def add_dancer(request, club_id=None):
         'is_superuser': request.user.is_superuser,
     })
 
+@login_required
+def add_dancer(request, club_id=None):
+    if request.user.is_superuser and club_id:
+        club = get_object_or_404(DanceClub, id=club_id)
+    else:
+        club = get_object_or_404(DanceClub, user=request.user)
 
+    if request.method == 'POST':
+        form = DancerForm(request.POST)
+        if form.is_valid():
+            dancer = form.save(commit=False)
+            dancer.club = club
+            dancer.save()
+            messages.success(request, _("Dancer added successfully."))
+            if request.user.is_superuser:
+                return redirect('admin_list_dancers', club_id=club.id)
+            else:
+                return redirect('list_dancers')
+    else:
+        form = DancerForm()
+
+    return render(request, 'core/add_dancer.html', {
+        'form': form,
+        'club': club,
+        'is_superuser': request.user.is_superuser,
+    })
 
 @login_required
 def list_dancers(request, club_id=None):
@@ -622,6 +653,7 @@ def delete_dancer(request, dancer_id, club_id=None):
 
     dancer = get_object_or_404(Dancer, id=dancer_id, club=club)
     dancer.delete()
+    messages.success(request, _("Dancer deleted successfully."))
 
     if request.user.is_superuser:
         return redirect('admin_list_dancers', club_id=club.id)
@@ -664,7 +696,7 @@ def create_event(request):
             # Automatically add default styles to the new event
             for style_name in DEFAULT_STYLES:
                 StyleCategory.objects.get_or_create(event=event, name=style_name)
-
+            messages.success(request, _("Event created successfully."))
             return redirect('event_list')
     else:
         form = EventForm()
@@ -736,7 +768,7 @@ def register_dancer(request, event_id):
             # save dancer links
             for dancer in dancers:
                 DancerParticipation.objects.create(participation=participation, dancer=dancer)
-
+            messages.success(request, _("Participation registered successfully."))
             return redirect(f'{request.path}?club_id={club_id}')
     else:
         form = GroupParticipationForm(club=selected_club, event=event)
@@ -890,6 +922,7 @@ def edit_club(request, club_id=None):
         form = DanceClubRegistrationForm(request.POST, instance=club)
         if form.is_valid():
             form.save(commit=True)  # form now updates both DanceClub + linked User
+            messages.success(request, _("Club details updated successfully."))
             return redirect('club_dashboard')
     else:
         # Pre-fill email from linked user
@@ -907,12 +940,12 @@ def edit_club(request, club_id=None):
 def edit_dancer(request, dancer_id):
     dancer = get_object_or_404(Dancer, id=dancer_id)
 
-    # Allow edit if superuser OR user owns the dancer's club
     if request.user.is_superuser or dancer.club.user == request.user:
         if request.method == 'POST':
             form = DancerForm(request.POST, instance=dancer)
             if form.is_valid():
                 form.save()
+                messages.success(request, _("Dancer updated successfully."))
                 if request.user.is_superuser:
                     return redirect('admin_list_dancers', club_id=dancer.club.id)
                 else:
@@ -960,7 +993,7 @@ def edit_participation(request, participation_id):
             DancerParticipation.objects.filter(participation=participation).exclude(dancer__in=new_dancers).delete()
             for dancer in new_dancers:
                 DancerParticipation.objects.get_or_create(participation=participation, dancer=dancer)
-
+            messages.success(request, _("Participation updated successfully."))
             return redirect('list_event_participants', event_id=event.id)
         else:
             messages.error(request, "There was a problem updating the participation. Please correct the errors below.")
@@ -1014,6 +1047,7 @@ def delete_participation(request):
 
         event = get_object_or_404(Event, id=event_id)
         participations.delete()
+        messages.success(request, _("Participation deleted successfully."))
 
         return redirect('list_event_participants', event_id=event_id)
 
@@ -1043,6 +1077,7 @@ def delete_participation_group(request):
             participations = participations.filter(dancer__club=club)
 
         participations.delete()
+        messages.success(request, _("Participation deleted successfully."))
         return redirect('list_event_participants', event_id=event_id)
 
     return redirect('event_list')
@@ -1410,6 +1445,7 @@ def edit_event(request, event_id):
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
+            messages.success(request, _("Event updated successfully."))
             return redirect('event_list')
     else:
         form = EventForm(instance=event)
