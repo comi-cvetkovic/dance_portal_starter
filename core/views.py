@@ -1274,20 +1274,20 @@ def event_awards_view(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     participations = Participation.objects.filter(event=event).select_related("style")
 
-    judge_scores = (
-        JudgeScore.objects.filter(participation__event=event)
-        .select_related("participation", "judge")
-    )
+    judge_scores = JudgeScore.objects.filter(participation__event=event).select_related("participation", "judge")
 
+    # Build dancer map
     dancer_map = defaultdict(list)
-    for dp in DancerParticipation.objects.filter(participation__in=participations).select_related("dancer"):
+    for dp in DancerParticipation.objects.filter(participation__in=participations).select_related("dancer__club"):
         dancer_map[dp.participation_id].append(dp.dancer)
 
     results_by_category = defaultdict(list)
+
     for p in participations:
         category_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
         scores = judge_scores.filter(participation=p)
 
+        # Scoring fields
         criterion_fields = ["technique", "composition", "image"]
         if p.style.name == "Show Dance":
             criterion_fields.append("show_value")
@@ -1298,7 +1298,7 @@ def event_awards_view(request, event_id):
         for f in criterion_fields:
             values = [getattr(s, f) for s in scores if getattr(s, f) is not None]
             if len(values) >= 3:
-                values = sorted(values)[1:-1]  # drop high+low
+                values = sorted(values)[1:-1]  # drop high + low
             total_points += sum(values)
             total_counts += len(values)
 
@@ -1311,33 +1311,26 @@ def event_awards_view(request, event_id):
             )
             results_by_category[category_key].append(result)
 
-    # Sort each category
+    # Sort participants within each category by score (descending)
     for category in results_by_category:
-        results_by_category[category].sort(key=lambda x: x.score, reverse=True)
+        results_by_category[category].sort(key=lambda r: r.score, reverse=True)
 
+    # Preserve category order from start list
     group_display_order_map = {
         (p.style.name, p.group_type, p.age_group, p.difficulty): p.group_display_order or 0
         for p in participations
     }
-
+    
     sorted_keys = sorted(results_by_category.keys(), key=lambda k: group_display_order_map.get(k, 0))
-    current_index = int(request.GET.get("group", 0))
 
-    if current_index >= len(sorted_keys):
-        current_index = len(sorted_keys) - 1
-    if current_index < 0:
-        current_index = 0
-
-    current_key = sorted_keys[current_index] if sorted_keys else None
-    current_results = results_by_category.get(current_key, []) if current_key else []
+    # Build grouped_results in correct order
+    grouped_results = OrderedDict()
+    for key in sorted_keys:
+        grouped_results[key] = results_by_category[key]
 
     return render(request, "core/event_awards.html", {
         "event": event,
-        "current_key": current_key,
-        "results": current_results,
-        "current_index": current_index,
-        "has_next": current_index + 1 < len(sorted_keys),
-        "has_prev": current_index > 0,
+        "grouped_results": grouped_results,
     })
 
 
