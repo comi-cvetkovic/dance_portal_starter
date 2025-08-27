@@ -54,12 +54,12 @@
                 </td>
                 <td class="right">
                   <a class="btn btn-default btn-sm" href="{% url 'admin_list_dancers' c.id %}">{% trans "Dancers" %}</a>
-                  <a href="{% url 'edit_club' club.id %}" class="btn btn-edit">{% trans "Edit Club Details" %}</a>
-                 <a class="btn btn-delete btn-sm"
-                    href="{% url 'delete_club' c.id %}"
-                    onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
-                    {% trans "Delete" %}
-                </a>
+                  <a href="{% url 'edit_club' c.id %}" class="btn btn-edit">{% trans "Edit" %}</a>
+                  <a class="btn btn-delete btn-sm"
+                     href="{% url 'delete_club' c.id %}"
+                     onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
+                     {% trans "Delete" %}
+                  </a>
                 </td>
               </tr>
             {% endfor %}
@@ -80,7 +80,7 @@
       <p class="muted">{% trans "Here’s a quick overview of your club and useful shortcuts." %}</p>
     </div>
     <div class="hero-actions">
-      <a href="{% url 'edit_club' %}" class="btn btn-edit">{% trans "Edit Club Details" %}</a>
+      <a href="{% url 'edit_own_club' %}" class="btn btn-edit">{% trans "Edit Club Details" %}</a>
       <a href="{% url 'event_list' %}" class="btn btn-green">{% trans "Browse Events" %}</a>
     </div>
   </div>
