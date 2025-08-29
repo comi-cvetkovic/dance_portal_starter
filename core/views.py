@@ -897,7 +897,8 @@ def list_event_participants(request, event_id):
             "choreographer_name": key[4],
             "choreography_name": plist[0].choreography_name if plist and plist[0].choreography_name else "Untitled",
             "dancers": list({dp.dancer for p in plist for dp in p.dancer_links.all()}),
-            "participation_id": plist[0].id
+            "participation_id": plist[0].id,
+            "music_file": plist[0].music_file,
         }
         for key, plist in grouped.items()
     ]
