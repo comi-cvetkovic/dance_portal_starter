@@ -15,7 +15,7 @@ LANGUAGE_CODE = "en"
 
 LANGUAGES = [
     ("en", ("English")),
-    ("sr-latn", "Srpski"),
+    ("sr-Latn", "Srpski"),
 ]
 
 USE_I18N = True
