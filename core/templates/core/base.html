@@ -51,14 +51,13 @@
   .navbar select { font-size: 1rem; padding: 0.3rem 0.5rem; }
 
   /* Background logo less zoomed in */
-@media (max-width:1024px){
-  body::before{
-    background-image: url("{% static 'images/5678.png' %}");
-    background-size: cover;          /* fills the viewport */
-    background-position: center top; /* keeps the logo visible */
-    opacity: 0.9;
+  body::before {
+    background-size: contain;
+    background-position: center;
+    background-color:#3B1373 ;
+    opacity: 0.9; /* keep your current look */
   }
-}
+
   /* Event grid + card centering */
   .event-grid {
     display: flex;
