@@ -14,15 +14,15 @@ ALLOWED_HOSTS = ["209.74.87.118", "5678danceportal.com", "www.5678danceportal.co
 LANGUAGE_CODE = "en"
 
 LANGUAGES = [
-    ("en", _("English")),
+    ("en", ("English")),
     ("sr-latn", "Srpski"),
 ]
 
 USE_I18N = True
 
-LOCALE_PATHS = [
-    os.path.join(BASE_DIR, "locale"),
-]
+# LOCALE_PATHS = [
+#     os.path.join(BASE_DIR, "locale"),
+# ]
 
 # Required Django & custom apps
 INSTALLED_APPS = [
