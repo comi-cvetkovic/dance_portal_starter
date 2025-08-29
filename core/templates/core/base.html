@@ -136,43 +136,54 @@
 }
 
 /* Mobile navbar layout */
-@media (max-width:1024px){
-  /* Treat the whole bar as a flex row */
+/* NAVBAR — mobile layout polish */
+@media (max-width: 1024px) {
   .navbar{
-    display:flex;
-    align-items:center;
-    gap:.5rem;
-    padding-right:.75rem;  /* room for the dropdown */
+    position: sticky; top: 0; z-index: 1000;
+    display: flex; align-items: center;
+    background: #3B1373;            /* your color */
+    min-height: 56px;
+    padding: .6rem .75rem;
   }
 
-  /* Your links list – make it scrollable horizontally */
+  /* LINKS: scrollable row, reserve space for the dropdown on the right */
   .navbar .nav-links,
-  .navbar ul{                 /* fallback if you don’t have .nav-links */
-    flex:1 1 auto;
-    display:flex;
-    gap:1rem;
-    overflow-x:auto;
-    white-space:nowrap;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-    padding:0 .25rem;
+  .navbar ul{                       /* fallback if you don't have .nav-links */
+    flex: 1 1 auto;
+    display: flex; gap: .75rem;
+    overflow-x: auto;
+    white-space: nowrap;            /* prevent wrapping (e.g. "Registruj Klub") */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-right: 8.5rem;           /* ≈ width of the dropdown; tune if needed */
   }
   .navbar .nav-links::-webkit-scrollbar,
-  .navbar ul::-webkit-scrollbar{ display:none; }
+  .navbar ul::-webkit-scrollbar{ display: none; }
 
-  /* Language dropdown area on the right */
+  /* DROPDOWN: pin to the right, above the scrolling links */
   .navbar .nav-right{
-    flex:0 0 auto;
-    margin-left:.25rem;
-    position:relative;
-    z-index:2;  /* stay above scrolling links */
+    position: absolute; right: .75rem; top: 50%;
+    transform: translateY(-50%);
+    display: flex; align-items: center;
+    z-index: 2;
   }
   .navbar select{
-    font-size:1rem;
-    padding:.3rem .5rem;
-    max-width:140px;   /* avoid clipping on the edge */
+    font-size: .95rem;
+    padding: .35rem .5rem;
+    max-width: 140px;               /* prevents clipping */
   }
+
+  /* Slightly tighter link size on phones so labels stay on one line */
+  .navbar a{ font-size: .98rem; line-height: 1; }
 }
+
+/* Tiny phones */
+@media (max-width: 420px){
+  .navbar a{ font-size: .9rem; }
+  .navbar .nav-links{ gap: .6rem; margin-right: 7.5rem; }
+  .navbar select{ max-width: 120px; }
+}
+
 
 
     nav,
