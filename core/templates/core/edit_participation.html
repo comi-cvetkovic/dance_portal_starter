@@ -68,19 +68,19 @@
     </p>
 
     {% if participation.music_file %}
-    <p>
-        <strong>Current Music File:</strong><br>
-        <audio controls style="max-width: 400px;">
-            <source src="{{ participation.music_file.url }}" type="audio/mpeg">
-            {% trans "Your browser does not support the audio tag" %}.
-        </audio><br>
-        <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
+<p>
+    <strong>Current Music File:</strong><br>
+    <audio controls style="max-width: 400px;">
+        <source src="{{ participation.music_file.url }}" type="audio/mpeg">
+        {% trans "Your browser does not support the audio tag" %}.
+    </audio><br>
+    <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
 
-        <!-- ✅ Remove option -->
-        <label style="color:red; font-weight:500;">
-            <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
-        </label>
-    </p>
+    <!-- ✅ Remove option -->
+    <label style="color:red; font-weight:500;">
+        <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
+    </label>
+</p>
 {% endif %}
 
 <p>
@@ -90,15 +90,6 @@
     <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
     {% endif %}
 </p>
-    {% endif %}
-
-    <p>
-        <label for="id_music_file">{% trans "Replace Music File (optional):" %}</label><br>
-        {{ form.music_file }}
-        {% if form.music_file.errors %}
-        <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
-        {% endif %}
-    </p>
 
     <button type="submit" class="btn-edit">{% trans "Save Changes" %}</button>
 </form>
