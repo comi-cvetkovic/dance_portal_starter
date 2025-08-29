@@ -10,25 +10,14 @@
 <div class="event-grid">
     {% for event in events %}
     <div class="event-card">
-        <!-- Poster area with overlay and text inside -->
-        <div class="poster"
-             {% if event.notice_image %}
-             style="background-image: url('{{ event.notice_image.url }}');"
-             {% endif %}>
-            <div class="event-card-overlay"></div>
-
-            <!-- Event details overlay -->
-            <div class="event-content">
-                <h3 class="event-title">{{ event.name }}</h3>
-                <div class="event-meta">
-                    <span>📍 {{ event.city }} — {{ event.location }}</span>
-                    <span>📅 {{ event.date }}</span>
-                    {% if event.start_time %}
-                    <span>🕒 {{ event.start_time }}</span>
-                    {% endif %}
-                </div>
-            </div>
+        <!-- Poster only -->
+        {% if event.notice_image %}
+        <div class="poster" style="background-image: url('{{ event.notice_image.url }}');"></div>
+        {% else %}
+        <div class="poster" style="background:#ccc; display:flex; align-items:center; justify-content:center; color:#444;">
+            {% trans "No Poster Available" %}
         </div>
+        {% endif %}
     </div>
     {% empty %}
     <p>{% trans "No upcoming events found." %}</p>
@@ -61,52 +50,15 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   }
 
-  /* Poster with fixed aspect ratio */
+  /* Poster keeps 4:5 aspect ratio like a flyer */
   .poster {
     position: relative;
     width: 100%;
-    padding-top: 125%; /* maintain 4:5 aspect ratio */
+    padding-top: 125%; /* 4:5 ratio */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 16px;
-  }
-
-  /* Overlay */
-  .event-card-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 0;
-  }
-
-  /* Content over the poster */
-  .event-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
-    z-index: 1;
-    color: #fff;
-  }
-
-  .event-title {
-    margin: 0 0 .25rem 0;
-    font-size: clamp(1.1rem, 2.8vw, 1.35rem);
-    color: #fff;
-  }
-
-  .event-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
-    font-size: .95rem;
-    color: #fff;
-  }
-
-  @media (max-width: 520px) {
-    .event-meta { font-size: .9rem; }
   }
 </style>
 {% endblock %}
