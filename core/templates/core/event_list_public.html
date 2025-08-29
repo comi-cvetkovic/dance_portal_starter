@@ -9,26 +9,24 @@
 
 <div class="event-grid">
     {% for event in events %}
-    <div class="event-card {% if event.notice_image %}has-bg{% endif %}">
-        
-        <!-- Poster area -->
-        {% if event.notice_image %}
-        <div class="poster" style="background-image: url('{{ event.notice_image.url }}');">
+    <div class="event-card">
+        <!-- Poster area with overlay and text inside -->
+        <div class="poster"
+             {% if event.notice_image %}
+             style="background-image: url('{{ event.notice_image.url }}');"
+             {% endif %}>
             <div class="event-card-overlay"></div>
-        </div>
-        {% else %}
-        <div class="poster" style="background:#ccc;"></div>
-        {% endif %}
 
-        <!-- Event details -->
-        <div class="event-content">
-            <h3 class="event-title">{{ event.name }}</h3>
-            <div class="event-meta">
-                <span>📍 {{ event.city }} — {{ event.location }}</span>
-                <span>📅 {{ event.date }}</span>
-                {% if event.start_time %}
-                <span>🕒 {{ event.start_time }}</span>
-                {% endif %}
+            <!-- Event details overlay -->
+            <div class="event-content">
+                <h3 class="event-title">{{ event.name }}</h3>
+                <div class="event-meta">
+                    <span>📍 {{ event.city }} — {{ event.location }}</span>
+                    <span>📅 {{ event.date }}</span>
+                    {% if event.start_time %}
+                    <span>🕒 {{ event.start_time }}</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -40,78 +38,75 @@
 
 {% block extra_styles %}
 <style>
-    /* Grid layout */
-    .event-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 1.25rem;
-    }
+  .event-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
 
-    .event-card {
-        background: #fafafa;
-        border-radius: 12px;
-        overflow: hidden;
-        position: relative;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        transition: transform .15s ease, box-shadow .15s ease;
-        display: flex;
-        flex-direction: column;
-    }
+  .event-card {
+    width: min(92vw, 440px);
+    margin: 0 auto;
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    background: #fafafa;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
 
-    .event-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    }
+  .event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  }
 
-    /* Poster area with fixed aspect ratio (4:5) */
-    .poster {
-        position: relative;
-        width: 100%;
-        padding-top: 125%; /* maintain aspect ratio */
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    }
+  /* Poster with fixed aspect ratio */
+  .poster {
+    position: relative;
+    width: 100%;
+    padding-top: 125%; /* maintain 4:5 aspect ratio */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 16px;
+  }
 
-    /* Overlay for text readability */
-    .event-card-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.45);
-        z-index: 0;
-    }
+  /* Overlay */
+  .event-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 0;
+  }
 
-    .event-content {
-        padding: 1rem 1.25rem;
-        display: flex;
-        flex-direction: column;
-        gap: .5rem;
-        position: relative;
-        z-index: 1;
-    }
+  /* Content over the poster */
+  .event-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    z-index: 1;
+    color: #fff;
+  }
 
-    .event-title {
-        margin: 0;
-        font-size: clamp(1.1rem, 2.8vw, 1.35rem);
-        color: #222;
-    }
+  .event-title {
+    margin: 0 0 .25rem 0;
+    font-size: clamp(1.1rem, 2.8vw, 1.35rem);
+    color: #fff;
+  }
 
-    .event-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .5rem;
-        font-size: .95rem;
-        color: #444;
-    }
+  .event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    font-size: .95rem;
+    color: #fff;
+  }
 
-    /* White text when poster background exists */
-    .event-card.has-bg .event-title,
-    .event-card.has-bg .event-meta {
-        color: #fff;
-    }
-
-    @media (max-width: 520px) {
-        .event-meta { font-size: .9rem; }
-    }
+  @media (max-width: 520px) {
+    .event-meta { font-size: .9rem; }
+  }
 </style>
 {% endblock %}
