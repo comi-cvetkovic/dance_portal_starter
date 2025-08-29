@@ -15,7 +15,7 @@ LANGUAGE_CODE = "en"
 
 LANGUAGES = [
     ("en", "English"),
-    ("sr_Latn", "Srpski"),
+    ("sr-Latn", "Srpski"),
     ("sr", "Serbian (alias → Latin)"),  # treat plain sr as Latin
 ]
 
