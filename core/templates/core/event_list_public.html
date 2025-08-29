@@ -31,6 +31,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Spacer to keep same height as event-actions in admin -->
+            <div class="event-spacer"></div>
         </div>
     </div>
     {% empty %}
@@ -58,7 +61,7 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        height: 480px; /* consistent with admin/club */
+        height: 480px; /* same as admin/club */
     }
 
     .event-card:hover {
@@ -66,7 +69,6 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
 
-    /* Dark overlay for posters */
     .event-card-overlay {
         position: absolute;
         inset: 0;
@@ -102,20 +104,27 @@
         font-size: .95rem;
     }
 
-    /* White text when poster background is present */
     .event-card.has-bg .event-title,
     .event-card.has-bg .event-meta {
         color: #fff;
     }
 
+    /* Spacer mimics admin button row */
+    .event-spacer {
+        margin-top: auto;
+        min-height: 48px; /* same as one row of buttons */
+    }
+
     @media (max-width: 520px) {
         .event-card {
-            height: auto; /* let grow naturally */
+            height: auto; /* let it shrink naturally on very small screens */
         }
         .event-meta {
             font-size: .9rem;
         }
+        .event-spacer {
+            min-height: 40px; /* slightly smaller padding on mobile */
+        }
     }
 </style>
 {% endblock %}
-
