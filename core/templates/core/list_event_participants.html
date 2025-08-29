@@ -19,7 +19,7 @@
         <thead>
             {% if user.is_superuser %}
             <tr>
-                <td colspan="10" style="text-align:right; padding-bottom: 10px;">
+                <td colspan="11" style="text-align:right; padding-bottom: 10px;">
                     <form method="get" action="">
                         <button type="submit" name="view" value="summary" class="btn-default">{% trans "View Registered by Club" %}</button>
                     </form>
@@ -36,6 +36,7 @@
                 <th class="heading-dark">{% trans "Age Group" %}</th>
                 <th class="heading-dark">{% trans "Choreographer" %}</th>
                 <th class="heading-dark">{% trans "Choreography" %}</th>
+                <th class="heading-dark">{% trans "Music" %}</th>   <!-- 👈 new column -->
                 <th class="heading-dark">{% trans "Actions" %}</th>
             </tr>
         </thead>
@@ -55,6 +56,13 @@
                 <td class="center">{{ group.age_group }}</td>
                 <td>{{ group.choreographer_name }}</td>
                 <td>{{ group.choreography_name|default:"Untitled" }}</td>
+                <td class="center">
+                    {% if group.music_file %}
+                        <span style="color:green;">&#10004;</span> <!-- check -->
+                    {% else %}
+                        <span style="color:red;">&#10008;</span> <!-- cross -->
+                    {% endif %}
+                </td>
                 <td class="right">
                     <form method="get" action="{% url 'edit_participation' group.participation_id %}" style="margin-bottom:6px;">
                         <button type="submit" class="btn-edit">{% trans "Edit" %}</button>
@@ -119,7 +127,9 @@
   .nice-table th:nth-child(9),
   .nice-table td:nth-child(9) { width: 12%; }
   .nice-table th:nth-child(10),
-  .nice-table td:nth-child(10) { width: 10%; text-align: right; }
+  .nice-table td:nth-child(10) { width: 6%; text-align: center; } /* Music */
+  .nice-table th:nth-child(11),
+  .nice-table td:nth-child(11) { width: 10%; text-align: right; }
 
   /* Utility alignments */
   .center { text-align: center; }
