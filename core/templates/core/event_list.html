@@ -35,30 +35,30 @@
                 </div>
                 <div class="status-chips">
                     {% if event.is_published %}
-                    <span class="chip chip-green" title="Start list is published">{% trans "Published" %}</span>
+                        <span class="chip chip-green" title="Event is published">{% trans "Published" %}</span>
                     {% else %}
-                    <span class="chip">{% trans "Unpublished" %}</span>
+                        <span class="chip">{% trans "Unpublished" %}</span>
                     {% endif %}
 
                     {% if event.has_judges %}
-                    <span class="chip chip-blue" title="Judge accounts exist">{% trans "Judges" %}</span>
+                        <span class="chip chip-blue" title="Judge accounts exist">{% trans "Judges" %}</span>
                     {% else %}
-                    <span class="chip chip-muted">{% trans "No Judges" %}</span>
+                        <span class="chip chip-muted">{% trans "No Judges" %}</span>
                     {% endif %}
 
                     {% if event.results_published %}
-                    <span class="chip chip-gold" title="Results are public">{% trans "Results" %}</span>
+                        <span class="chip chip-gold" title="Results are public">{% trans "Results" %}</span>
                     {% else %}
-                    <span class="chip chip-muted">{% trans "No Results Published" %}</span>
+                        <span class="chip chip-muted">{% trans "No Results Published" %}</span>
                     {% endif %}
                 </div>
             </div>
 
             <div class="event-actions">
-                <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
-                <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
-
                 {% if user.is_superuser %}
+                    <!-- Admin always sees all actions -->
+                    <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
+                    <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
                     <a href="{% url 'manage_start_list' event.id %}" class="btn btn-default">{% trans "Manage Start List" %}</a>
                     <a href="{% url 'manage_styles' event.id %}" class="btn btn-default">{% trans "Manage Style Categories" %}</a>
                     <a href="{% url 'event_music' event.id %}" class="btn btn-default">{% trans "Event Music" %}</a>
@@ -67,9 +67,18 @@
                     <a href="{% url 'edit_event' event.id %}" class="btn btn-default">{% trans "Edit Event" %}</a>
                     <a href="{% url 'notify_clubs' event.id %}" class="btn btn-default">{% trans "Notify Clubs" %}</a>
                 {% else %}
-                    <a href="{% url 'start_list' event.id %}" class="btn btn-default">{% trans "Start List" %}</a>
-                    {% if event.results_published %}
-                    <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Results" %}</a>
+                    {% if event.is_published %}
+                        <!-- Clubs only see actions if event is published -->
+                        <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
+                        <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
+                        <a href="{% url 'start_list' event.id %}" class="btn btn-default">{% trans "Start List" %}</a>
+                        {% if event.results_published %}
+                        <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Results" %}</a>
+                        {% endif %}
+                    {% else %}
+                        <p style="margin-top:auto; font-style:italic; color:#999;">
+                            {% trans "Event published soon – no actions available" %}
+                        </p>
                     {% endif %}
                 {% endif %}
             </div>
@@ -100,10 +109,10 @@
         transition: transform .15s ease, box-shadow .15s ease;
         overflow: hidden;
 
-        /* NEW: equal height cards with flex layout */
+        /* Equal height cards */
         display: flex;
         flex-direction: column;
-        height: 480px;   /* 👈 fixed height for uniform grid */
+        height: 480px;
     }
 
     .event-card:hover {
@@ -122,8 +131,7 @@
     .event-content {
         position: relative;
         z-index: 1;
-
-        flex: 1; /* take up remaining space */
+        flex: 1;
         display: flex;
         flex-direction: column;
     }
@@ -138,7 +146,7 @@
     /* Titles and meta text */
     .event-title {
         margin: 0 0 .25rem 0;
-        color: #222; /* default dark */
+        color: #222;
     }
 
     .event-meta {
@@ -149,7 +157,7 @@
         font-size: .95rem;
     }
 
-    /* Switch to white text if card has poster background */
+    /* White text if poster background exists */
     .event-card.has-bg .event-title,
     .event-card.has-bg .event-meta {
         color: #fff;
@@ -197,7 +205,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: .5rem;
-        margin-top: auto;   /* 👈 push buttons to bottom */
+        margin-top: auto;
         justify-content: flex-start;
     }
 
@@ -211,13 +219,12 @@
         background: rgba(0,0,0,0.8);
     }
 
-    /* Make long button rows wrap nicely on narrow screens */
     @media (max-width: 520px) {
         .event-meta {
             font-size: .9rem;
         }
         .event-card {
-            height: auto; /* let cards grow naturally on small screens */
+            height: auto;
         }
     }
 </style>

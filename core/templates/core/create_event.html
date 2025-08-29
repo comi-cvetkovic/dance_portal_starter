@@ -38,6 +38,10 @@
         {{ form.notice_image }}
     </p>
 
+    <p>
+        <label for="id_is_published">{{ form.is_published }} {% trans "Publish Event" %}</label>
+    </p>
+
     <button type="submit" class="btn-green">{% trans "Create Event" %}</button>
 </form>
 {% endblock %}

@@ -59,6 +59,8 @@ class Event(models.Model):
         verbose_name="Event Poster / Notice"
     )
 
+    allow_registrations = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.name} - {self.city} ({self.date})"
 

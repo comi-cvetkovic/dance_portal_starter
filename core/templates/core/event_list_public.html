@@ -28,11 +28,11 @@
 {% block extra_styles %}
 <style>
   .event-grid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  justify-items: center;
+}
 
   .event-card {
     width: min(92vw, 440px);
