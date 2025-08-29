@@ -6,6 +6,7 @@ __pycache__/
 
 # Virtual environment
 venv/
+.venv/
 
 # SQLite DBs (local only, not production)
 *.sqlite3
@@ -19,6 +20,11 @@ media/
 
 # Logs
 *.log
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
 
 # IDE/editor files
 .vscode/
