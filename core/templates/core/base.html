@@ -63,29 +63,74 @@
       opacity: 0.9;  /* lighter so text pops */
   }
 
-  /* Event grid → 1 card per row */
-  .event-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
+ .event-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
-
-  /* Event cards adjust height automatically */
   .event-card {
-      height: auto;
-      padding: 1rem;
+    width: min(92vw, 440px);
+    margin: 0 auto;
+    border-radius: 18px;
   }
 
-  /* Buttons larger and full-width for tap targets */
+  /* 2) Poster: show the whole image (no crop) with a poster-like ratio */
+  /* If your poster is a dedicated inner element, keep .event-card .poster.
+     If the background is on .event-card itself, replace `.event-card .poster`
+     below with `.event-card`. */
+  .event-card .poster {
+    position: relative;
+    width: 100%;
+    /* 4:5 feels “poster-like”. Adjust to taste: 3/4, 2/3, etc. */
+    padding-top: 125%;
+    background-size: contain;         /* show the whole poster */
+    background-repeat: no-repeat;
+    background-position: center top;
+    border-radius: 16px;
+  }
+
+  /* If you use an <img> for the poster, use this instead of the block above:
+  .event-card img.event-poster {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: contain;
+    display: block;
+    border-radius: 16px;
+  } */
+
+  /* 3) Title/meta sizing */
+  .event-card .event-title { font-size: clamp(1.1rem, 2.8vw, 1.35rem); }
+  .event-card .event-meta  { font-size: 0.95rem; }
+
+  /* 4) Action buttons: 2-column grid on phones, smaller tap-friendly size */
   .event-actions {
-      flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .6rem;
+    margin-top: .75rem;
   }
   .event-actions .btn {
-      width: 100%;
-      text-align: center;
-      font-size: 0.95rem;
-      padding: 0.6rem 1rem;
-      margin-bottom: 0.5rem;
+    width: 100%;
+    padding: .55rem .75rem;
+    font-size: .95rem;
+    line-height: 1.2;
+    border-radius: .75rem;
   }
+
+  /* 5) Pills/badges shrink a touch so they don’t overlap */
+  .event-card .badge,
+  .event-card .status-pill {
+    transform: scale(.9);
+    transform-origin: top right;
+  }
+
+/* Ultra-small screens: stack buttons to one column */
+@media (max-width: 420px) {
+  .event-actions { grid-template-columns: 1fr; }
+  .event-card    { width: 94vw; }
+  .event-card .poster { padding-top: 130%; }
+}
 
   /* Tables scrollable on small screens */
   table {
