@@ -14,8 +14,9 @@ ALLOWED_HOSTS = ["209.74.87.118", "5678danceportal.com", "www.5678danceportal.co
 LANGUAGE_CODE = "en"
 
 LANGUAGES = [
-    ("en", ("English")),
-    ("sr-Latn", "Srpski"),
+    ("en", "English"),
+    ("sr_Latn", "Srpski"),
+    ("sr", "Serbian (alias → Latin)"),  # treat plain sr as Latin
 ]
 
 USE_I18N = True
