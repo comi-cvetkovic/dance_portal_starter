@@ -74,8 +74,22 @@
             <source src="{{ participation.music_file.url }}" type="audio/mpeg">
             {% trans "Your browser does not support the audio tag" %}.
         </audio><br>
-        <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em>
+        <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
+
+        <!-- ✅ Remove option -->
+        <label style="color:red; font-weight:500;">
+            <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
+        </label>
     </p>
+{% endif %}
+
+<p>
+    <label for="id_music_file">{% trans "Replace Music File (optional):" %}</label><br>
+    {{ form.music_file }}
+    {% if form.music_file.errors %}
+    <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
+    {% endif %}
+</p>
     {% endif %}
 
     <p>

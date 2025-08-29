@@ -1004,15 +1004,22 @@ def edit_participation(request, participation_id):
             participation.choreography_name = form.cleaned_data['choreography_name']
             participation.group_name = form.cleaned_data.get('group_name')
 
-            if form.cleaned_data.get('music_file'):
+            # ✅ Handle music file
+            if "remove_music" in request.POST:
+                if participation.music_file:
+                    participation.music_file.delete(save=False)
+                participation.music_file = None
+            elif form.cleaned_data.get('music_file'):
                 participation.music_file = form.cleaned_data['music_file']
 
             participation.save()
 
+            # dancers update
             new_dancers = form.cleaned_data['dancers']
             DancerParticipation.objects.filter(participation=participation).exclude(dancer__in=new_dancers).delete()
             for dancer in new_dancers:
                 DancerParticipation.objects.get_or_create(participation=participation, dancer=dancer)
+
             messages.success(request, _("Participation updated successfully."))
             return redirect('list_event_participants', event_id=event.id)
         else:
@@ -1038,7 +1045,6 @@ def edit_participation(request, participation_id):
         'form': form,
         'participation': participation
     })
-
 
     
 @login_required
