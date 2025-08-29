@@ -20,6 +20,12 @@ LANGUAGES = [
 
 USE_I18N = True
 
+LANGUAGE_COOKIE_NAME = "django_language"
+LANGUAGE_COOKIE_AGE = 1209600  # 2 weeks
+LANGUAGE_COOKIE_HTTPONLY = True
+LANGUAGE_COOKIE_SAMESITE = "Lax"
+LANGUAGE_COOKIE_ALLOW_GET = True  # lets you test with ?lang=en
+
 # LOCALE_PATHS = [
 #     os.path.join(BASE_DIR, "locale"),
 # ]
