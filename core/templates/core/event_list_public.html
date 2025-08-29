@@ -9,31 +9,27 @@
 
 <div class="event-grid">
     {% for event in events %}
-    <div class="event-card {% if event.notice_image %}has-bg{% endif %}"
-         {% if event.notice_image %}
-         style="background-image: url('{{ event.notice_image.url }}'); background-size: cover; background-position: center;"
-         {% endif %}>
-         
+    <div class="event-card {% if event.notice_image %}has-bg{% endif %}">
+        
+        <!-- Poster area -->
         {% if event.notice_image %}
-        <div class="event-card-overlay"></div>
+        <div class="poster" style="background-image: url('{{ event.notice_image.url }}');">
+            <div class="event-card-overlay"></div>
+        </div>
+        {% else %}
+        <div class="poster" style="background:#ccc;"></div>
         {% endif %}
 
+        <!-- Event details -->
         <div class="event-content">
-            <div class="event-header">
-                <div>
-                    <h3 class="event-title">{{ event.name }}</h3>
-                    <div class="event-meta">
-                        <span>📍 {{ event.city }} — {{ event.location }}</span>
-                        <span>📅 {{ event.date }}</span>
-                        {% if event.start_time %}
-                        <span>🕒 {{ event.start_time }}</span>
-                        {% endif %}
-                    </div>
-                </div>
+            <h3 class="event-title">{{ event.name }}</h3>
+            <div class="event-meta">
+                <span>📍 {{ event.city }} — {{ event.location }}</span>
+                <span>📅 {{ event.date }}</span>
+                {% if event.start_time %}
+                <span>🕒 {{ event.start_time }}</span>
+                {% endif %}
             </div>
-
-            <!-- Spacer to keep same height as event-actions in admin -->
-            <div class="event-spacer"></div>
         </div>
     </div>
     {% empty %}
@@ -52,16 +48,14 @@
     }
 
     .event-card {
-        position: relative;
         background: #fafafa;
         border-radius: 12px;
-        padding: 1.25rem 1.25rem 1rem;
+        overflow: hidden;
+        position: relative;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         transition: transform .15s ease, box-shadow .15s ease;
-        overflow: hidden;
         display: flex;
         flex-direction: column;
-        height: 480px; /* same as admin/club */
     }
 
     .event-card:hover {
@@ -69,6 +63,17 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
 
+    /* Poster area with fixed aspect ratio (4:5) */
+    .poster {
+        position: relative;
+        width: 100%;
+        padding-top: 125%; /* maintain aspect ratio */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    /* Overlay for text readability */
     .event-card-overlay {
         position: absolute;
         inset: 0;
@@ -77,22 +82,17 @@
     }
 
     .event-content {
-        position: relative;
-        z-index: 1;
-        flex: 1;
+        padding: 1rem 1.25rem;
         display: flex;
         flex-direction: column;
-    }
-
-    .event-header {
-        display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        align-items: flex-start;
+        gap: .5rem;
+        position: relative;
+        z-index: 1;
     }
 
     .event-title {
-        margin: 0 0 .25rem 0;
+        margin: 0;
+        font-size: clamp(1.1rem, 2.8vw, 1.35rem);
         color: #222;
     }
 
@@ -100,31 +100,18 @@
         display: flex;
         flex-wrap: wrap;
         gap: .5rem;
-        color: #444;
         font-size: .95rem;
+        color: #444;
     }
 
+    /* White text when poster background exists */
     .event-card.has-bg .event-title,
     .event-card.has-bg .event-meta {
         color: #fff;
     }
 
-    /* Spacer mimics admin button row */
-    .event-spacer {
-        margin-top: auto;
-        min-height: 48px; /* same as one row of buttons */
-    }
-
     @media (max-width: 520px) {
-        .event-card {
-            height: auto; /* let it shrink naturally on very small screens */
-        }
-        .event-meta {
-            font-size: .9rem;
-        }
-        .event-spacer {
-            min-height: 40px; /* slightly smaller padding on mobile */
-        }
+        .event-meta { font-size: .9rem; }
     }
 </style>
 {% endblock %}
