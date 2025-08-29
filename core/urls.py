@@ -78,8 +78,6 @@ urlpatterns = [
     path('events/<int:event_id>/calculate_age_group/', views.calculate_age_group_view, name='calculate_age_group'),
 
     path("events/<int:event_id>/notify_clubs/", views.notify_clubs_of_event, name="notify_clubs"),
-
-    path("i18n/", include("django.conf.urls.i18n")),
     
     path('events/<int:event_id>/delete/', views.delete_event, name='delete_event'),
 
