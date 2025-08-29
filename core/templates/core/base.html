@@ -45,144 +45,113 @@
 
 /* Mobile tweaks only */
 /* ------------------ MOBILE (≤1024px) ------------------ */
+/* =============== MOBILE (≤1024px) — single consolidated block =============== */
 @media (max-width: 1024px) {
-  /* Navbar bigger and easier to tap */
-  .navbar { font-size: 1rem; padding: 0.8rem 1rem; }
-  .navbar select { font-size: 1rem; padding: 0.3rem 0.5rem; }
 
-  /* Background logo less zoomed in */
-  body::before {
-    background-size: contain;
-    background-position: center;
-    background-color:#3B1373 ;
-    opacity: 0.9; /* keep your current look */
+  /* --- feel less "zoomed in" on small screens --- */
+  html { font-size: 15px; } /* was effectively larger on some pages */
+  .container { padding: 1.25rem; } /* was 2rem */
+  /* if you have a hero title/lead on the homepage: */
+  .hero h1, .page-title { font-size: clamp(1.8rem, 6vw, 2.4rem); line-height: 1.15; }
+  .hero p,  .lead       { font-size: clamp(1rem, 3.6vw, 1.2rem); line-height: 1.4; }
+
+  /* --- background logo fill (no crazy zoom) --- */
+  body::before{
+    background-size: auto 100%;   /* fill height; avoids over-zoom */
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-color: #3B1373;    /* your brand background behind image */
+    opacity: 0.9;
   }
 
-  /* Event grid + card centering */
-  .event-grid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+  /* ---------------- NAVBAR (target real markup: <nav>, .nav-left, .nav-right) ---------------- */
+  nav{
+    position: sticky; top: 0; z-index: 1000;
+    display: flex; align-items: center;
+    justify-content: flex-start;
+    gap: .5rem;
+    background: #3B1373;
+    min-height: 56px;
+    padding: .6rem .75rem;
   }
-  .event-card {
+  /* Link row (your left block) — scrollable so nothing gets cut off */
+  nav .nav-left{
+    flex: 1 1 auto;
+    display: flex; gap: .75rem;
+    overflow-x: auto;
+    white-space: nowrap;                /* prevent wrapping (e.g. “Registruj Klub”) */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-right: 8.5rem;               /* reserve space for the language dropdown */
+  }
+  nav .nav-left::-webkit-scrollbar{ display: none; }
+
+  /* Individual links a touch tighter, readable */
+  nav a{ font-size: .98rem; line-height: 1; text-decoration: none; }
+
+  /* Language select pinned to the right, never overlaps links */
+  nav .nav-right{
+    position: absolute; right: .75rem; top: 50%;
+    transform: translateY(-50%);
+    display: flex; align-items: center; gap: .5rem;
+    z-index: 2;
+  }
+  nav .nav-right select{
+    font-size: .95rem;
+    padding: .35rem .5rem;
+    max-width: 140px;
+  }
+
+  /* ---------------- Event list/cards ---------------- */
+  .event-grid{
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  }
+  .event-card{
     width: min(92vw, 440px);
-    margin: 0 auto;
-    border-radius: 18px;
+    margin: 0 auto; border-radius: 18px;
   }
-
-  /* Poster shows fully (no crop) in a poster-like ratio */
-  .event-card .poster {
-    position: relative;
-    width: 100%;
-    padding-top: 125%;       /* ~4:5 */
-    background-size: contain;
+  .event-card .poster{
+    position: relative; width: 100%;
+    padding-top: 125%;                 /* 4:5 poster-like */
+    background-size: contain;          /* show full poster */
     background-repeat: no-repeat;
     background-position: center top;
     border-radius: 16px;
   }
+  .event-card .event-title{ font-size: clamp(1.1rem, 2.8vw, 1.35rem); }
+  .event-card .event-meta { font-size: .95rem; }
 
-  /* Title/meta sizing */
-  .event-card .event-title { font-size: clamp(1.1rem, 2.8vw, 1.35rem); }
-  .event-card .event-meta  { font-size: 0.95rem; }
+  .event-actions{
+    display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-top: .75rem;
+  }
+  .event-actions .btn{
+    width: 100%; padding: .55rem .75rem; font-size: .95rem; line-height: 1.2; border-radius: .75rem;
+  }
+  .event-card .badge, .event-card .status-pill{ transform: scale(.9); transform-origin: top right; }
 
-  /* Action buttons: 2-col grid */
-  .event-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: .6rem;
-    margin-top: .75rem;
+  /* ---------------- Tables: scrollable with sticky header ---------------- */
+  table{
+    display: block; width: 100%;
+    overflow-x: auto; white-space: nowrap;
+    -webkit-overflow-scrolling: touch; border-spacing: 0;
   }
-  .event-actions .btn {
-    width: 100%;
-    padding: .55rem .75rem;
-    font-size: .95rem;
-    line-height: 1.2;
-    border-radius: .75rem;
+  table thead th{
+    position: sticky; top: 0; background: #fff; z-index: 1;
   }
-
-  /* Pills a touch smaller */
-  .event-card .badge,
-  .event-card .status-pill {
-    transform: scale(.9);
-    transform-origin: top right;
-  }
-
-  /* Tables: horizontal scroll + sticky header so all content is visible */
-  table {
-    display: block;              /* allow horizontal scroll */
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-spacing: 0;           /* keep borders tidy when block */
-    white-space: nowrap;         /* prevent wrapping cells */
-  }
-  table thead th {
-    position: sticky; top: 0;    /* header stays visible while scrolling */
-    background: #fff;            /* adjust to your card bg color */
-    z-index: 1;
-  }
-  table td, table th { padding: .75rem 1rem; }
+  table td, table th{ padding: .75rem 1rem; }
 }
 
-/* ------------------ VERY SMALL (≤420px) ------------------ */
-@media (max-width: 420px) {
-  .event-actions { grid-template-columns: 1fr; }
-  .event-card    { width: 94vw; }
-  .event-card .poster { padding-top: 130%; }
-
-  /* Slightly tighter table spacing on tiny screens */
-  table td, table th { padding: .6rem .75rem; font-size: .95rem; }
-}
-
-/* Mobile navbar layout */
-/* NAVBAR — mobile layout polish */
-@media (max-width: 1024px) {
-  .navbar{
-    position: sticky; top: 0; z-index: 1000;
-    display: flex; align-items: center;
-    background: #3B1373;            /* your color */
-    min-height: 56px;
-    padding: .6rem .75rem;
-  }
-
-  /* LINKS: scrollable row, reserve space for the dropdown on the right */
-  .navbar .nav-links,
-  .navbar ul{                       /* fallback if you don't have .nav-links */
-    flex: 1 1 auto;
-    display: flex; gap: .75rem;
-    overflow-x: auto;
-    white-space: nowrap;            /* prevent wrapping (e.g. "Registruj Klub") */
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    margin-right: 8.5rem;           /* ≈ width of the dropdown; tune if needed */
-  }
-  .navbar .nav-links::-webkit-scrollbar,
-  .navbar ul::-webkit-scrollbar{ display: none; }
-
-  /* DROPDOWN: pin to the right, above the scrolling links */
-  .navbar .nav-right{
-    position: absolute; right: .75rem; top: 50%;
-    transform: translateY(-50%);
-    display: flex; align-items: center;
-    z-index: 2;
-  }
-  .navbar select{
-    font-size: .95rem;
-    padding: .35rem .5rem;
-    max-width: 140px;               /* prevents clipping */
-  }
-
-  /* Slightly tighter link size on phones so labels stay on one line */
-  .navbar a{ font-size: .98rem; line-height: 1; }
-}
-
-/* Tiny phones */
+/* =============== VERY SMALL (≤420px) =============== */
 @media (max-width: 420px){
-  .navbar a{ font-size: .9rem; }
-  .navbar .nav-links{ gap: .6rem; margin-right: 7.5rem; }
-  .navbar select{ max-width: 120px; }
+  nav a{ font-size: .9rem; }
+  nav .nav-left{ gap: .6rem; margin-right: 7.5rem; }
+  nav .nav-right select{ max-width: 120px; }
+  .event-actions{ grid-template-columns: 1fr; }
+  .event-card{ width: 94vw; }
+  .event-card .poster{ padding-top: 130%; }
+  table td, table th{ padding: .6rem .75rem; font-size: .95rem; }
 }
+
 
 
 
