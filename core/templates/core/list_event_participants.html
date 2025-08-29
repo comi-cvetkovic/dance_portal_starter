@@ -14,6 +14,7 @@
 {% endif %}
 
 {% if grouped_participations %}
+<div class="table-wrapper">
     <table class="nice-table">
         <thead>
             {% if user.is_superuser %}
@@ -74,6 +75,7 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
 {% else %}
 <p>{% trans "No participants yet." %}</p>
 {% endif %}

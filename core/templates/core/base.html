@@ -131,6 +131,17 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-wrapper table {
+    min-width: 900px;   /* force wide table so it scrolls instead of squishes */
+    white-space: nowrap;
+  }
+}
+
 
     nav,
     .container {
