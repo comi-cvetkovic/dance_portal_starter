@@ -65,26 +65,30 @@
   }
 
   /* ---------------- NAVBAR (target real markup: <nav>, .nav-left, .nav-right) ---------------- */
-  nav{
+  nav {
     position: sticky; top: 0; z-index: 1000;
     display: flex; align-items: center;
-    justify-content: flex-start;
-    gap: .5rem;
+    justify-content: space-between;   /* split left/right automatically */
     background: #3B1373;
     min-height: 56px;
     padding: .6rem .75rem;
   }
   /* Link row (your left block) — scrollable so nothing gets cut off */
-  nav .nav-left{
+  nav .nav-left {
     flex: 1 1 auto;
     display: flex; gap: .75rem;
     overflow-x: auto;
-    white-space: nowrap;                /* prevent wrapping (e.g. “Registruj Klub”) */
+    white-space: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    margin-right: 8.5rem;               /* reserve space for the language dropdown */
   }
-  nav .nav-left::-webkit-scrollbar{ display: none; }
+  nav .nav-left::-webkit-scrollbar { display: none; }
+
+  /* right side pinned properly */
+  nav .nav-right {
+    flex: 0 0 auto; 
+    display: flex; align-items: center; gap: .5rem;
+  }
 
   /* Individual links a touch tighter, readable */
   nav a{ font-size: .98rem; line-height: 1; text-decoration: none; }
@@ -128,17 +132,7 @@
     width: 100%; padding: .55rem .75rem; font-size: .95rem; line-height: 1.2; border-radius: .75rem;
   }
   .event-card .badge, .event-card .status-pill{ transform: scale(.9); transform-origin: top right; }
-
-  /* ---------------- Tables: scrollable with sticky header ---------------- */
-  table{
-    display: block; width: 100%;
-    overflow-x: auto; white-space: nowrap;
-    -webkit-overflow-scrolling: touch; border-spacing: 0;
-  }
-  table thead th{
-    position: sticky; top: 0; background: #fff; z-index: 1;
-  }
-  table td, table th{ padding: .75rem 1rem; }
+  
 }
 
 /* =============== VERY SMALL (≤420px) =============== */
