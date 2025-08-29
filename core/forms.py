@@ -160,7 +160,7 @@ class GroupParticipationForm(forms.Form):
         label=_("Group Name"),
         widget=forms.TextInput(attrs={'placeholder': _("Enter group name (for groups of 4+)"), 'id': 'id_group_name'})
     )
-    music_file = forms.FileField(required=True, label=_("Music File"))
+    music_file = forms.FileField(required=False, label=_("Music File"))
 
     def __init__(self, *args, **kwargs):
         club = kwargs.pop('club', None)
