@@ -64,35 +64,6 @@
     opacity: 0.9;
   }
 
-  /* ---------------- NAVBAR (target real markup: <nav>, .nav-left, .nav-right) ---------------- */
-  nav {
-    position: sticky; top: 0; z-index: 1000;
-    display: flex; align-items: center;
-    justify-content: space-between;   /* split left/right automatically */
-    background: #3B1373;
-    min-height: 56px;
-    padding: .6rem .75rem;
-  }
-  /* Link row (your left block) — scrollable so nothing gets cut off */
-  nav .nav-left {
-    flex: 1 1 auto;
-    display: flex; gap: .75rem;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  nav .nav-left::-webkit-scrollbar { display: none; }
-  /* Individual links a touch tighter, readable */
-  nav a{ font-size: .98rem; line-height: 1; text-decoration: none; }
-
-  /* Language select pinned to the right, never overlaps links */
- nav .nav-right {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-}
   /* ---------------- Event list/cards ---------------- */
   .event-grid{
     display: flex; flex-direction: column; align-items: center; gap: 1rem;
@@ -120,16 +91,6 @@
   }
   .event-card .badge, .event-card .status-pill{ transform: scale(.9); transform-origin: top right; }
   
-}
-
-/* =============== VERY SMALL (≤420px) =============== */
-@media (max-width: 420px){
-  nav a{ font-size: .9rem; }
-  nav .nav-left{ gap: .6rem; margin-right: 7.5rem; }
-  nav .nav-right select{ max-width: 120px; }
-  .event-actions{ grid-template-columns: 1fr; }
-  .event-card{ width: 94vw; }
-  .event-card .poster{ padding-top: 130%; }
 }
 
     nav,
