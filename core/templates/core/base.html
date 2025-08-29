@@ -42,12 +42,58 @@
     z-index: 0;                      /* behind page content */
 }
 
+/* Mobile tweaks only */
 @media (max-width: 768px) {
-    body::before {
-        background-size: contain;
-        background-position: top center;
-    }
+
+  /* Navbar bigger and easier to tap */
+  .navbar {
+      font-size: 1rem;
+      padding: 0.8rem 1rem;
+  }
+  .navbar select {
+      font-size: 1rem;
+      padding: 0.3rem 0.5rem;
+  }
+
+  /* Background logo less zoomed in */
+  body::before {
+      background-size: contain;
+      background-position: center;
+      opacity: 0.08;  /* lighter so text pops */
+  }
+
+  /* Event grid → 1 card per row */
+  .event-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+  }
+
+  /* Event cards adjust height automatically */
+  .event-card {
+      height: auto;
+      padding: 1rem;
+  }
+
+  /* Buttons larger and full-width for tap targets */
+  .event-actions {
+      flex-direction: column;
+  }
+  .event-actions .btn {
+      width: 100%;
+      text-align: center;
+      font-size: 0.95rem;
+      padding: 0.6rem 1rem;
+      margin-bottom: 0.5rem;
+  }
+
+  /* Tables scrollable on small screens */
+  table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+  }
 }
+
 
     nav,
     .container {
