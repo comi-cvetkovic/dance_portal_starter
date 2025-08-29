@@ -135,6 +135,45 @@
   table td, table th { padding: .6rem .75rem; font-size: .95rem; }
 }
 
+/* Mobile navbar layout */
+@media (max-width:1024px){
+  /* Treat the whole bar as a flex row */
+  .navbar{
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    padding-right:.75rem;  /* room for the dropdown */
+  }
+
+  /* Your links list – make it scrollable horizontally */
+  .navbar .nav-links,
+  .navbar ul{                 /* fallback if you don’t have .nav-links */
+    flex:1 1 auto;
+    display:flex;
+    gap:1rem;
+    overflow-x:auto;
+    white-space:nowrap;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding:0 .25rem;
+  }
+  .navbar .nav-links::-webkit-scrollbar,
+  .navbar ul::-webkit-scrollbar{ display:none; }
+
+  /* Language dropdown area on the right */
+  .navbar .nav-right{
+    flex:0 0 auto;
+    margin-left:.25rem;
+    position:relative;
+    z-index:2;  /* stay above scrolling links */
+  }
+  .navbar select{
+    font-size:1rem;
+    padding:.3rem .5rem;
+    max-width:140px;   /* avoid clipping on the edge */
+  }
+}
+
 
     nav,
     .container {
