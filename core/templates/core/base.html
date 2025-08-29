@@ -52,7 +52,7 @@
   .container { padding: 1.25rem; }
 
   body::before {
-    background-size: auto 100%;   /* fill height, not “contain” */
+    background-size: contain;   /* fill height, not “contain” */
     background-position: center top;
     background-repeat: no-repeat;
     background-color: #3B1373;
@@ -140,7 +140,7 @@
     min-width: 900px;   /* force wide table so it scrolls instead of squishes */
     white-space: nowrap;
   }
-  
+
 table {
     white-space: normal !important; /* allow wrapping instead of forced inline */
 }
