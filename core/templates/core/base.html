@@ -140,6 +140,15 @@
     min-width: 900px;   /* force wide table so it scrolls instead of squishes */
     white-space: nowrap;
   }
+  
+table {
+    white-space: normal !important; /* allow wrapping instead of forced inline */
+}
+td, th {
+    word-break: break-word; /* force long text to wrap */
+    white-space: normal; 
+}
+
 }
 
 
