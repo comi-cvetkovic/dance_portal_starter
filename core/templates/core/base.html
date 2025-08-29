@@ -44,26 +44,21 @@
 }
 
 /* Mobile tweaks only */
+/* ------------------ MOBILE (≤1024px) ------------------ */
 @media (max-width: 1024px) {
-
   /* Navbar bigger and easier to tap */
-  .navbar {
-      font-size: 1rem;
-      padding: 0.8rem 1rem;
-  }
-  .navbar select {
-      font-size: 1rem;
-      padding: 0.3rem 0.5rem;
-  }
+  .navbar { font-size: 1rem; padding: 0.8rem 1rem; }
+  .navbar select { font-size: 1rem; padding: 0.3rem 0.5rem; }
 
   /* Background logo less zoomed in */
   body::before {
-      background-size: contain;
-      background-position: center;
-      opacity: 0.9;  /* lighter so text pops */
+    background-size: contain;
+    background-position: center;
+    opacity: 0.9; /* keep your current look */
   }
 
- .event-grid {
+  /* Event grid + card centering */
+  .event-grid {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -75,22 +70,17 @@
     border-radius: 18px;
   }
 
-  /* 2) Poster: show the whole image (no crop) with a poster-like ratio */
-  /* If your poster is a dedicated inner element, keep .event-card .poster.
-     If the background is on .event-card itself, replace `.event-card .poster`
-     below with `.event-card`. */
+  /* Poster shows fully (no crop) in a poster-like ratio */
   .event-card .poster {
     position: relative;
     width: 100%;
-    /* 4:5 feels “poster-like”. Adjust to taste: 3/4, 2/3, etc. */
-    padding-top: 125%;
-    background-size: contain;         /* show the whole poster */
+    padding-top: 125%;       /* ~4:5 */
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center top;
     border-radius: 16px;
   }
-
-  /* If you use an <img> for the poster, use this instead of the block above:
+  /* If you use an <img> instead of bg:
   .event-card img.event-poster {
     width: 100%;
     aspect-ratio: 4 / 5;
@@ -99,11 +89,11 @@
     border-radius: 16px;
   } */
 
-  /* 3) Title/meta sizing */
+  /* Title/meta sizing */
   .event-card .event-title { font-size: clamp(1.1rem, 2.8vw, 1.35rem); }
   .event-card .event-meta  { font-size: 0.95rem; }
 
-  /* 4) Action buttons: 2-column grid on phones, smaller tap-friendly size */
+  /* Action buttons: 2-col grid */
   .event-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -118,26 +108,38 @@
     border-radius: .75rem;
   }
 
-  /* 5) Pills/badges shrink a touch so they don’t overlap */
+  /* Pills a touch smaller */
   .event-card .badge,
   .event-card .status-pill {
     transform: scale(.9);
     transform-origin: top right;
   }
 
-/* Ultra-small screens: stack buttons to one column */
+  /* Tables: horizontal scroll + sticky header so all content is visible */
+  table {
+    display: block;              /* allow horizontal scroll */
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-spacing: 0;           /* keep borders tidy when block */
+    white-space: nowrap;         /* prevent wrapping cells */
+  }
+  table thead th {
+    position: sticky; top: 0;    /* header stays visible while scrolling */
+    background: #fff;            /* adjust to your card bg color */
+    z-index: 1;
+  }
+  table td, table th { padding: .75rem 1rem; }
+}
+
+/* ------------------ VERY SMALL (≤420px) ------------------ */
 @media (max-width: 420px) {
   .event-actions { grid-template-columns: 1fr; }
   .event-card    { width: 94vw; }
   .event-card .poster { padding-top: 130%; }
-}
 
-  /* Tables scrollable on small screens */
-  table {
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
-  }
+  /* Slightly tighter table spacing on tiny screens */
+  table td, table th { padding: .6rem .75rem; font-size: .95rem; }
 }
 
 
