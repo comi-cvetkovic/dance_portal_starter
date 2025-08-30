@@ -159,6 +159,16 @@
   .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
   .status-dot.ok{ background:#28a745; }
   .status-dot.warn{ background:#ffc107; }
+
+  @media (max-width: 1024px) {
+    .event-meta span {
+  white-space: nowrap;    /* keep each piece on one line */
+}
+.event-meta {
+  overflow-x: auto;       /* allow scroll instead of wrapping */
+  -webkit-overflow-scrolling: touch;
+}
+  }
 </style>
 {% endblock %}
 
