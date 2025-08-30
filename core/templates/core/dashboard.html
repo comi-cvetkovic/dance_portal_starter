@@ -27,10 +27,10 @@
               <tr>
                 <th>{% trans "Club" %}</th>
                 <th>{% trans "Representative" %}</th>
-                <th>{% trans "Country" %}</th>
-                <th>{% trans "City" %}</th>
-                <th>{% trans "Email" %}</th>
-                <th>{% trans "Phone" %}</th>
+                <th class="hide-mobile">{% trans "Country" %}</th>
+                <th class="hide-mobile">{% trans "City" %}</th>
+                <th class="hide-mobile">{% trans "Email" %}</th>
+                <th class="hide-mobile">{% trans "Phone" %}</th>
                 <th>{% trans "Password" %}</th>
                 <th>{% trans "Status" %}</th>
                 <th class="right">{% trans "Actions" %}</th>
@@ -41,10 +41,10 @@
               <tr>
                 <td>{{ c.club_name }}</td>
                 <td>{{ c.representative_name }}</td>
-                <td>{{ c.country.name }}</td>
-                <td>{{ c.city }}</td>
-                <td>{{ c.user.email }}</td>
-                <td>{{ c.phone_number }}</td>
+                <td class="hide-mobile">{{ c.country.name }}</td>
+                <td class="hide-mobile">{{ c.city }}</td>
+                <td class="hide-mobile">{{ c.user.email }}</td>
+                <td class="hide-mobile">{{ c.phone_number }}</td>
                 <td>{{ c.raw_password }}</td>
                 <td>
                   {% if c.confirmed %}
@@ -154,11 +154,15 @@
   .status-dot.ok{ background:#28a745; }
   .status-dot.warn{ background:#ffc107; }
 
+  /* Hide certain columns only on mobile */
   @media (max-width: 1024px) {
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .nice-table, .nice-table th, .nice-table td { white-space: nowrap; }
     .nice-table { display: block; width: max-content; min-width: 100%; }
     .nice-table thead th { position: sticky; top: 0; background: #fff; z-index: 2; }
+
+    /* hide these fields on mobile */
+    .hide-mobile { display: none; }
   }
 </style>
 {% endblock %}
