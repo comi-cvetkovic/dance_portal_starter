@@ -161,14 +161,18 @@
   .status-dot.warn{ background:#ffc107; }
 
   @media (max-width: 1024px) {
-    .event-meta span {
-  white-space: nowrap;    /* keep each piece on one line */
-}
-.event-meta {
-  overflow-x: auto;       /* allow scroll instead of wrapping */
-  -webkit-overflow-scrolling: touch;
-}
+  .kv li {
+    white-space: nowrap;           /* keep each detail on one line */
+    overflow-x: auto;              /* allow scrolling if too long */
+    -webkit-overflow-scrolling: touch;
   }
+  .kv li strong {
+    font-size: 0.9rem;             /* slightly smaller label text */
+  }
+  .kv li {
+    font-size: 0.85rem;            /* slightly smaller values */
+  }
+}
 </style>
 {% endblock %}
 
