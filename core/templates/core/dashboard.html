@@ -27,6 +27,11 @@
               <tr>
                 <th>{% trans "Club" %}</th>
                 <th>{% trans "Representative" %}</th>
+                <th>{% trans "Country" %}</th>
+                <th>{% trans "City" %}</th>
+                <th>{% trans "Email" %}</th>
+                <th>{% trans "Phone" %}</th>
+                <th>{% trans "Password" %}</th>
                 <th>{% trans "Status" %}</th>
                 <th class="right">{% trans "Actions" %}</th>
               </tr>
@@ -36,6 +41,11 @@
               <tr>
                 <td>{{ c.club_name }}</td>
                 <td>{{ c.representative_name }}</td>
+                <td>{{ c.country.name }}</td>
+                <td>{{ c.city }}</td>
+                <td>{{ c.user.email }}</td>
+                <td>{{ c.phone_number }}</td>
+                <td>{{ c.club_password }}</td>
                 <td>
                   {% if c.confirmed %}
                     <span class="status-dot ok"></span> {% trans "Confirmed" %}
@@ -112,7 +122,6 @@
 
 {% block extra_styles %}
 <style>
-  /* Layout */
   .dash-hero{
     background:#f8f9fa; border-radius:14px; padding:18px 22px; margin-bottom:18px;
     display:flex; align-items:center; justify-content:space-between; gap:16px;
@@ -123,64 +132,33 @@
   .grid-3{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
   @media (max-width: 900px){ .grid-2,.grid-3{ grid-template-columns:1fr; } }
 
-  .card{
-    background:#fff; border:1px solid #e8e8e8; border-radius:14px; padding:18px;
-    box-shadow:0 2px 8px rgba(0,0,0,.04);
-  }
+  .card{ background:#fff; border:1px solid #e8e8e8; border-radius:14px; padding:18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04); }
   .card-title{ margin:0 0 .6rem 0; font-size:1.1rem; display:flex; align-items:center; gap:.5rem; }
 
   .muted{ color:#666; }
-
-  /* Key-value list */
   .kv{ margin:0; padding-left:1rem; }
   .kv li{ margin:.35rem 0; }
 
-  /* Buttons / chips */
   .btn-row .btn{ margin-right:8px; margin-bottom:8px; }
-  .chip-list{ display:flex; flex-wrap:wrap; gap:8px; }
-  .chip{ display:inline-block; padding:6px 10px; border-radius:999px; background:#eee; font-size:.9rem; }
-  .chip-blue{ background:#e7f1ff; }
-  .chip-gold{ background:#fff6db; }
+  .badge{ display:inline-block; background:#eef2ff; border-radius:10px;
+    padding:2px 8px; font-size:.85rem; margin-left:.4rem; }
 
-  .badge{
-    display:inline-block; background:#eef2ff; border-radius:10px;
-    padding:2px 8px; font-size:.85rem; margin-left:.4rem;
-  }
-
-  /* Table */
   .table-wrap{ overflow:auto; }
   .nice-table{ width:100%; border-collapse: collapse; }
   .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; }
   .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
   .right{ text-align:right; }
 
-  /* Status dot */
   .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
   .status-dot.ok{ background:#28a745; }
   .status-dot.warn{ background:#ffc107; }
 
-  /* Mobile table fix */
   @media (max-width: 1024px) {
-    .table-wrap {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .nice-table,
-    .nice-table th,
-    .nice-table td {
-      white-space: nowrap;
-    }
-    .nice-table {
-      display: block;
-      width: max-content;
-      min-width: 100%;
-    }
-    .nice-table thead th {
-      position: sticky;
-      top: 0;
-      background: #fff;
-      z-index: 2;
-    }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .nice-table, .nice-table th, .nice-table td { white-space: nowrap; }
+    .nice-table { display: block; width: max-content; min-width: 100%; }
+    .nice-table thead th { position: sticky; top: 0; background: #fff; z-index: 2; }
   }
 </style>
 {% endblock %}
