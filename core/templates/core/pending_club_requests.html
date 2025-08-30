@@ -43,3 +43,35 @@
 <p>{% trans "No pending clubs at the moment" %}.</p>
 {% endif %}
 {% endblock %}
+
+{% block extra_styles %}
+<style>
+/* Mobile table fix */
+@media (max-width: 1024px) {
+  .table-wrap {
+    overflow-x: auto;           /* enable horizontal scroll */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nice-table,
+  .nice-table th,
+  .nice-table td {
+    white-space: nowrap;        /* keep content in one line */
+  }
+
+  .nice-table {
+    display: block;             /* so it can scroll */
+    width: max-content;         /* take as much space as needed */
+    min-width: 100%;            /* at least full width */
+  }
+
+  /* make header row stick when scrolling */
+  .nice-table thead th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 2;
+  }
+}
+</style>
+{% endblock %}
