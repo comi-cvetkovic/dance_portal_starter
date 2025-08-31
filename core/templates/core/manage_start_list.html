@@ -91,29 +91,38 @@
     .start-group .start-time {
         font-size: 0.85em; color: gray;
     }
-    @media (max-width: 1024px) {
-        .start-group th,
-        .start-group td {
-            font-size: 0.85rem;     /* slightly smaller text */
-            white-space: normal;    /* allow wrapping instead of forcing wide cells */
-            word-break: break-word; /* break long text if needed */
-        }
-
-        .start-group {
-            table-layout: fixed;    /* force equal column widths */
-            width: 100%;
-        }
-
-        #sticky-toolbar {
-            right: 10px;  /* was 30px */
-            left: 10px;   /* keep inside screen */
-            justify-content: space-between;
-            flex-wrap: wrap; /* let buttons stack if too wide */
-        }
-        #sticky-toolbar button {
-            flex: 1 1 auto; /* make buttons shrink evenly */
-        }
+@media (max-width: 1024px) {
+    .start-group th,
+    .start-group td {
+        font-size: 0.85rem;
+        white-space: normal;     /* allow wrapping */
+        word-break: break-word;  /* break long words */
+        padding: 4px;            /* tighter padding */
+        text-align: left;
     }
+
+    .start-group {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;      /* keep columns aligned naturally */
+    }
+
+    #sticky-toolbar {
+        right: 10px;
+        left: auto;                         /* don’t stretch full width */
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;                    /* stack if too wide */
+        max-width: calc(100% - 20px);       /* always inside screen */
+    }
+
+    #sticky-toolbar button {
+        font-size: 0.8rem;
+        padding: 4px 6px;
+        flex: 1 1 auto;                     /* buttons shrink/wrap neatly */
+    }
+}
+
 </style>
 {% endblock %}
 
