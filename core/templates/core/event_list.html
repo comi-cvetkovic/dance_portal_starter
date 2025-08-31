@@ -235,8 +235,14 @@
     /* add more breathing room between cards */
     .event-grid {
         display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
-        gap: 1.75rem !important;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+        gap: 1.5rem !important;  /* space between cards */
+        justify-content: center; /* center cards if only 1 per row */
+    }
+
+    .event-card {
+        width: 100% !important;  /* let grid control width */
+        max-width: 440px;        /* prevent them from stretching too wide */
     }
 
     /* ensure carousel arrows sit outside the card edges */
