@@ -102,7 +102,7 @@
     .event-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 1.25rem;
+        gap: 1.5rem;
     }
 
     .event-card {
@@ -193,6 +193,7 @@
     .event-actions-wrapper {
         overflow: hidden;
         flex: 1;
+        position: relative;
     }
 
     .event-actions {
@@ -211,52 +212,54 @@
     }
 
     .carousel-btn {
-        background: rgba(0,0,0,0.5);
-        color: #fff;
-        border: none;
-        font-size: 1.5rem;
-        padding: 0.4rem 0.6rem;
-        cursor: pointer;
-        border-radius: 50%;
-        z-index: 2;
-    }
-
-    .event-card.has-bg .btn {
-        background: rgba(0,0,0,0.65);
-        color: #fff;
-        border: 1px solid rgba(255,255,255,0.25);
-    }
-
-    .event-card.has-bg .btn:hover {
-        background: rgba(0,0,0,0.8);
-    }
-
-    /* ✅ Mobile/tablet override to fix spacing and side-by-side */
-    @media (max-width: 1024px) {
-      .event-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-        gap: 1.5rem !important;        /* finally adds horizontal spacing */
-        justify-content: center !important;
-    }
-
-    .event-card {
-        width: auto !important;        /* let grid decide width */
-        max-width: none !important;    /* remove 440px cap */
-        margin: 0 !important;          /* kill auto-centering */
-    }
-
-      .carousel-btn {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
         z-index: 5;
         background: rgba(0,0,0,0.65);
-        font-size: 1.6rem;
-        padding: 0.5rem 0.7rem;
+        color: #fff;
+        border: none;
+        font-size: 2rem;
+        padding: 0.6rem 0.9rem;
+        cursor: pointer;
+        border-radius: 50%;
+    }
+    .carousel-btn.prev { left: -2.5rem; }
+    .carousel-btn.next { right: -2.5rem; }
+
+    /* Edge fades */
+    .event-actions-wrapper::before,
+    .event-actions-wrapper::after {
+        content: "";
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 30px;
+        pointer-events: none;
+        z-index: 4;
+    }
+    .event-actions-wrapper::before {
+        left: 0;
+        background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
+    }
+    .event-actions-wrapper::after {
+        right: 0;
+        background: linear-gradient(to left, rgba(0,0,0,0.4), transparent);
+    }
+
+    /* ✅ Mobile override */
+    @media (max-width: 1024px) {
+      .event-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 1.5rem !important;
+        justify-content: center !important;
       }
-      .carousel-btn.prev { left: -1.4rem; }
-      .carousel-btn.next { right: -1.4rem; }
+
+      .event-card {
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+      }
     }
 </style>
 {% endblock %}
@@ -275,7 +278,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const maxPage = Math.ceil(totalButtons / perPage) - 1;
 
         function updateCarousel() {
-            wrapper.style.transform = `translateX(-${page * 100}%)`;
+            const buttonWidth = buttons[0].offsetWidth + 8; // include margin
+            const shift = page * (perPage * buttonWidth);
+            wrapper.style.transform = `translateX(-${shift}px)`;
         }
 
         prev.addEventListener('click', () => {
