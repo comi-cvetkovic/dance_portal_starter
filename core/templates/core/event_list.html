@@ -234,16 +234,18 @@
     @media (max-width: 1024px) {
     /* add more breathing room between cards */
     .event-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-        gap: 1.5rem !important;   /* proper gap between cards */
-        justify-content: center;  /* center grid if only 1 card per row */
-    }
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 1.5rem !important;
+    justify-content: center;
+  }
 
-    .event-card {
-        width: 100% !important;   /* let grid handle width */
-        max-width: 440px;         /* prevent too wide stretching */
-    }
+  .event-card {
+    width: 100% !important;     /* let the grid decide width */
+    max-width: 440px !important;
+    margin: 0 !important;       /* remove the forced center margin */
+  }
+
 
     /* ensure carousel arrows sit outside the card edges */
     .event-actions-carousel {
