@@ -219,13 +219,32 @@
         background: rgba(0,0,0,0.8);
     }
 
-    @media (max-width: 520px) {
-        .event-meta {
-            font-size: .9rem;
-        }
-        .event-card {
-            height: auto;
-        }
+   @media (max-width: 520px) {
+    .event-card {
+        height: auto;
     }
+
+    .event-actions {
+        display: flex;
+        flex-wrap: nowrap;       /* single row */
+        overflow-x: auto;        /* horizontal scroll */
+        -webkit-overflow-scrolling: touch;
+        gap: .5rem;
+        padding-bottom: .4rem;
+    }
+
+    .event-actions .btn {
+        flex: 0 0 auto;          /* prevent shrinking */
+        font-size: .85rem;
+        padding: .45rem .6rem;
+        border-radius: .5rem;
+        white-space: nowrap;
+    }
+
+    /* hide scrollbar for WebKit browsers */
+    .event-actions::-webkit-scrollbar {
+        display: none;
+    }
+}
 </style>
 {% endblock %}
