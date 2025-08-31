@@ -235,14 +235,14 @@
     /* add more breathing room between cards */
     .event-grid {
         display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
-        gap: 1.5rem !important;  /* space between cards */
-        justify-content: center; /* center cards if only 1 per row */
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 1.5rem !important;   /* proper gap between cards */
+        justify-content: center;  /* center grid if only 1 card per row */
     }
 
     .event-card {
-        width: 100% !important;  /* let grid control width */
-        max-width: 440px;        /* prevent them from stretching too wide */
+        width: 100% !important;   /* let grid handle width */
+        max-width: 440px;         /* prevent too wide stretching */
     }
 
     /* ensure carousel arrows sit outside the card edges */
