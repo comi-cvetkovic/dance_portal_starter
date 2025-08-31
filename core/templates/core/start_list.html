@@ -6,6 +6,7 @@
 <h2>Start List for {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
 
 {% if show_entries %}
+<div class="table-wrapper">
 <table class="start-group" id="group-container" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
     <thead>
         <tr>
@@ -39,7 +40,7 @@
             <td>
                 {{ entry.global_row_number }}
                 {% if entry.start_time %}
-                <br><span style="font-size: 0.85em; color: gray;">{{ entry.start_time }}</span>
+                <br><span class="start-time">{{ entry.start_time }}</span>
                 {% endif %}
             </td>
             <td>
@@ -60,9 +61,32 @@
     </tbody>
     {% endfor %}
 </table>
+</div>
 {% else %}
 <p>{% trans "The start list has not been published yet" %}.</p>
 {% endif %}
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+.table-wrapper {
+    overflow-x: auto;
+}
+.start-group th, .start-group td {
+    white-space: normal;   /* allow wrapping */
+    word-break: break-word;
+    padding: .6rem .75rem;
+}
+.start-group .start-time {
+    font-size: 0.85em; color: gray;
+}
+@media (max-width: 600px) {
+    .start-group th, .start-group td {
+        font-size: .9rem;
+        padding: .5rem;
+    }
+}
+</style>
 {% endblock %}
 
 {% block extra_scripts %}

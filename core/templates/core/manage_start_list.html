@@ -5,6 +5,7 @@
 {% block content %}
 <h2>{% trans "Manage Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
 
+<div class="table-wrapper">
 <table class="start-group" id="group-container" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
     <thead>
         <tr>
@@ -35,7 +36,7 @@
             <td>
                 {{ entry.global_row_number }}
                 {% if entry.start_time %}
-                <br><span style="font-size: 0.85em; color: gray;">{{ entry.start_time }}</span>
+                <br><span class="start-time">{{ entry.start_time }}</span>
                 {% endif %}
             </td>
             <td>
@@ -60,6 +61,7 @@
     {% endfor %}
     {% endwith %}
 </table>
+</div>
 {% endblock %}
 
 {% block extra_styles %}
@@ -76,6 +78,24 @@
         display: flex;
         gap: 10px;
         align-items: center;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+    .start-group th, .start-group td {
+        white-space: normal;      /* wrap text */
+        word-break: break-word;
+        padding: .6rem .75rem;
+    }
+    .start-group .start-time {
+        font-size: 0.85em; color: gray;
+    }
+    @media (max-width: 600px) {
+        .start-group th, .start-group td {
+            font-size: .9rem;
+            padding: .5rem;
+        }
     }
 </style>
 {% endblock %}
