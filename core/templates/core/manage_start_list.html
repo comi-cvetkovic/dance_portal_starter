@@ -92,34 +92,43 @@
         font-size: 0.85em; color: gray;
     }
 @media (max-width: 1024px) {
+    /* Smaller, wrapped table */
     .start-group th,
     .start-group td {
-        font-size: 0.85rem;
-        white-space: normal;     /* allow wrapping */
-        word-break: break-word;  /* break long words */
-        padding: 4px;            /* tighter padding */
+        font-size: 0.8rem;
+        white-space: normal;
+        word-break: break-word;
+        padding: 3px 4px;
         text-align: left;
     }
 
     .start-group {
         width: 100%;
         border-collapse: collapse;
-        table-layout: auto;      /* keep columns aligned naturally */
+        table-layout: auto;
     }
 
+    /* Toolbar styling */
     #sticky-toolbar {
-        right: 10px;
-        left: auto;                         /* don’t stretch full width */
+        position: relative;         /* place it in flow, above table */
+        top: auto;
+        right: auto;
+        left: auto;
+        margin: 0 0 0.5rem 0;       /* small space below */
         display: flex;
+        justify-content: center;
+        flex-wrap: wrap;            /* stack if needed */
         gap: 6px;
-        flex-wrap: wrap;                    /* stack if too wide */
-        max-width: calc(100% - 20px);       /* always inside screen */
+        width: 100%;
+        background: transparent;    /* no big white box */
+        box-shadow: none;
+        padding: 0;
     }
 
     #sticky-toolbar button {
         font-size: 0.8rem;
-        padding: 4px 6px;
-        flex: 1 1 auto;                     /* buttons shrink/wrap neatly */
+        padding: 4px 8px;
+        flex: 0 1 auto;
     }
 }
 
