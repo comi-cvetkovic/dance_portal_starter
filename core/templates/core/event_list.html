@@ -236,15 +236,15 @@
       .event-grid {
         display: grid !important;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-        gap: 1.5rem !important;
+        gap: 1.5rem !important;        /* finally adds horizontal spacing */
         justify-content: center !important;
-      }
+    }
 
-      .event-card {
-        width: 100% !important;
-        max-width: 440px !important;
-        margin: 0 !important;
-      }
+    .event-card {
+        width: auto !important;        /* let grid decide width */
+        max-width: none !important;    /* remove 440px cap */
+        margin: 0 !important;          /* kill auto-centering */
+    }
 
       .carousel-btn {
         position: absolute;
