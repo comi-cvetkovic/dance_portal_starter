@@ -231,9 +231,35 @@
         background: rgba(0,0,0,0.8);
     }
 
-    @media (max-width: 520px) {
-        .event-card { height: auto; }
+    @media (max-width: 768px) {
+    /* add more breathing room between cards */
+    .event-grid {
+        gap: 1.75rem; /* was 1.25rem */
     }
+
+    /* ensure carousel arrows sit outside the card edges */
+    .event-actions-carousel {
+        position: relative;
+    }
+
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        background: rgba(0,0,0,0.65);
+        color: #fff;
+        border: none;
+        font-size: 1.6rem;   /* slightly larger for touch */
+        padding: 0.5rem 0.7rem;
+        cursor: pointer;
+        border-radius: 50%;
+    }
+
+    .carousel-btn.prev { left: -1.4rem; }
+    .carousel-btn.next { right: -1.4rem; }
+}
+
 </style>
 {% endblock %}
 
