@@ -270,9 +270,18 @@
 
     /* Arrows closer to edge of poster */
     .carousel-btn {
-        font-size: 1.4rem;
+        position: absolute;
+        bottom: 3.5rem;   /* sit above the buttons row */
+        z-index: 5;
+        background: rgba(0,0,0,0.65);
+        color: #fff;
+        border: none;
+        font-size: 1.5rem;
         padding: 0.4rem 0.6rem;
+        cursor: pointer;
+        border-radius: 50%;
     }
+
     .carousel-btn.prev { left: -1.2rem; }
     .carousel-btn.next { right: -1.2rem; }
     }
