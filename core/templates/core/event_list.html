@@ -231,45 +231,33 @@
         background: rgba(0,0,0,0.8);
     }
 
+    /* ✅ Mobile/tablet override to fix spacing and side-by-side */
     @media (max-width: 1024px) {
-    /* add more breathing room between cards */
-    .event-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-    gap: 1.5rem !important;
-    justify-content: center;
-  }
+      .event-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 1.5rem !important;
+        justify-content: center !important;
+      }
 
-  .event-card {
-    width: 100% !important;     /* let the grid decide width */
-    max-width: 440px !important;
-    margin: 0 !important;       /* remove the forced center margin */
-  }
+      .event-card {
+        width: 100% !important;
+        max-width: 440px !important;
+        margin: 0 !important;
+      }
 
-
-    /* ensure carousel arrows sit outside the card edges */
-    .event-actions-carousel {
-        position: relative;
-    }
-
-    .carousel-btn {
+      .carousel-btn {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
         z-index: 5;
         background: rgba(0,0,0,0.65);
-        color: #fff;
-        border: none;
-        font-size: 1.6rem;   /* slightly larger for touch */
+        font-size: 1.6rem;
         padding: 0.5rem 0.7rem;
-        cursor: pointer;
-        border-radius: 50%;
+      }
+      .carousel-btn.prev { left: -1.4rem; }
+      .carousel-btn.next { right: -1.4rem; }
     }
-
-    .carousel-btn.prev { left: -1.4rem; }
-    .carousel-btn.next { right: -1.4rem; }
-}
-
 </style>
 {% endblock %}
 
@@ -303,4 +291,3 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
-
