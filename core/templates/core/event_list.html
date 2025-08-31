@@ -54,33 +54,38 @@
                 </div>
             </div>
 
-            <div class="event-actions">
-                {% if user.is_superuser %}
-                    <!-- Admin always sees all actions -->
-                    <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
-                    <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
-                    <a href="{% url 'manage_start_list' event.id %}" class="btn btn-default">{% trans "Manage Start List" %}</a>
-                    <a href="{% url 'manage_styles' event.id %}" class="btn btn-default">{% trans "Manage Style Categories" %}</a>
-                    <a href="{% url 'event_music' event.id %}" class="btn btn-default">{% trans "Event Music" %}</a>
-                    <a href="{% url 'manage_judges' event.id %}" class="btn btn-default">{% trans "Judges" %}</a>
-                    <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Awards" %}</a>
-                    <a href="{% url 'edit_event' event.id %}" class="btn btn-default">{% trans "Edit Event" %}</a>
-                    <a href="{% url 'notify_clubs' event.id %}" class="btn btn-default">{% trans "Notify Clubs" %}</a>
-                {% else %}
-                    {% if event.is_published %}
-                        <!-- Clubs only see actions if event is published -->
-                        <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
-                        <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
-                        <a href="{% url 'start_list' event.id %}" class="btn btn-default">{% trans "Start List" %}</a>
-                        {% if event.results_published %}
-                        <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Results" %}</a>
+            <!-- Action buttons carousel -->
+            <div class="event-actions-carousel">
+                <button class="carousel-btn prev">‹</button>
+                <div class="event-actions-wrapper">
+                    <div class="event-actions">
+                        {% if user.is_superuser %}
+                            <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
+                            <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
+                            <a href="{% url 'manage_start_list' event.id %}" class="btn btn-default">{% trans "Manage Start List" %}</a>
+                            <a href="{% url 'manage_styles' event.id %}" class="btn btn-default">{% trans "Manage Style Categories" %}</a>
+                            <a href="{% url 'event_music' event.id %}" class="btn btn-default">{% trans "Event Music" %}</a>
+                            <a href="{% url 'manage_judges' event.id %}" class="btn btn-default">{% trans "Judges" %}</a>
+                            <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Awards" %}</a>
+                            <a href="{% url 'edit_event' event.id %}" class="btn btn-default">{% trans "Edit Event" %}</a>
+                            <a href="{% url 'notify_clubs' event.id %}" class="btn btn-default">{% trans "Notify Clubs" %}</a>
+                        {% else %}
+                            {% if event.is_published %}
+                                <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
+                                <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
+                                <a href="{% url 'start_list' event.id %}" class="btn btn-default">{% trans "Start List" %}</a>
+                                {% if event.results_published %}
+                                <a href="{% url 'event_awards' event.id %}" class="btn btn-default">{% trans "Results" %}</a>
+                                {% endif %}
+                            {% else %}
+                                <p style="margin-top:auto; font-style:italic; color:#999;">
+                                    {% trans "Event published soon – no actions available" %}
+                                </p>
+                            {% endif %}
                         {% endif %}
-                    {% else %}
-                        <p style="margin-top:auto; font-style:italic; color:#999;">
-                            {% trans "Event published soon – no actions available" %}
-                        </p>
-                    {% endif %}
-                {% endif %}
+                    </div>
+                </div>
+                <button class="carousel-btn next">›</button>
             </div>
 
         </div>
@@ -109,7 +114,6 @@
         transition: transform .15s ease, box-shadow .15s ease;
         overflow: hidden;
 
-        /* Equal height cards */
         display: flex;
         flex-direction: column;
         height: 480px;
@@ -120,7 +124,6 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
 
-    /* Overlay for background images */
     .event-card-overlay {
         position: absolute;
         inset: 0;
@@ -143,11 +146,7 @@
         align-items: flex-start;
     }
 
-    /* Titles and meta text */
-    .event-title {
-        margin: 0 0 .25rem 0;
-        color: #222;
-    }
+    .event-title { margin: 0 0 .25rem 0; color: #222; }
 
     .event-meta {
         display: flex;
@@ -157,13 +156,9 @@
         font-size: .95rem;
     }
 
-    /* White text if poster background exists */
     .event-card.has-bg .event-title,
-    .event-card.has-bg .event-meta {
-        color: #fff;
-    }
+    .event-card.has-bg .event-meta { color: #fff; }
 
-    /* Chips */
     .status-chips {
         display: flex;
         gap: .4rem;
@@ -180,33 +175,50 @@
         white-space: nowrap;
     }
 
-    .chip-green {
-        background: #28a745;
-        color: #fff;
+    .chip-green { background: #28a745; color: #fff; }
+    .chip-blue  { background: #0b5ed7; color: #fff; }
+    .chip-gold  { background: #ffc107; color: #333; }
+    .chip-muted { background: rgba(255,255,255,0.7); color: #333; }
+
+    /* Carousel styling */
+    .event-actions-carousel {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        position: relative;
+        gap: .5rem;
     }
 
-    .chip-blue {
-        background: #0b5ed7;
-        color: #fff;
+    .event-actions-wrapper {
+        overflow: hidden;
+        flex: 1;
     }
 
-    .chip-gold {
-        background: #ffc107;
-        color: #333;
-    }
-
-    .chip-muted {
-        background: rgba(255,255,255,0.7);
-        color: #333;
-    }
-
-    /* Actions pinned at bottom */
     .event-actions {
         display: flex;
-        flex-wrap: wrap;
-        gap: .5rem;
-        margin-top: auto;
-        justify-content: flex-start;
+        transition: transform 0.3s ease;
+        will-change: transform;
+    }
+
+    .event-actions .btn {
+        flex: 0 0 calc(25% - 0.5rem); /* 4 per view */
+        margin: 0.25rem;
+        text-align: center;
+        font-size: .9rem;
+        padding: .5rem .6rem;
+        border-radius: .5rem;
+    }
+
+    .carousel-btn {
+        background: rgba(0,0,0,0.5);
+        color: #fff;
+        border: none;
+        font-size: 1.5rem;
+        padding: 0.4rem 0.6rem;
+        cursor: pointer;
+        border-radius: 50%;
+        z-index: 2;
     }
 
     .event-card.has-bg .btn {
@@ -219,32 +231,40 @@
         background: rgba(0,0,0,0.8);
     }
 
-   @media (max-width: 1024px) {
-    .event-card {
-        height: auto;
+    @media (max-width: 520px) {
+        .event-card { height: auto; }
     }
-
-    .event-actions {
-        display: flex;
-        flex-wrap: nowrap;       /* single row */
-        overflow-x: auto;        /* horizontal scroll */
-        -webkit-overflow-scrolling: touch;
-        gap: .5rem;
-        padding-bottom: .4rem;
-    }
-
-    .event-actions .btn {
-        flex: 0 0 auto;          /* prevent shrinking */
-        font-size: .85rem;
-        padding: .45rem .6rem;
-        border-radius: .5rem;
-        white-space: nowrap;
-    }
-
-    /* hide scrollbar for WebKit browsers */
-    .event-actions::-webkit-scrollbar {
-        display: none;
-    }
-}
 </style>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.event-actions-carousel').forEach(carousel => {
+        const wrapper = carousel.querySelector('.event-actions');
+        const prev = carousel.querySelector('.prev');
+        const next = carousel.querySelector('.next');
+        const buttons = wrapper.querySelectorAll('.btn');
+        let page = 0;
+        const perPage = 4;
+        const totalButtons = buttons.length;
+        const maxPage = Math.ceil(totalButtons / perPage) - 1;
+
+        function updateCarousel() {
+            wrapper.style.transform = `translateX(-${page * 100}%)`;
+        }
+
+        prev.addEventListener('click', () => {
+            if (page > 0) { page--; updateCarousel(); }
+        });
+
+        next.addEventListener('click', () => {
+            if (page < maxPage) { page++; updateCarousel(); }
+        });
+
+        updateCarousel();
+    });
+});
+</script>
+{% endblock %}
+
