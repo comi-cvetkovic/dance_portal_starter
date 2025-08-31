@@ -234,7 +234,9 @@
     @media (max-width: 1024px) {
     /* add more breathing room between cards */
     .event-grid {
-        gap: 3.75rem; /* was 1.25rem */
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+        gap: 1.75rem !important;
     }
 
     /* ensure carousel arrows sit outside the card edges */
