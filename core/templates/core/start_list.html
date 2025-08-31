@@ -80,12 +80,29 @@
 .start-group .start-time {
     font-size: 0.85em; color: gray;
 }
-@media (max-width: 600px) {
-    .start-group th, .start-group td {
-        font-size: .9rem;
-        padding: .5rem;
+@media (max-width: 1024px) {
+        .start-group th,
+        .start-group td {
+            font-size: 0.85rem;     /* slightly smaller text */
+            white-space: normal;    /* allow wrapping instead of forcing wide cells */
+            word-break: break-word; /* break long text if needed */
+        }
+
+        .start-group {
+            table-layout: fixed;    /* force equal column widths */
+            width: 100%;
+        }
+
+        #sticky-toolbar {
+            right: 10px;  /* was 30px */
+            left: 10px;   /* keep inside screen */
+            justify-content: space-between;
+            flex-wrap: wrap; /* let buttons stack if too wide */
+        }
+        #sticky-toolbar button {
+            flex: 1 1 auto; /* make buttons shrink evenly */
+        }
     }
-}
 </style>
 {% endblock %}
 
