@@ -94,34 +94,39 @@
 @media (max-width: 1024px) {
     .start-group th,
     .start-group td {
-        font-size: 0.85rem;
-        white-space: normal;     /* allow wrapping */
-        word-break: break-word;  /* break long words */
-        padding: 4px;            /* tighter padding */
+        font-size: 0.8rem;          /* slightly smaller text */
+        white-space: normal;        /* allow wrapping */
+        word-break: break-word;     /* break long words */
+        padding: 3px 4px;           /* tighter padding */
         text-align: left;
     }
 
     .start-group {
         width: 100%;
         border-collapse: collapse;
-        table-layout: auto;      /* keep columns aligned naturally */
+        table-layout: auto;         /* natural column widths, stays aligned */
     }
 
     #sticky-toolbar {
-        right: 10px;
-        left: auto;                         /* don’t stretch full width */
+        position: relative;         /* no fixed positioning on mobile */
+        top: auto;
+        right: auto;
+        left: auto;
+        margin: 0.5rem 0;
         display: flex;
+        flex-wrap: wrap;            /* stack if too wide */
         gap: 6px;
-        flex-wrap: wrap;                    /* stack if too wide */
-        max-width: calc(100% - 20px);       /* always inside screen */
+        justify-content: center;    /* center align the buttons */
+        width: 100%;
     }
 
     #sticky-toolbar button {
         font-size: 0.8rem;
         padding: 4px 6px;
-        flex: 1 1 auto;                     /* buttons shrink/wrap neatly */
+        flex: 1 1 auto;             /* shrink/wrap neatly */
     }
 }
+
 
 </style>
 {% endblock %}
