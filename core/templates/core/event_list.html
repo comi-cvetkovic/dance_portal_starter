@@ -56,6 +56,7 @@
 
             <div class="event-actions">
                 {% if user.is_superuser %}
+                    <!-- Admin always sees all actions -->
                     <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
                     <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
                     <a href="{% url 'manage_start_list' event.id %}" class="btn btn-default">{% trans "Manage Start List" %}</a>
@@ -67,6 +68,7 @@
                     <a href="{% url 'notify_clubs' event.id %}" class="btn btn-default">{% trans "Notify Clubs" %}</a>
                 {% else %}
                     {% if event.is_published %}
+                        <!-- Clubs only see actions if event is published -->
                         <a href="{% url 'register_dancer' event.id %}" class="btn btn-default">{% trans "Register Dancers" %}</a>
                         <a href="{% url 'list_event_participants' event.id %}" class="btn btn-default">{% trans "View Registered" %}</a>
                         <a href="{% url 'start_list' event.id %}" class="btn btn-default">{% trans "Start List" %}</a>
@@ -106,6 +108,8 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
         transition: transform .15s ease, box-shadow .15s ease;
         overflow: hidden;
+
+        /* Equal height cards */
         display: flex;
         flex-direction: column;
         height: 480px;
@@ -116,6 +120,7 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
 
+    /* Overlay for background images */
     .event-card-overlay {
         position: absolute;
         inset: 0;
@@ -138,6 +143,7 @@
         align-items: flex-start;
     }
 
+    /* Titles and meta text */
     .event-title {
         margin: 0 0 .25rem 0;
         color: #222;
@@ -151,11 +157,13 @@
         font-size: .95rem;
     }
 
+    /* White text if poster background exists */
     .event-card.has-bg .event-title,
     .event-card.has-bg .event-meta {
         color: #fff;
     }
 
+    /* Chips */
     .status-chips {
         display: flex;
         gap: .4rem;
@@ -172,11 +180,27 @@
         white-space: nowrap;
     }
 
-    .chip-green { background: #28a745; color: #fff; }
-    .chip-blue  { background: #0b5ed7; color: #fff; }
-    .chip-gold  { background: #ffc107; color: #333; }
-    .chip-muted { background: rgba(255,255,255,0.7); color: #333; }
+    .chip-green {
+        background: #28a745;
+        color: #fff;
+    }
 
+    .chip-blue {
+        background: #0b5ed7;
+        color: #fff;
+    }
+
+    .chip-gold {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .chip-muted {
+        background: rgba(255,255,255,0.7);
+        color: #333;
+    }
+
+    /* Actions pinned at bottom */
     .event-actions {
         display: flex;
         flex-wrap: wrap;
@@ -195,22 +219,12 @@
         background: rgba(0,0,0,0.8);
     }
 
-    /* ✅ Mobile fix: smaller 2-per-row buttons */
     @media (max-width: 520px) {
+        .event-meta {
+            font-size: .9rem;
+        }
         .event-card {
             height: auto;
-        }
-        .event-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: .5rem;
-        }
-        .event-actions .btn {
-            font-size: .85rem;
-            padding: .45rem .5rem;
-            border-radius: .5rem;
-            text-align: center;
-            white-space: normal;
         }
     }
 </style>
