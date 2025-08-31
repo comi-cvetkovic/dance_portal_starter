@@ -295,9 +295,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const maxPage = Math.ceil(totalButtons / perPage) - 1;
 
         function updateCarousel() {
-            const buttonWidth = buttons[0].offsetWidth + 8; // include margin
-            const shift = page * (perPage * buttonWidth);
-            wrapper.style.transform = `translateX(-${shift}px)`;
+            const startIndex = page * perPage;
+            const firstButton = buttons[startIndex];
+            if (firstButton) {
+                const offset = firstButton.offsetLeft;
+                wrapper.style.transform = `translateX(-${offset}px)`;
+            }
         }
 
         prev.addEventListener('click', () => {
