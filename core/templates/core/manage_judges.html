@@ -15,7 +15,17 @@
 {% if judges %}
 <ul>
   {% for judge in judges %}
-    <li>{{ judge.first_name }} {{ judge.last_name }} ({{ judge.username }})</li>
+    <li>
+      {{ judge.first_name }} {{ judge.last_name }}
+      <form method="post" action="{% url 'delete_single_judge' event.id judge.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete" onclick="return confirm('Delete this judge?');">
+          Delete
+        </button>
+      </form>
+    </li>
+  {% empty %}
+    <li>No judges created yet.</li>
   {% endfor %}
 </ul>
 {% else %}
