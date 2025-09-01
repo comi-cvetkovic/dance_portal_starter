@@ -17,12 +17,13 @@
         <button type="button" class="btn-default" onclick="submitPublish('default')">{% trans "Reset to Default Order" %}</button>
     </form>
 
-    {% if event.is_published %}
-    <form method="post" action="{% url 'unpublish_start_list' event.id %}" style="display: inline;"
-        onsubmit="return confirm('Unpublish the start list?');">
-        {% csrf_token %}
-        <button type="submit" class="btn-delete">{% trans "Unpublish" %}</button>
-    </form>
+    {% if event.start_list_published %}
+        <form method="post" action="{% url 'unpublish_start_list' event.id %}" style="display: inline;"
+            onsubmit="return confirm('Unpublish the start list?');">
+            {% csrf_token %}
+            <button type="submit" class="btn-delete">{% trans "Unpublish Start List" %}</button>
+        </form>
+    {% endif %}
     {% endif %}
 </div>
 
