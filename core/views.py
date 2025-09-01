@@ -508,12 +508,18 @@ def register_club(request):
     if request.method == 'POST':
         form = DanceClubRegistrationForm(request.POST)
         if form.is_valid():
-            form.save(commit=True)  # This creates both User and DanceClub
+            form.save(commit=True)
             messages.success(request, _("Club registered successfully. Awaiting admin approval."))
             return redirect('login')
     else:
         form = DanceClubRegistrationForm()
+
+    # 👇 change label only when registering
+    if 'password' in form.fields:
+        form.fields['password'].label = _("Password")
+
     return render(request, 'core/register_club.html', {'form': form})
+
 
 
 
