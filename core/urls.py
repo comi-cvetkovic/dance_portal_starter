@@ -81,6 +81,9 @@ urlpatterns = [
     
     path('events/<int:event_id>/delete/', views.delete_event, name='delete_event'),
 
+    path("events/<int:event_id>/judges/<int:judge_id>/delete/", views.delete_single_judge, name="delete_single_judge"),
+
+
 
 ]
 

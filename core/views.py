@@ -1291,6 +1291,14 @@ def manage_judges(request, event_id):
         "judges": existing_judges,
     })
 
+@staff_member_required
+@require_POST
+def delete_single_judge(request, event_id, judge_id):
+    judge = get_object_or_404(User, id=judge_id, username__startswith=f"judge_{event_id}_")
+    judge.delete()
+    messages.success(request, f"Judge {judge.username} deleted.")
+    return redirect('manage_judges', event_id=event_id)
+
 
 @staff_member_required
 @require_POST
