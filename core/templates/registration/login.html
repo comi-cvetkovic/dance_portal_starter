@@ -5,7 +5,7 @@
 {% block content %}
 <h2>Login</h2>
 
-<form method="post">
+<form method="post" class="login-form">
   {% csrf_token %}
 
   {% if form.non_field_errors %}
@@ -26,6 +26,41 @@
     <input type="password" name="password" id="id_password" required>
   </p>
 
-  <button type="submit" class="btn-default">{% trans "Login" %}</button>
+  <button type="submit" class="btn-green">{% trans "Login" %}</button>
 </form>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px 14px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.login-form button {
+  margin-top: 1em;
+  padding: 12px 20px;
+  font-size: 1rem;
+  border-radius: 6px;
+}
+
+/* On smaller screens, make them even bigger */
+@media (max-width: 768px) {
+  .login-form input[type="text"],
+  .login-form input[type="password"] {
+    font-size: 1.1rem;
+    padding: 14px 16px;
+  }
+  .login-form button {
+    font-size: 1.1rem;
+    padding: 14px 22px;
+  }
+}
+</style>
 {% endblock %}
