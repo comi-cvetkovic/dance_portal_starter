@@ -5,6 +5,27 @@
 {% block content %}
 <h2>{% trans "Manage Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
 
+<!-- Toolbar ABOVE the table -->
+<div id="sticky-toolbar">
+    <form id="publish-form" method="post" action="{% url 'publish_start_list' event.id %}" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="mode" id="publish-mode">
+        <input type="hidden" name="ordered_ids_json" id="ordered-ids-json">
+        <input type="hidden" name="source" value="manage">
+
+        <button type="button" class="btn-default" onclick="submitPublish('current', 'manage')">{% trans "Publish Start List" %}</button>
+        <button type="button" class="btn-default" onclick="submitPublish('default')">{% trans "Reset to Default Order" %}</button>
+    </form>
+
+    {% if event.is_published %}
+    <form method="post" action="{% url 'unpublish_start_list' event.id %}" style="display: inline;"
+        onsubmit="return confirm('Unpublish the start list?');">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete">{% trans "Unpublish" %}</button>
+    </form>
+    {% endif %}
+</div>
+
 <div class="table-wrapper">
 <table class="start-group" id="group-container" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
     <thead>
@@ -65,96 +86,50 @@
 {% block extra_styles %}
 <style>
     #sticky-toolbar {
-        position: fixed;
-        top: 60px;
-        right: 30px;
-        z-index: 998;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
         display: flex;
+        justify-content: flex-end;  /* align right */
         gap: 10px;
-        align-items: center;
+        margin-bottom: 1rem;        /* spacing above table */
     }
-
     .table-wrapper {
         overflow-x: auto;
     }
     .start-group th, .start-group td {
-        white-space: normal;      /* wrap text */
+        white-space: normal;
         word-break: break-word;
         padding: .6rem .75rem;
     }
     .start-group .start-time {
         font-size: 0.85em; color: gray;
     }
-@media (max-width: 1024px) {
-    /* Smaller, wrapped table */
-    .start-group th,
-    .start-group td {
-        font-size: 0.8rem;
-        white-space: normal;
-        word-break: break-word;
-        padding: 3px 4px;
-        text-align: left;
+    @media (max-width: 1024px) {
+        .start-group th,
+        .start-group td {
+            font-size: 0.8rem;
+            white-space: normal;
+            word-break: break-word;
+            padding: 3px 4px;
+            text-align: left;
+        }
+        .start-group {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        #sticky-toolbar {
+            flex-wrap: wrap;
+            justify-content: center;  /* center on mobile */
+            gap: 6px;
+        }
+        #sticky-toolbar button {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+        }
     }
-
-    .start-group {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: auto;
-    }
-
-    /* Toolbar styling */
-    #sticky-toolbar {
-        position: relative;         /* place it in flow, above table */
-        top: auto;
-        right: auto;
-        left: auto;
-        margin: 0 0 0.5rem 0;       /* small space below */
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;            /* stack if needed */
-        gap: 6px;
-        width: 100%;
-        background: transparent;    /* no big white box */
-        box-shadow: none;
-        padding: 0;
-    }
-
-    #sticky-toolbar button {
-        font-size: 0.8rem;
-        padding: 4px 8px;
-        flex: 0 1 auto;
-    }
-}
-
 </style>
 {% endblock %}
 
 {% block extra_scripts %}
-<!-- Sticky Toolbar -->
-<div id="sticky-toolbar">
-    <form id="publish-form" method="post" action="{% url 'publish_start_list' event.id %}" style="display: inline;">
-        {% csrf_token %}
-        <input type="hidden" name="mode" id="publish-mode">
-        <input type="hidden" name="ordered_ids_json" id="ordered-ids-json">
-        <input type="hidden" name="source" value="manage">
-
-        <button type="button" class="btn-default" onclick="submitPublish('current', 'manage')">{% trans "Publish Start List" %}</button>
-        <button type="button" class="btn-default" onclick="submitPublish('default')">{% trans "Reset to Default Order" %}</button>
-    </form>
-
-    {% if event.is_published %}
-    <form method="post" action="{% url 'unpublish_start_list' event.id %}" style="display: inline;"
-        onsubmit="return confirm('Unpublish the start list?');">
-        {% csrf_token %}
-        <button type="submit" class="btn-delete">{% trans "Unpublish" %}</button>
-    </form>
-    {% endif %}
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
