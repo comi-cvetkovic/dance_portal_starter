@@ -105,7 +105,7 @@
     height: 28px;
   }
 
-  /* + / - buttons */
+  /* Stepper buttons */
   .stepper {
     display: inline-block;
     font-size: 1.2rem;
@@ -113,16 +113,31 @@
     padding: 8px 14px;
     margin: 0 4px;
     border-radius: 6px;
-    background: #4a148c;   /* dark purple */
-    color: #fff;           /* white text */
     border: none;
     cursor: pointer;
+    color: #fff;
   }
-  .stepper:hover {
-    background: #6a1b9a;   /* lighter purple */
+
+  /* – button (red) */
+  .stepper[data-step^="-"] {
+    background: #d32f2f;   /* red */
   }
-  .stepper:active {
-    background: #38006b;   /* darker purple */
+  .stepper[data-step^="-"]:hover {
+    background: #b71c1c;
+  }
+  .stepper[data-step^="-"]:active {
+    background: #880e4f;
+  }
+
+  /* + button (green) */
+  .stepper[data-step^="0.25"] {
+    background: #2e7d32;   /* green */
+  }
+  .stepper[data-step^="0.25"]:hover {
+    background: #1b5e20;
+  }
+  .stepper[data-step^="0.25"]:active {
+    background: #004d40;
   }
 
   /* Score numbers */
