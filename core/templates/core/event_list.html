@@ -203,7 +203,8 @@
     }
 
     .event-actions .btn {
-        flex: 0 0 calc(25% - 0.5rem); /* 4 per view */
+        flex: 0 0 calc(33.333% - 0.5rem); /* 3 per view */
+        max-width: 33.333%;
         margin: 0.25rem;
         text-align: center;
         font-size: .9rem;
@@ -290,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const next = carousel.querySelector('.next');
         const buttons = wrapper.querySelectorAll('.btn');
         let page = 0;
-        const perPage = 4;
+        const perPage = 3;
         const totalButtons = buttons.length;
         const maxPage = Math.ceil(totalButtons / perPage) - 1;
 
