@@ -42,9 +42,9 @@
         <input type="range" name="technique_{{ p.id }}" min="1" max="10" step="0.25"
                value="{{ existing_scores|get_item:p.id|get_item:'technique'|default:5 }}"
                class="score-slider" data-output="technique_output_{{ p.id }}">
-        <button type="button" class="btn-xs btn-default stepper" data-target="technique_{{ p.id }}" data-step="-0.25">-</button>
+        <button type="button" class="stepper" data-target="technique_{{ p.id }}" data-step="-0.25">-</button>
         <output id="technique_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'technique'|default:5 }}</output>
-        <button type="button" class="btn-xs btn-default stepper" data-target="technique_{{ p.id }}" data-step="0.25">+</button>
+        <button type="button" class="stepper" data-target="technique_{{ p.id }}" data-step="0.25">+</button>
         <br><br>
 
         <!-- Composition -->
@@ -52,9 +52,9 @@
         <input type="range" name="composition_{{ p.id }}" min="1" max="10" step="0.25"
                value="{{ existing_scores|get_item:p.id|get_item:'composition'|default:5 }}"
                class="score-slider" data-output="composition_output_{{ p.id }}">
-        <button type="button" class="btn-xs btn-default stepper" data-target="composition_{{ p.id }}" data-step="-0.25">-</button>
+        <button type="button" class="stepper" data-target="composition_{{ p.id }}" data-step="-0.25">-</button>
         <output id="composition_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'composition'|default:5 }}</output>
-        <button type="button" class="btn-xs btn-default stepper" data-target="composition_{{ p.id }}" data-step="0.25">+</button>
+        <button type="button" class="stepper" data-target="composition_{{ p.id }}" data-step="0.25">+</button>
         <br><br>
 
         <!-- Image -->
@@ -62,9 +62,9 @@
         <input type="range" name="image_{{ p.id }}" min="1" max="10" step="0.25"
                value="{{ existing_scores|get_item:p.id|get_item:'image'|default:5 }}"
                class="score-slider" data-output="image_output_{{ p.id }}">
-        <button type="button" class="btn-xs btn-default stepper" data-target="image_{{ p.id }}" data-step="-0.25">-</button>
+        <button type="button" class="stepper" data-target="image_{{ p.id }}" data-step="-0.25">-</button>
         <output id="image_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'image'|default:5 }}</output>
-        <button type="button" class="btn-xs btn-default stepper" data-target="image_{{ p.id }}" data-step="0.25">+</button>
+        <button type="button" class="stepper" data-target="image_{{ p.id }}" data-step="0.25">+</button>
         <br><br>
 
         <!-- Show Value (only for Show Dance) -->
@@ -73,9 +73,9 @@
         <input type="range" name="show_value_{{ p.id }}" min="1" max="10" step="0.25"
                value="{{ existing_scores|get_item:p.id|get_item:'show_value'|default:5 }}"
                class="score-slider" data-output="show_value_output_{{ p.id }}">
-        <button type="button" class="btn-xs btn-default stepper" data-target="show_value_{{ p.id }}" data-step="-0.25">-</button>
+        <button type="button" class="stepper" data-target="show_value_{{ p.id }}" data-step="-0.25">-</button>
         <output id="show_value_output_{{ p.id }}">{{ existing_scores|get_item:p.id|get_item:'show_value'|default:5 }}</output>
-        <button type="button" class="btn-xs btn-default stepper" data-target="show_value_{{ p.id }}" data-step="0.25">+</button>
+        <button type="button" class="stepper" data-target="show_value_{{ p.id }}" data-step="0.25">+</button>
         <br><br>
         {% endif %}
       </div>
@@ -96,6 +96,55 @@
 {% else %}
   <p>{% trans "No categories available for judging." %}</p>
 {% endif %}
+
+{% block extra_styles %}
+<style>
+  /* Bigger sliders */
+  .score-slider {
+    width: 70%;
+    height: 28px;       /* taller track */
+  }
+
+  /* Bigger + and - buttons */
+  .stepper {
+    display: inline-block;
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 6px 12px;
+    margin: 0 4px;
+    border-radius: 6px;
+    background: #eee;
+    border: 1px solid #ccc;
+  }
+
+  .stepper:active {
+    background: #ddd;
+  }
+
+  /* Bigger numbers */
+  output {
+    font-size: 1.1rem;
+    margin: 0 6px;
+    min-width: 2.5em;
+    display: inline-block;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .score-slider {
+      width: 100%;
+      height: 34px;   /* even taller on touch devices */
+    }
+    .stepper {
+      font-size: 1.3rem;
+      padding: 8px 14px;
+    }
+    output {
+      font-size: 1.2rem;
+    }
+  }
+</style>
+{% endblock %}
 
 <script>
 document.querySelectorAll('.score-slider').forEach(slider => {
