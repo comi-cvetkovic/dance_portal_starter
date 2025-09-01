@@ -44,18 +44,18 @@
             {% for group in grouped_participations %}
             <tr>
                 <td class="center">{{ group.dancers|length }}</td>
-                <td class="truncate">
+                <td>
                     {% for dancer in group.dancers %}
                     {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </td>
-                <td class="truncate">{{ group.dancers.0.club.club_name }}</td>
-                <td class="truncate">{{ group.style.name }}</td>
+                <td>{{ group.dancers.0.club.club_name }}</td>
+                <td>{{ group.style.name }}</td>
                 <td class="center">{{ group.difficulty }}</td>
                 <td class="center">{{ group.group_type }}</td>
                 <td class="center">{{ group.age_group }}</td>
-                <td class="truncate">{{ group.choreographer_name }}</td>
-                <td class="truncate">{{ group.choreography_name|default:"Untitled" }}</td>
+                <td>{{ group.choreographer_name }}</td>
+                <td>{{ group.choreography_name|default:"Untitled" }}</td>
                 <td class="center">
                     {% if group.music_file %}
                         <span style="color:green;">&#10004;</span>
@@ -94,50 +94,41 @@
   .participants-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;    /* lock column widths */
-    font-size: 0.9rem;
+    font-size: 0.75rem;        /* smaller text so table fits */
+    table-layout: auto;        /* natural widths */
   }
   .participants-table th,
   .participants-table td {
-    padding: 8px 10px;
+    padding: 6px 8px;
     border-bottom: 1px solid #ddd;
     text-align: left;
-    white-space: nowrap;      /* keep on one line */
-    overflow: hidden;
-    text-overflow: ellipsis;  /* cut off with … */
   }
   .participants-table thead th {
     background: #f8f9fa;
     font-weight: 600;
+    white-space: nowrap;       /* headings stay one line */
+    font-size: 0.8rem;
   }
 
-  /* Column widths */
-  .participants-table th:nth-child(1),
-  .participants-table td:nth-child(1) { width: 6%; text-align: center; }
-  .participants-table th:nth-child(2),
-  .participants-table td:nth-child(2) { width: 18%; }
-  .participants-table th:nth-child(3),
-  .participants-table td:nth-child(3) { width: 14%; }
-  .participants-table th:nth-child(4),
-  .participants-table td:nth-child(4) { width: 10%; }
-  .participants-table th:nth-child(5),
-  .participants-table td:nth-child(5) { width: 8%; text-align: center; }
-  .participants-table th:nth-child(6),
-  .participants-table td:nth-child(6) { width: 10%; text-align: center; }
-  .participants-table th:nth-child(7),
-  .participants-table td:nth-child(7) { width: 10%; text-align: center; }
-  .participants-table th:nth-child(8),
-  .participants-table td:nth-child(8) { width: 12%; }
-  .participants-table th:nth-child(9),
-  .participants-table td:nth-child(9) { width: 12%; }
-  .participants-table th:nth-child(10),
-  .participants-table td:nth-child(10) { width: 6%; text-align: center; }
-  .participants-table th:nth-child(11),
-  .participants-table td:nth-child(11) { width: 10%; text-align: right; }
+  /* Cells show full strings */
+  .participants-table td {
+    white-space: normal;       /* allow wrapping */
+    word-break: break-word;    /* break long words if needed */
+  }
 
   /* Utility classes */
   .center { text-align: center; }
   .right { text-align: right; }
-  .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Even smaller on mobile */
+  @media (max-width: 768px) {
+    .participants-table {
+      font-size: 0.7rem;
+    }
+    .participants-table th,
+    .participants-table td {
+      padding: 4px 6px;
+    }
+  }
 </style>
 {% endblock %}
