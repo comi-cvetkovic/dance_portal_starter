@@ -102,28 +102,32 @@
   /* Bigger sliders */
   .score-slider {
     width: 70%;
-    height: 28px;       /* taller track */
+    height: 28px;
   }
 
-  /* Bigger + and - buttons */
+  /* + / - buttons */
   .stepper {
     display: inline-block;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    padding: 6px 12px;
+    padding: 8px 14px;
     margin: 0 4px;
     border-radius: 6px;
-    background: #eee;
-    border: 1px solid #ccc;
+    background: #4a148c;   /* dark purple */
+    color: #fff;           /* white text */
+    border: none;
+    cursor: pointer;
   }
-
+  .stepper:hover {
+    background: #6a1b9a;   /* lighter purple */
+  }
   .stepper:active {
-    background: #ddd;
+    background: #38006b;   /* darker purple */
   }
 
-  /* Bigger numbers */
+  /* Score numbers */
   output {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     margin: 0 6px;
     min-width: 2.5em;
     display: inline-block;
@@ -133,14 +137,14 @@
   @media (max-width: 768px) {
     .score-slider {
       width: 100%;
-      height: 34px;   /* even taller on touch devices */
+      height: 34px;
     }
     .stepper {
-      font-size: 1.3rem;
-      padding: 8px 14px;
+      font-size: 1.4rem;
+      padding: 10px 16px;
     }
     output {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
     }
   }
 </style>
