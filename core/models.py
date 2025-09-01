@@ -50,6 +50,7 @@ class Event(models.Model):
     city = models.CharField(max_length=100, verbose_name=_("City"))
     date = models.DateField(verbose_name=_("Date"))
     is_published = models.BooleanField(default=False, verbose_name=_("Is Published"))
+    start_list_published = models.BooleanField(default=False, verbose_name=_("Is Start List Published"))
     results_published = models.BooleanField(default=False, verbose_name=_("Results Published"))
     start_time = models.TimeField(null=True, blank=True, verbose_name=_("Start Time"))
     notice_image = models.ImageField(

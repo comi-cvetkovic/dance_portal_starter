@@ -35,21 +35,29 @@
                 </div>
                 <div class="status-chips">
                     {% if event.is_published %}
-                        <span class="chip chip-green" title="Event is published">{% trans "Published" %}</span>
+                        <span class="chip chip-green">{% trans "Event Published" %}</span>
                     {% else %}
-                        <span class="chip">{% trans "Unpublished" %}</span>
+                        <span class="chip">{% trans "Event Unpublished" %}</span>
                     {% endif %}
 
-                    {% if event.has_judges %}
-                        <span class="chip chip-blue" title="Judge accounts exist">{% trans "Judges" %}</span>
+                    {% if event.start_list_published %}
+                        <span class="chip chip-green">{% trans "Start List Published" %}</span>
                     {% else %}
-                        <span class="chip chip-muted">{% trans "No Judges" %}</span>
+                        <span class="chip chip-muted">{% trans "Start List Hidden" %}</span>
+                    {% endif %}
+
+                    {% if user.is_superuser %}
+                        {% if event.has_judges %}
+                            <span class="chip chip-blue">{% trans "Judges" %}</span>
+                        {% else %}
+                            <span class="chip chip-muted">{% trans "No Judges" %}</span>
+                        {% endif %}
                     {% endif %}
 
                     {% if event.results_published %}
-                        <span class="chip chip-gold" title="Results are public">{% trans "Results" %}</span>
+                        <span class="chip chip-gold">{% trans "Results Published" %}</span>
                     {% else %}
-                        <span class="chip chip-muted">{% trans "No Results Published" %}</span>
+                        <span class="chip chip-muted">{% trans "No Results" %}</span>
                     {% endif %}
                 </div>
             </div>
@@ -203,8 +211,8 @@
     }
 
     .event-actions .btn {
-        flex: 0 0 calc(28% - 0.25rem); /* slightly smaller */
-        max-width: 30%;
+        flex: 0 0 calc(28% - 0.25rem); /* slightly smaller so 3 fit */
+        max-width: 28%;
         margin: 0.2rem;
         text-align: center;
         font-size: .85rem;
@@ -234,7 +242,7 @@
         content: "";
         position: absolute;
         top: 0; bottom: 0;
-        width: 15px; /* was 30px */
+        width: 15px;
         pointer-events: none;
         z-index: 4;
     }
@@ -263,12 +271,11 @@
       }
 
       .event-actions .btn {
-        flex: 0 0 calc(28.5% - 0.25rem); /* a hair smaller for small screens */
-        max-width: 29.5%;
+        flex: 0 0 calc(27.5% - 0.25rem); /* even smaller on mobile */
+        max-width: 27.5%;
         margin: 0.2rem;
-    }
+      }
 
-      /* Arrows closer to edge of poster */
       .carousel-btn {
         top: auto !important;
         bottom: 3.5rem !important;
@@ -280,7 +287,6 @@
     }
 </style>
 {% endblock %}
-
 
 {% block extra_scripts %}
 <script>

@@ -238,7 +238,7 @@ def delete_event(request, event_id):
 def start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     is_admin = request.user.is_superuser
-    show_entries = event.is_published or is_admin
+    show_entries = event.start_list_published or is_admin
 
     participations = Participation.objects.filter(event=event).select_related("style").order_by(
         "group_display_order", "display_order", "id"
@@ -309,7 +309,7 @@ def start_list(request, event_id):
         "event": event,
         "grouped_entries": sorted_grouped_entries if show_entries else {},
         "is_admin": is_admin,
-        "is_published": event.is_published,
+        "is_published": event.start_list_published,
         "show_entries": show_entries,
     })
 
@@ -453,8 +453,8 @@ def publish_start_list(request, event_id):
                 continue
 
         # ✅ Only publish if 'current'
-        event.is_published = True
-        event.save()
+        event.start_list_published = True
+        event.save(update_fields=["start_list_published"])
         messages.success(request, _("Start list published successfully."))
     elif mode == "default":
         def group_sort_key(p):
@@ -494,8 +494,8 @@ def publish_start_list(request, event_id):
 @require_POST
 def unpublish_start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    event.is_published = False
-    event.save()
+    event.start_list_published = False
+    event.save(update_fields=["start_list_published"])
     messages.info(request, _("Start list unpublished."))
     return redirect('manage_start_list', event_id=event.id)
 
