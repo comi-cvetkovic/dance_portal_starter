@@ -70,55 +70,29 @@
 .table-wrapper {
     overflow-x: auto;
 }
-.start-group th, .start-group td {
-    white-space: normal;   /* allow wrapping */
+.start-group th,
+.start-group td {
+    white-space: normal;    /* wrap text fully */
     word-break: break-word;
     padding: .6rem .75rem;
 }
+.start-group thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+    white-space: nowrap;    /* keep headings one line */
+}
 .start-group .start-time {
-    font-size: 0.85em; color: gray;
+    font-size: 0.85em;
+    color: gray;
 }
 @media (max-width: 1024px) {
-    /* Smaller, wrapped table */
     .start-group th,
     .start-group td {
         font-size: 0.8rem;
-        white-space: normal;
-        word-break: break-word;
         padding: 3px 4px;
         text-align: left;
     }
-
-    .start-group {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: auto;
-    }
-
-    /* Toolbar styling */
-    #sticky-toolbar {
-        position: relative;         /* place it in flow, above table */
-        top: auto;
-        right: auto;
-        left: auto;
-        margin: 0 0 0.5rem 0;       /* small space below */
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;            /* stack if needed */
-        gap: 6px;
-        width: 100%;
-        background: transparent;    /* no big white box */
-        box-shadow: none;
-        padding: 0;
-    }
-
-    #sticky-toolbar button {
-        font-size: 0.8rem;
-        padding: 4px 8px;
-        flex: 0 1 auto;
-    }
 }
-
 </style>
 {% endblock %}
 
@@ -130,4 +104,3 @@
 </script>
 {% endif %}
 {% endblock %}
-
