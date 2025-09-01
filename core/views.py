@@ -14,6 +14,7 @@ from .forms import (
     GroupParticipationForm,
     JudgeCreationFormSet,
     SingleJudgeForm,
+    ClubLoginForm,
 )
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
@@ -662,14 +663,14 @@ def delete_dancer(request, dancer_id, club_id=None):
 
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
+    authentication_form = ClubLoginForm
 
     def get_success_url(self):
         user = self.request.user
 
         if user.username.startswith("judge_"):
-            # New format: judge_<event_id>_<name>
             try:
-                event_id = user.username.split("_")[1]  # index 1 = event ID
+                event_id = user.username.split("_")[1]
                 return reverse('judge_view', args=[int(event_id)])
             except (IndexError, ValueError):
                 return reverse('home')

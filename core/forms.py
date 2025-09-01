@@ -5,6 +5,8 @@ from django_countries.widgets import CountrySelectWidget
 from django.utils.translation import gettext_lazy as _
 from .models import Dancer, Event, Participation, DanceClub, StyleCategory, JudgeScore
 from mutagen.mp3 import MP3
+from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
 
 
 class DancerForm(forms.ModelForm):
@@ -260,4 +262,18 @@ class JudgeScoreForm(forms.ModelForm):
     class Meta:
         model = JudgeScore
         fields = []  # No direct single field now
+
+
+class ClubLoginForm(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        # Superusers and judges can always log in
+        if user.is_superuser or user.username.startswith("judge_"):
+            return
+
+        # For clubs: check approval
+        if hasattr(user, "club") and not user.club.confirmed:
+            raise ValidationError(
+                _("Your club registration is pending admin approval."),
+                code="inactive",
+            )
 
