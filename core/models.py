@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 from django.utils.translation import gettext_lazy as _
 
 class DanceClub(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="club")
     raw_password = models.CharField(
         max_length=128, blank=True, null=True,
         verbose_name=_("Raw Password")  # Store plaintext password (not secure!)
