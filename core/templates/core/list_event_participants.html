@@ -15,7 +15,7 @@
 
 {% if grouped_participations %}
 <div class="table-wrapper">
-    <table class="nice-table">
+    <table class="participants-table">
         <thead>
             {% if user.is_superuser %}
             <tr>
@@ -27,40 +27,40 @@
             </tr>
             {% endif %}
             <tr>
-                <th class="heading-dark">{% trans "# Dancers" %}</th>
-                <th class="heading-dark">{% trans "Dancer(s)" %}</th>
-                <th class="heading-dark">{% trans "Club" %}</th>
-                <th class="heading-dark">{% trans "Style" %}</th>
-                <th class="heading-dark">{% trans "Difficulty" %}</th>
-                <th class="heading-dark">{% trans "Group Type" %}</th>
-                <th class="heading-dark">{% trans "Age Group" %}</th>
-                <th class="heading-dark">{% trans "Choreographer" %}</th>
-                <th class="heading-dark">{% trans "Choreography" %}</th>
-                <th class="heading-dark">{% trans "Music" %}</th>   <!-- 👈 new column -->
-                <th class="heading-dark">{% trans "Actions" %}</th>
+                <th>{% trans "# Dancers" %}</th>
+                <th>{% trans "Dancer(s)" %}</th>
+                <th>{% trans "Club" %}</th>
+                <th>{% trans "Style" %}</th>
+                <th>{% trans "Difficulty" %}</th>
+                <th>{% trans "Group Type" %}</th>
+                <th>{% trans "Age Group" %}</th>
+                <th>{% trans "Choreographer" %}</th>
+                <th>{% trans "Choreography" %}</th>
+                <th>{% trans "Music" %}</th>
+                <th>{% trans "Actions" %}</th>
             </tr>
         </thead>
         <tbody>
             {% for group in grouped_participations %}
             <tr>
                 <td class="center">{{ group.dancers|length }}</td>
-                <td>
+                <td class="truncate">
                     {% for dancer in group.dancers %}
                     {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </td>
-                <td>{{ group.dancers.0.club.club_name }}</td>
-                <td>{{ group.style.name }}</td>
+                <td class="truncate">{{ group.dancers.0.club.club_name }}</td>
+                <td class="truncate">{{ group.style.name }}</td>
                 <td class="center">{{ group.difficulty }}</td>
                 <td class="center">{{ group.group_type }}</td>
                 <td class="center">{{ group.age_group }}</td>
-                <td>{{ group.choreographer_name }}</td>
-                <td>{{ group.choreography_name|default:"Untitled" }}</td>
+                <td class="truncate">{{ group.choreographer_name }}</td>
+                <td class="truncate">{{ group.choreography_name|default:"Untitled" }}</td>
                 <td class="center">
                     {% if group.music_file %}
-                        <span style="color:green;">&#10004;</span> <!-- check -->
+                        <span style="color:green;">&#10004;</span>
                     {% else %}
-                        <span style="color:red;">&#10008;</span> <!-- cross -->
+                        <span style="color:red;">&#10008;</span>
                     {% endif %}
                 </td>
                 <td class="right">
@@ -91,48 +91,53 @@
 
 {% block extra_styles %}
 <style>
-  .nice-table {
+  .participants-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; /* ensures equal alignment */
+    table-layout: fixed;    /* lock column widths */
+    font-size: 0.9rem;
   }
-  .nice-table th, .nice-table td {
-    padding: 10px 12px;
+  .participants-table th,
+  .participants-table td {
+    padding: 8px 10px;
     border-bottom: 1px solid #ddd;
-    vertical-align: top;
     text-align: left;
+    white-space: nowrap;      /* keep on one line */
+    overflow: hidden;
+    text-overflow: ellipsis;  /* cut off with … */
   }
-  .nice-table thead th {
+  .participants-table thead th {
     background: #f8f9fa;
     font-weight: 600;
   }
 
   /* Column widths */
-  .nice-table th:nth-child(1),
-  .nice-table td:nth-child(1) { width: 6%; text-align: center; }
-  .nice-table th:nth-child(2),
-  .nice-table td:nth-child(2) { width: 20%; }
-  .nice-table th:nth-child(3),
-  .nice-table td:nth-child(3) { width: 14%; }
-  .nice-table th:nth-child(4),
-  .nice-table td:nth-child(4) { width: 12%; }
-  .nice-table th:nth-child(5),
-  .nice-table td:nth-child(5) { width: 8%; text-align: center; }
-  .nice-table th:nth-child(6),
-  .nice-table td:nth-child(6) { width: 10%; text-align: center; }
-  .nice-table th:nth-child(7),
-  .nice-table td:nth-child(7) { width: 10%; text-align: center; }
-  .nice-table th:nth-child(8),
-  .nice-table td:nth-child(8) { width: 12%; }
-  .nice-table th:nth-child(9),
-  .nice-table td:nth-child(9) { width: 12%; }
-  .nice-table th:nth-child(10),
-  .nice-table td:nth-child(10) { width: 6%; text-align: center; } /* Music */
-  .nice-table th:nth-child(11),
-  .nice-table td:nth-child(11) { width: 10%; text-align: right; }
+  .participants-table th:nth-child(1),
+  .participants-table td:nth-child(1) { width: 6%; text-align: center; }
+  .participants-table th:nth-child(2),
+  .participants-table td:nth-child(2) { width: 18%; }
+  .participants-table th:nth-child(3),
+  .participants-table td:nth-child(3) { width: 14%; }
+  .participants-table th:nth-child(4),
+  .participants-table td:nth-child(4) { width: 10%; }
+  .participants-table th:nth-child(5),
+  .participants-table td:nth-child(5) { width: 8%; text-align: center; }
+  .participants-table th:nth-child(6),
+  .participants-table td:nth-child(6) { width: 10%; text-align: center; }
+  .participants-table th:nth-child(7),
+  .participants-table td:nth-child(7) { width: 10%; text-align: center; }
+  .participants-table th:nth-child(8),
+  .participants-table td:nth-child(8) { width: 12%; }
+  .participants-table th:nth-child(9),
+  .participants-table td:nth-child(9) { width: 12%; }
+  .participants-table th:nth-child(10),
+  .participants-table td:nth-child(10) { width: 6%; text-align: center; }
+  .participants-table th:nth-child(11),
+  .participants-table td:nth-child(11) { width: 10%; text-align: right; }
 
-  /* Utility alignments */
+  /* Utility classes */
   .center { text-align: center; }
   .right { text-align: right; }
+  .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 {% endblock %}
