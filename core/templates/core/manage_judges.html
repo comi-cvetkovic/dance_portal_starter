@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
+
 {% if messages %}
 <ul>
   {% for message in messages %}
@@ -7,6 +8,7 @@
   {% endfor %}
 </ul>
 {% endif %}
+
 {% block title %}Judges – {{ event.name }}{% endblock %}
 
 {% block content %}
@@ -16,7 +18,7 @@
 <ul>
   {% for judge in judges %}
     <li>
-      {{ judge.first_name }} {{ judge.last_name }}
+      {{ judge.first_name }} {{ judge.last_name }} ({{ judge.username }})
       <form method="post" action="{% url 'delete_single_judge' event.id judge.id %}" style="display:inline;">
         {% csrf_token %}
         <button type="submit" class="btn-delete" onclick="return confirm('Delete this judge?');">
@@ -24,22 +26,20 @@
         </button>
       </form>
     </li>
-  {% empty %}
-    <li>No judges created yet.</li>
   {% endfor %}
 </ul>
 {% else %}
-<p>{% trans "No judges have been added for this event yet" %}.</p>
+<p>No judges have been added for this event yet.</p>
 {% endif %}
 
 <hr>
 
-<h3>{% trans "Add Judge" %}</h3>
+<h3>Add Judge</h3>
 
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
-  <button type="submit" class="btn-green">{% trans "Add Judge" %}</button>
+  <button type="submit" class="btn-green">Add Judge</button>
 </form>
-
 {% endblock %}
+
