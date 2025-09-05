@@ -67,24 +67,29 @@
 
 {% block extra_styles %}
 <style>
-.table-wrapper {
-    overflow-x: auto;
-}
+.table-wrapper { overflow-x: auto; }
 .start-group th,
 .start-group td {
-    white-space: normal;    /* wrap text fully */
+    white-space: normal;
     word-break: break-word;
     padding: .6rem .75rem;
 }
 .start-group thead th {
     background: #f8f9fa;
     font-weight: 600;
-    white-space: nowrap;    /* keep headings one line */
+    white-space: nowrap;
 }
 .start-group .start-time {
     font-size: 0.85em;
     color: gray;
 }
+
+/* ✅ Highlight style */
+.highlighted-group {
+    background-color: #fff7d6 !important;
+    border-left: 6px solid #ff9800;
+}
+
 @media (max-width: 1024px) {
     .start-group th,
     .start-group td {
@@ -97,10 +102,17 @@
 {% endblock %}
 
 {% block extra_scripts %}
-{% if is_admin %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-    // same drag/drop + publish logic you already have in manage_start_list
+    // 🔄 Auto refresh every 10s
+    setInterval(() => location.reload(), 10000);
+
+    // 🎯 Scroll to highlighted category
+    document.addEventListener("DOMContentLoaded", () => {
+        const highlighted = document.querySelector('.highlighted-group');
+        if (highlighted) {
+            highlighted.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    });
 </script>
-{% endif %}
 {% endblock %}
+

@@ -83,6 +83,8 @@ urlpatterns = [
 
     path("events/<int:event_id>/judges/<int:judge_id>/delete/", views.delete_single_judge, name="delete_single_judge"),
 
+    path("events/<int:event_id>/diplomas/", views.diploma_list, name="diploma_list"),
+
 
 
 ]

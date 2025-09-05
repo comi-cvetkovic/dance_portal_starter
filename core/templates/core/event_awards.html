@@ -18,7 +18,7 @@
 
 {% if grouped_results %}
   {% for group_key, results in grouped_results.items %}
-    <div class="award-category">
+    <div class="award-category" style="margin-bottom:2.5em;">
       <h3 class="category-title">
         {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
       </h3>
@@ -74,6 +74,17 @@
             {% endfor %}
           </tbody>
         </table>
+
+        {% if user.is_superuser %}
+          <form method="post" action="{% url 'generate_diploma' event.id %}" style="margin-top:1em;">
+            {% csrf_token %}
+            <input type="hidden" name="category" value="{{ group_key.0 }}|{{ group_key.1 }}|{{ group_key.2 }}|{{ group_key.3 }}">
+            <button type="submit" class="btn btn-green">
+              🖨 {% trans "Preview & Print Diplomas for this Category" %}
+            </button>
+          </form>
+        {% endif %}
+
       {% else %}
         <p><em>{% trans "No results for this category yet." %}</em></p>
       {% endif %}
@@ -89,7 +100,7 @@
   .award-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;  /* ensures columns align */
+    table-layout: fixed;
   }
 
   .award-table th,
@@ -100,7 +111,6 @@
     text-align: left;
   }
 
-  /* Column widths */
   .award-table th:nth-child(1),
   .award-table td:nth-child(1) { width: 8%; text-align: center; }
   .award-table th:nth-child(2),
@@ -119,14 +129,10 @@
     font-weight: 600;
   }
 
-  /* Row highlights */
-  .placement-row.first-place { background: #fff8dc; }   /* gold */
-  .placement-row.second-place { background: #f8f8f8; }  /* silver */
-  .placement-row.third-place { background: #ffe4c4; }   /* bronze */
+  .placement-row.first-place { background: #fff8dc; }
+  .placement-row.second-place { background: #f8f8f8; }
+  .placement-row.third-place { background: #ffe4c4; }
 
-  .placement {
-    font-weight: bold;
-    text-align: center;
-  }
+  .placement { font-weight: bold; text-align: center; }
 </style>
 {% endblock %}

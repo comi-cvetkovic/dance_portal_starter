@@ -5,7 +5,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import logout
 from collections import defaultdict
-from .models import Event, Participation, DanceClub, Dancer, StyleCategory, DancerParticipation, EventPlaybackState, JudgeScore
+from .models import ( 
+    Event, Participation, DanceClub, Dancer, StyleCategory, 
+    DancerParticipation, EventPlaybackState, JudgeScore,
+    Diploma,
+)
 from .forms import (
     EventForm,
     ParticipationForm,
@@ -40,6 +44,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django import forms
 from django.utils.translation import gettext as _
+from PIL import Image, ImageDraw, ImageFont
+from decimal import Decimal
+import builtins
 
 # Order definitions
 DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Jazz Performance', 'Open',
@@ -267,15 +274,11 @@ def start_list(request, event_id):
         group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
         group_index = p.group_display_order or 0
 
-        # First time we see this group key
         if group_key not in group_key_to_index:
             group_key_to_index[group_key] = group_index
             grouped_entries[group_key] = []
 
-        # Display either group name or individual dancers
         display_dancers = p.group_name if not is_admin and len(dancers) > 3 and p.group_name else dancers
-
-        # Start time display
         start_time_str = current_time.strftime("%H:%M") if current_time else None
 
         grouped_entries[group_key].append({
@@ -296,7 +299,6 @@ def start_list(request, event_id):
         })
         global_counter += 1
 
-        # Advance the current time
         if current_time:
             duration = get_music_duration(p)
             current_time += timedelta(seconds=duration)
@@ -305,12 +307,20 @@ def start_list(request, event_id):
         sorted(grouped_entries.items(), key=lambda item: group_key_to_index[item[0]])
     )
 
+    # 🔹 Get highlight key from EventPlaybackState
+    highlight_key = None
+    try:
+        highlight_key = EventPlaybackState.objects.get(event=event).current_highlight_key
+    except EventPlaybackState.DoesNotExist:
+        pass
+
     return render(request, "core/start_list.html", {
         "event": event,
         "grouped_entries": sorted_grouped_entries if show_entries else {},
         "is_admin": is_admin,
         "is_published": event.start_list_published,
         "show_entries": show_entries,
+        "highlight_key": highlight_key,
     })
 
 
@@ -350,7 +360,6 @@ def manage_start_list(request, event_id):
     for p in participations:
         dancers = dancer_map.get(p.id, [])
         club = dancers[0].club if dancers else None
-
         group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
         group_index = p.group_display_order or 0
 
@@ -358,7 +367,6 @@ def manage_start_list(request, event_id):
             group_key_to_index[group_key] = group_index
             grouped_entries[group_key] = []
 
-        # Add formatted start time if available
         start_time_str = current_time.strftime("%H:%M") if current_time else None
 
         grouped_entries[group_key].append({
@@ -379,7 +387,6 @@ def manage_start_list(request, event_id):
         })
         global_counter += 1
 
-        # Advance time based on song duration + buffer
         if current_time:
             duration = get_music_duration(p)
             current_time += timedelta(seconds=duration)
@@ -388,13 +395,22 @@ def manage_start_list(request, event_id):
         sorted(grouped_entries.items(), key=lambda item: group_key_to_index[item[0]])
     )
 
+    # 🔹 Get highlight key from EventPlaybackState
+    highlight_key = None
+    try:
+        highlight_key = EventPlaybackState.objects.get(event=event).current_highlight_key
+    except EventPlaybackState.DoesNotExist:
+        pass
+
     return render(request, "core/manage_start_list.html", {
         "event": event,
         "grouped_entries": sorted_grouped_entries,
         "is_admin": True,
         "is_published": event.is_published,
         "show_entries": True,
+        "highlight_key": highlight_key,
     })
+
 
 
 def get_music_duration(p):
@@ -1374,59 +1390,142 @@ def event_awards_view(request, event_id):
         "grouped_results": grouped_results,
     })
 
-
 @staff_member_required
 def generate_diploma(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
     if request.method == "POST":
-        category = request.POST.get("category").split("|")
-        place = request.POST.get("place")
-        dancers = request.POST.get("dancers").split("|")
+        # category key passed from awards page
+        style, group_type, age_group, difficulty = request.POST.get("category").split("|")
 
-        style, group_type, age_group, difficulty = category
+        # filter participations by category
+        participations = Participation.objects.filter(
+            event=event,
+            style__name=style.strip(),
+            group_type=group_type.strip(),
+            age_group=age_group.strip(),
+            difficulty=difficulty.strip(),
+        )
 
-        # Load diploma background
-        base_path = os.path.join("media", "diploma_template.jpg")  # or .png
-        font_path = os.path.join("core", "static", "fonts", "OpenSans-Bold.ttf")  # adjust as needed
+        # ✅ use event template if available, otherwise fallback
+        if event.diploma_template:
+            base_path = event.diploma_template.path
+        else:
+            base_path = os.path.join(settings.MEDIA_ROOT, "diploma_template.jpg")
 
-        font_large = ImageFont.truetype(font_path, 50)
-        font_small = ImageFont.truetype(font_path, 36)
+        # calculate average scores for placements
+        results = []
+        for p in participations:
+            scores = JudgeScore.objects.filter(participation=p)
+            fields = ["technique", "composition", "image"]
+            if p.style.name == "Show Dance":
+                fields.append("show_value")
 
-        images = []
-        for name in dancers:
-            img = Image.open(base_path).convert("RGBA")
-            draw = ImageDraw.Draw(img)
+            total = Decimal(0)
+            count = 0
+            for f in fields:
+                values = [getattr(s, f) for s in scores if getattr(s, f) is not None]
+                if len(values) >= 3:
+                    values = sorted(values)[1:-1]  # drop high + low
+                if values:
+                    total += sum(values)
+                    count += len(values)
 
-            category_text = f"{style} – {group_type} – {age_group} – {difficulty}"
-            draw.text((300, 400), name, font=font_large, fill="black")
-            draw.text((300, 480), category_text, font=font_small, fill="black")
-            draw.text((300, 560), f"{place} Place", font=font_small, fill="black")
+            avg_score = float(total / Decimal(count)) if count else 0.0
+            results.append((p, avg_score))
 
-            # Save to memory
-            buffer = io.BytesIO()
-            img.save(buffer, format="PNG")
-            buffer.seek(0)
-            images.append((name, buffer))
+        results.sort(key=lambda x: x[1], reverse=True)
 
-        # If only 1: return image directly
-        if len(images) == 1:
-            name, image_buffer = images[0]
-            response = HttpResponse(image_buffer, content_type="image/png")
-            response['Content-Disposition'] = f'attachment; filename="{name}_diploma.png"'
-            return response
+        # helper for centered text
+        def draw_centered(draw, text, y, font, fill="black"):
+            if not text:
+                return
+            W, H = img.size
+            bbox = draw.textbbox((0, 0), text, font=font)
+            text_w = bbox[2] - bbox[0]
+            x = (W - text_w) / 2
+            draw.text((x, y), text, font=font, fill=fill)
 
-        # If multiple: zip and return
-        import zipfile
-        zip_io = io.BytesIO()
-        with zipfile.ZipFile(zip_io, "w") as zipf:
-            for name, image_buffer in images:
-                zipf.writestr(f"{name}_diploma.png", image_buffer.read())
-        zip_io.seek(0)
+        # generate diplomas
+        category_text = " – ".join([style, group_type, age_group, difficulty])
+        for placement, (p, score) in enumerate(results, start=1):
+            dancers = DancerParticipation.objects.filter(participation=p).select_related("dancer")
+            for dp in dancers:
+                dancer = dp.dancer
+                name = f"{dancer.first_name} {dancer.last_name}"
+                choreo = p.choreography_name or ""
 
-        response = HttpResponse(zip_io, content_type="application/zip")
-        response['Content-Disposition'] = f'attachment; filename="diplomas_{event_id}.zip"'
-        return response
+                img = Image.open(base_path).convert("RGBA")
+                draw = ImageDraw.Draw(img)
+                W, H = img.size
+
+                # dynamic fonts relative to image height
+                font_bold = ImageFont.truetype(
+                    os.path.join(settings.BASE_DIR, "core/static/fonts/OpenSans-Bold.ttf"),
+                    int(H * 0.05),
+                )
+                font_regular = ImageFont.truetype(
+                    os.path.join(settings.BASE_DIR, "core/static/fonts/OpenSans-Regular.ttf"),
+                    int(H * 0.035),
+                )
+
+                # draw in lower half
+                draw_centered(draw, f"{placement} PLACE", int(H * 0.65), font_bold)
+                draw_centered(draw, category_text, int(H * 0.72), font_regular)
+                draw_centered(draw, name, int(H * 0.78), font_regular)
+                draw_centered(draw, choreo, int(H * 0.84), font_regular)
+
+                # save diploma image
+                filename = f"diplomas/{event.id}_{dancer.id}_{placement}.png"
+                full_path = os.path.join(settings.MEDIA_ROOT, filename)
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                img.save(full_path)
+
+                Diploma.objects.update_or_create(
+                    event=event,
+                    dancer=dancer,
+                    category=category_text,
+                    defaults={"placement": placement, "image": filename},
+                )
+
+        messages.success(request, _("Diplomas generated successfully."))
+
+        # ✅ re-fetch diplomas only for this category
+        diplomas_qs = Diploma.objects.filter(
+            event=event,
+            category=category_text,
+        )
+
+        return render(request, "core/diploma_list.html", {
+            "event": event,
+            "diplomas": diplomas_qs,
+        })
 
     return redirect("event_awards", event_id=event_id)
+
+
+
+
+@staff_member_required
+def diploma_list(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    diplomas = Diploma.objects.filter(event=event)
+
+    # filter diplomas if category query param exists
+    category_str = request.GET.get("category")
+    if category_str:
+        style, group_type, age_group, difficulty = category_str.split("|")
+        diplomas = diplomas.filter(
+            category=" – ".join([style.strip(), group_type.strip(), age_group.strip(), difficulty.strip()])
+        )
+
+    diplomas = diplomas.select_related("dancer").order_by("category", "placement")
+    return render(
+        request,
+        "core/diploma_list.html",
+        {"event": event, "diplomas": diplomas, "category": category_str},
+    )
+
 
 @login_required
 def category_results(request, event_id):

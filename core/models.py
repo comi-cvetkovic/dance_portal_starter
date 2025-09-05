@@ -60,6 +60,13 @@ class Event(models.Model):
         verbose_name="Event Poster / Notice"
     )
 
+    diploma_template = models.ImageField(
+        upload_to="diploma_templates/",
+        null=True,
+        blank=True,
+        verbose_name=_("Diploma Template"),
+    )
+
     allow_registrations = models.BooleanField(default=False)
 
     def __str__(self):
@@ -180,3 +187,18 @@ class JudgeScore(models.Model):
         unique_together = ('participation', 'judge')
         verbose_name = _("Judge Score")
         verbose_name_plural = _("Judge Scores")
+
+class Diploma(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name=_("Event"))
+    dancer = models.ForeignKey(Dancer, on_delete=models.CASCADE, verbose_name=_("Dancer"))
+    category = models.CharField(max_length=255, verbose_name=_("Category"))
+    placement = models.PositiveIntegerField(verbose_name=_("Placement"))
+    image = models.ImageField(upload_to="diplomas/", verbose_name=_("Diploma Image"))
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Diploma")
+        verbose_name_plural = _("Diplomas")
+
+    def __str__(self):
+        return f"{self.dancer} – {self.category} – Place {self.placement}"

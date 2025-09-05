@@ -41,9 +41,8 @@
 
     {% with 0 as global_counter %}
     {% for group_key, group_entries in grouped_entries.items %}
-    <tbody class="group-wrapper" data-group="{{ group_key.0 }}|{{ group_key.1 }}|{{ group_key.2 }}|{{ group_key.3 }}">
-
-        <tr class="group-header" style="background: #f0f0f0; cursor: grab;">
+    <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
+        <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}" style="cursor: grab;">
             <td colspan="8" style="font-weight: bold;">
                 {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
             </td>
@@ -87,13 +86,11 @@
 <style>
     #sticky-toolbar {
         display: flex;
-        justify-content: flex-end;  /* align right */
+        justify-content: flex-end;
         gap: 10px;
-        margin-bottom: 1rem;        /* spacing above table */
+        margin-bottom: 1rem;
     }
-    .table-wrapper {
-        overflow-x: auto;
-    }
+    .table-wrapper { overflow-x: auto; }
     .start-group th, .start-group td {
         white-space: normal;
         word-break: break-word;
@@ -102,6 +99,13 @@
     .start-group .start-time {
         font-size: 0.85em; color: gray;
     }
+
+    /* ✅ Highlight style */
+    .highlighted-group {
+        background-color: #fff7d6 !important;
+        border-left: 6px solid #ff9800;
+    }
+
     @media (max-width: 1024px) {
         .start-group th,
         .start-group td {
@@ -118,7 +122,7 @@
         }
         #sticky-toolbar {
             flex-wrap: wrap;
-            justify-content: center;  /* center on mobile */
+            justify-content: center;
             gap: 6px;
         }
         #sticky-toolbar button {
@@ -135,7 +139,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         const groupContainer = document.getElementById("group-container");
 
-        // Drag entire groups
         new Sortable(groupContainer, {
             animation: 200,
             handle: '.group-header',
@@ -147,7 +150,6 @@
             scrollTarget: window
         });
 
-        // Drag within groups
         document.querySelectorAll("tbody.group-wrapper").forEach(tbody => {
             new Sortable(tbody, {
                 animation: 150,
@@ -177,6 +179,15 @@
             }
             document.getElementById("publish-form").submit();
         };
+
+        // 🔄 Auto refresh every 10s
+        setInterval(() => location.reload(), 10000);
+
+        // 🎯 Scroll to highlighted category
+        const highlighted = document.querySelector('.highlighted-group');
+        if (highlighted) {
+            highlighted.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
     });
 </script>
 {% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Diplomas" %} – {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Diplomas for" %} {{ event.name }}</h2>
+
+<div style="margin-bottom: 1em;">
+  <a href="{% url 'event_awards' event.id %}" class="btn btn-default">← {% trans "Back to Awards" %}</a>
+  <button onclick="window.print()" class="btn-green">🖨 {% trans "Print All" %}</button>
+</div>
+
+{% if diplomas %}
+<div class="diploma-grid">
+  {% for diploma in diplomas %}
+    <div class="card diploma-card">
+      <img src="{{ diploma.image.url }}" alt="Diploma for {{ diploma.dancer }}" class="diploma-img">
+    </div>
+  {% endfor %}
+</div>
+{% else %}
+<p>{% trans "No diplomas have been generated yet." %}</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+/* Screen layout */
+.diploma-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.diploma-card { padding: 1rem; text-align: center; }
+.diploma-img { max-width: 100%; border: 1px solid #ccc; }
+.diploma-meta { margin-top: 0.5rem; }
+
+/* ✅ Print layout */
+@media print {
+  body * { visibility: hidden; }
+  .diploma-grid, .diploma-grid * { visibility: visible; }
+
+  .diploma-grid {
+    display: block !important;
+  }
+
+  .diploma-card {
+    page-break-after: always;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  .diploma-img {
+    display: block;
+    margin: 0 auto;
+    width: 100% !important;   /* scale to page */
+    height: auto !important;
+    border: none !important;
+  }
+
+  /* ❌ hide meta text under image */
+  .diploma-meta { display: none !important; }
+
+  /* ❌ hide headings/buttons/links */
+  h2, .btn, a { display: none !important; }
+}
+</style>
+{% endblock %}
+
