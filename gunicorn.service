@@ -5,11 +5,26 @@ After=network.target
 [Service]
 User=django
 Group=www-data
+WorkingDirectory=/home/django/dance_portal_starter
+
+# Gunicorn start command
+ExecStart=/home/django/dance_portal_starter/venv/bin/gunicorn \
+          --workers 3 \
+          --umask 007 \
+          --bind unix:/run/gunicorn/danceportal.sock \
+          dance_portal.wsgi:application
+
+# Create and manage the runtime directory for the socket
 RuntimeDirectory=gunicorn
 RuntimeDirectoryMode=0755
-WorkingDirectory=/home/django/dance_portal_starter
-ExecStart=/home/django/dance_portal_starter/venv/bin/gunicorn --workers 3 --umask 007 --bind unix:/run/gunicorn/danceportal.sock dance_portal.wsgi:application
+
+# ✅ Auto-restart settings
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+# Ensure systemd knows how to kill the service cleanly
+KillMode=mixed
 
 [Install]
 WantedBy=multi-user.target
-
