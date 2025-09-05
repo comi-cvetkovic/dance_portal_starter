@@ -1395,10 +1395,8 @@ def generate_diploma(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == "POST":
-        # category key passed from awards page
         style, group_type, age_group, difficulty = request.POST.get("category").split("|")
 
-        # filter participations by category
         participations = Participation.objects.filter(
             event=event,
             style__name=style.strip(),
@@ -1436,7 +1434,6 @@ def generate_diploma(request, event_id):
 
         results.sort(key=lambda x: x[1], reverse=True)
 
-        # helper for centered text
         def draw_centered(draw, text, y, font, fill="black"):
             if not text:
                 return
@@ -1446,20 +1443,38 @@ def generate_diploma(request, event_id):
             x = (W - text_w) / 2
             draw.text((x, y), text, font=font, fill=fill)
 
-        # generate diplomas
         category_text = " – ".join([style, group_type, age_group, difficulty])
+
+        # ✅ cleanup old diplomas (DB + files) for this event & category
+        old_diplomas = Diploma.objects.filter(event=event, category=category_text)
+        for d in old_diplomas:
+            if d.image and os.path.isfile(d.image.path):
+                try:
+                    os.remove(d.image.path)
+                except Exception:
+                    pass  # ignore errors if file already missing
+        old_diplomas.delete()
+
+        # generate diplomas
         for placement, (p, score) in enumerate(results, start=1):
-            dancers = DancerParticipation.objects.filter(participation=p).select_related("dancer")
+            dancers = DancerParticipation.objects.filter(participation=p).select_related("dancer", "dancer__club")
+
             for dp in dancers:
                 dancer = dp.dancer
-                name = f"{dancer.first_name} {dancer.last_name}"
+
+                # ✅ use group_name if available and group is 4+
+                if p.group_name and len(dancers) >= 4:
+                    display_name = p.group_name
+                else:
+                    display_name = f"{dancer.first_name} {dancer.last_name}"
+
                 choreo = p.choreography_name or ""
+                club_name = dancer.club.club_name if dancer.club else "–"
 
                 img = Image.open(base_path).convert("RGBA")
                 draw = ImageDraw.Draw(img)
                 W, H = img.size
 
-                # dynamic fonts relative to image height
                 font_bold = ImageFont.truetype(
                     os.path.join(settings.BASE_DIR, "core/static/fonts/OpenSans-Bold.ttf"),
                     int(H * 0.05),
@@ -1469,28 +1484,28 @@ def generate_diploma(request, event_id):
                     int(H * 0.035),
                 )
 
-                # draw in lower half
-                draw_centered(draw, f"{placement} PLACE", int(H * 0.65), font_bold)
-                draw_centered(draw, category_text, int(H * 0.72), font_regular)
-                draw_centered(draw, name, int(H * 0.78), font_regular)
-                draw_centered(draw, choreo, int(H * 0.84), font_regular)
+                draw_centered(draw, f"{placement} PLACE", int(H * 0.62), font_bold)
+                draw_centered(draw, category_text, int(H * 0.70), font_regular)
+                draw_centered(draw, display_name, int(H * 0.77), font_regular)
+                draw_centered(draw, club_name, int(H * 0.83), font_regular)  # ✅ club name
+                draw_centered(draw, choreo, int(H * 0.89), font_regular)
 
-                # save diploma image
-                filename = f"diplomas/{event.id}_{dancer.id}_{placement}.png"
+                # ✅ ensure unique filename
+                filename = f"diplomas/{event.id}_{p.id}_{dancer.id}_{placement}.png"
                 full_path = os.path.join(settings.MEDIA_ROOT, filename)
                 os.makedirs(os.path.dirname(full_path), exist_ok=True)
                 img.save(full_path)
 
-                Diploma.objects.update_or_create(
+                Diploma.objects.create(
                     event=event,
                     dancer=dancer,
                     category=category_text,
-                    defaults={"placement": placement, "image": filename},
+                    placement=placement,
+                    image=filename,
                 )
 
         messages.success(request, _("Diplomas generated successfully."))
 
-        # ✅ re-fetch diplomas only for this category
         diplomas_qs = Diploma.objects.filter(
             event=event,
             category=category_text,
@@ -1502,7 +1517,6 @@ def generate_diploma(request, event_id):
         })
 
     return redirect("event_awards", event_id=event_id)
-
 
 
 

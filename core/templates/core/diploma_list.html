@@ -33,7 +33,7 @@
 }
 .diploma-card { padding: 1rem; text-align: center; }
 .diploma-img { max-width: 100%; border: 1px solid #ccc; }
-.diploma-meta { margin-top: 0.5rem; }
+.diploma-meta { margin-top: 0.5rem; font-weight: 500; }
 
 /* ✅ Print layout */
 @media print {
@@ -54,17 +54,13 @@
   .diploma-img {
     display: block;
     margin: 0 auto;
-    width: 100% !important;   /* scale to page */
+    width: 100% !important;
     height: auto !important;
     border: none !important;
   }
 
-  /* ❌ hide meta text under image */
-  .diploma-meta { display: none !important; }
-
-  /* ❌ hide headings/buttons/links */
-  h2, .btn, a { display: none !important; }
+  /* ❌ hide club name + headings/buttons/links when printing */
+  .diploma-meta, h2, .btn, a { display: none !important; }
 }
 </style>
 {% endblock %}
-
