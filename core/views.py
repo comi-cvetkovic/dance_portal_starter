@@ -1394,6 +1394,20 @@ def event_awards_view(request, event_id):
 def generate_diploma(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
+    def ordinal(n):
+        return "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10::4])
+
+    def draw_centered_with_spacing(draw, text, y, font, spacing=2, fill="black"):
+        """Draw text centered with custom letter spacing"""
+        if not text:
+            return
+        W, H = img.size
+        total_w = sum(font.getbbox(ch)[2] for ch in text) + spacing * (len(text) - 1)
+        x = (W - total_w) / 2
+        for ch in text:
+            draw.text((x, y), ch, font=font, fill=fill)
+            x += font.getbbox(ch)[2] + spacing
+
     if request.method == "POST":
         style, group_type, age_group, difficulty = request.POST.get("category").split("|")
 
@@ -1434,15 +1448,6 @@ def generate_diploma(request, event_id):
 
         results.sort(key=lambda x: x[1], reverse=True)
 
-        def draw_centered(draw, text, y, font, fill="black"):
-            if not text:
-                return
-            W, H = img.size
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_w = bbox[2] - bbox[0]
-            x = (W - text_w) / 2
-            draw.text((x, y), text, font=font, fill=fill)
-
         category_text = " – ".join([style, group_type, age_group, difficulty])
 
         # ✅ cleanup old diplomas (DB + files) for this event & category
@@ -1452,43 +1457,57 @@ def generate_diploma(request, event_id):
                 try:
                     os.remove(d.image.path)
                 except Exception:
-                    pass  # ignore errors if file already missing
+                    pass
         old_diplomas.delete()
 
         # generate diplomas
         for placement, (p, score) in enumerate(results, start=1):
-            dancers = DancerParticipation.objects.filter(participation=p).select_related("dancer", "dancer__club")
+            dancers = DancerParticipation.objects.filter(
+                participation=p
+            ).select_related("dancer", "dancer__club")
 
             for dp in dancers:
                 dancer = dp.dancer
-
-                # ✅ use group_name if available and group is 4+
-                if p.group_name and len(dancers) >= 4:
-                    display_name = p.group_name
-                else:
-                    display_name = f"{dancer.first_name} {dancer.last_name}"
-
-                choreo = p.choreography_name or ""
                 club_name = dancer.club.club_name if dancer.club else "–"
+                choreo = p.choreography_name or ""
+
+                # ✅ different display logic
+                if p.group_name and len(dancers) >= 4:
+                    lines = [
+                        f"{ordinal(placement)} Place",
+                        category_text,
+                        p.group_name,
+                        f"{dancer.first_name} {dancer.last_name}",
+                        club_name,
+                        choreo,
+                    ]
+                else:
+                    lines = [
+                        f"{ordinal(placement)} Place",
+                        category_text,
+                        f"{dancer.first_name} {dancer.last_name}",
+                        club_name,
+                        choreo,
+                    ]
 
                 img = Image.open(base_path).convert("RGBA")
                 draw = ImageDraw.Draw(img)
                 W, H = img.size
 
-                font_bold = ImageFont.truetype(
-                    os.path.join(settings.BASE_DIR, "core/static/fonts/OpenSans-Bold.ttf"),
-                    int(H * 0.05),
-                )
-                font_regular = ImageFont.truetype(
-                    os.path.join(settings.BASE_DIR, "core/static/fonts/OpenSans-Regular.ttf"),
-                    int(H * 0.035),
-                )
+                # ✅ Bebas Neue font (place BebasNeue-Regular.ttf in core/static/fonts/)
+                font_path = os.path.join(settings.BASE_DIR, "core/static/fonts/BebasNeue-Regular.ttf")
+                font_bold = ImageFont.truetype(font_path, int(H * 0.045))
+                font_regular = ImageFont.truetype(font_path, int(H * 0.03))
 
-                draw_centered(draw, f"{placement} PLACE", int(H * 0.62), font_bold)
-                draw_centered(draw, category_text, int(H * 0.70), font_regular)
-                draw_centered(draw, display_name, int(H * 0.77), font_regular)
-                draw_centered(draw, club_name, int(H * 0.83), font_regular)  # ✅ club name
-                draw_centered(draw, choreo, int(H * 0.89), font_regular)
+                # dynamic line spacing
+                start_y = int(H * 0.65)  # top of the block
+                line_height = int(H * 0.055)  # spacing between lines
+
+                for i, text in enumerate(lines):
+                    font = font_bold if i == 0 else font_regular
+                    spacing = 3 if i == 0 else 2
+                    y = start_y + i * line_height
+                    draw_centered_with_spacing(draw, text, y, font, spacing=spacing)
 
                 # ✅ ensure unique filename
                 filename = f"diplomas/{event.id}_{p.id}_{dancer.id}_{placement}.png"
@@ -1517,7 +1536,6 @@ def generate_diploma(request, event_id):
         })
 
     return redirect("event_awards", event_id=event_id)
-
 
 
 @staff_member_required
