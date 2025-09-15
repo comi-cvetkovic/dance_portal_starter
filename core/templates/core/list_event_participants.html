@@ -137,6 +137,17 @@
     margin: 0;
   }
 
+  .actions-cell .btn-edit,
+    .actions-cell .btn-delete {
+    min-width: 70px;       /* same width for both */
+    text-align: center;    /* keep text centered */
+    white-space: nowrap;   /* prevent wrapping */
+    font-size: 0.75rem;    /* slightly smaller text */
+    height: 28px;          /* consistent height */
+    padding: 2px 8px;      /* tighter padding */
+    line-height: 1.2;      /* fix vertical alignment */
+    }
+
   /* Even smaller on mobile */
   @media (max-width: 768px) {
     .participants-table {
