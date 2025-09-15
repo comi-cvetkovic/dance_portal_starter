@@ -7,7 +7,7 @@ class DancerInline(admin.TabularInline):
 
 @admin.register(DanceClub)
 class DanceClubAdmin(admin.ModelAdmin):
-    list_display = ('club_name', 'user', 'country', 'city', 'phone_number', 'representative_name', 'raw_password')
+    list_display = ('club_name', 'user', 'country', 'city', 'phone_number', 'representative_name')
     inlines = [DancerInline]
 
 @admin.register(Dancer)

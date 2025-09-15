@@ -5,10 +5,6 @@ from django.utils.translation import gettext_lazy as _
 
 class DanceClub(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="club")
-    raw_password = models.CharField(
-        max_length=128, blank=True, null=True,
-        verbose_name=_("Raw Password")  # Store plaintext password (not secure!)
-    )
     club_name = models.CharField(max_length=255, verbose_name=_("Club Name"))
     country = CountryField(verbose_name=_("Country"))
     city = models.CharField(max_length=100, verbose_name=_("City"))

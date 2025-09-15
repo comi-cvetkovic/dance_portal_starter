@@ -31,9 +31,8 @@
                 <th class="hide-mobile">{% trans "City" %}</th>
                 <th class="hide-mobile">{% trans "Email" %}</th>
                 <th class="hide-mobile">{% trans "Phone" %}</th>
-                <th>{% trans "Password" %}</th>
                 <th>{% trans "Status" %}</th>
-                <th class="right">{% trans "Actions" %}</th>
+                <th>{% trans "Actions" %}</th>
               </tr>
             </thead>
             <tbody>
@@ -45,7 +44,6 @@
                 <td class="hide-mobile">{{ c.city }}</td>
                 <td class="hide-mobile">{{ c.user.email }}</td>
                 <td class="hide-mobile">{{ c.phone_number }}</td>
-                <td>{{ c.raw_password }}</td>
                 <td>
                   {% if c.confirmed %}
                     <span class="status-dot ok"></span> {% trans "Confirmed" %}
@@ -53,14 +51,16 @@
                     <span class="status-dot warn"></span> {% trans "Pending" %}
                   {% endif %}
                 </td>
-                <td class="right">
-                  <a class="btn btn-default btn-sm" href="{% url 'admin_list_dancers' c.id %}">{% trans "Dancers" %}</a>
-                  <a href="{% url 'edit_club' c.id %}" class="btn btn-edit">{% trans "Edit" %}</a>
-                  <a class="btn btn-delete btn-sm"
-                     href="{% url 'delete_club' c.id %}"
-                     onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
-                     {% trans "Delete" %}
-                  </a>
+                <td>
+                  <div class="btn-row">
+                    <a class="btn btn-default btn-sm" href="{% url 'admin_list_dancers' c.id %}">{% trans "Dancers" %}</a>
+                    <a href="{% url 'edit_club' c.id %}" class="btn btn-edit">{% trans "Edit" %}</a>
+                    <a class="btn btn-delete btn-sm"
+                       href="{% url 'delete_club' c.id %}"
+                       onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
+                       {% trans "Delete" %}
+                    </a>
+                  </div>
                 </td>
               </tr>
             {% endfor %}
@@ -148,23 +148,25 @@
   .nice-table{ width:100%; border-collapse: collapse; }
   .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; }
   .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
-  .right{ text-align:right; }
-  /* === Dashboard table action buttons === */
-  /* === Dashboard table action buttons === */
-.nice-table td .btn {
-  min-width: 65px;       /* smaller but consistent */
-  height: 26px;          /* shorter height */
-  font-size: 0.7rem;     /* smaller text */
-  text-align: center;
-  padding: 2px 6px;
-  white-space: nowrap;   /* prevent wrapping */
-  margin: 0 2px;
-  line-height: 1.2;
-}
 
-.nice-table td .btn.btn-delete {
-  min-width: 65px;       /* keep same as edit/dancers */
-}
+  /* Buttons aligned left inside Actions */
+  .btn-row {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nice-table td .btn {
+    min-width: 65px;
+    height: 26px;
+    font-size: 0.7rem;
+    text-align: center;
+    padding: 2px 6px;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .nice-table td .btn.btn-delete {
+    min-width: 65px;
+  }
 
   .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
   .status-dot.ok{ background:#28a745; }
@@ -176,8 +178,6 @@
     .nice-table, .nice-table th, .nice-table td { white-space: nowrap; }
     .nice-table { display: block; width: max-content; min-width: 100%; }
     .nice-table thead th { position: sticky; top: 0; background: #fff; z-index: 2; }
-
-    /* hide these fields on mobile */
     .hide-mobile { display: none; }
   }
 </style>

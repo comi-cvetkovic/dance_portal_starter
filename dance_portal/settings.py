@@ -32,6 +32,7 @@ LANGUAGE_COOKIE_ALLOW_GET = True  # lets you test with ?lang=en
 
 # Required Django & custom apps
 INSTALLED_APPS = [
+    'core',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_countries',
-    'core',
 ]
 
 MIDDLEWARE = [
@@ -126,7 +126,7 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "mihailo.serbia@gmail.com"
-EMAIL_HOST_PASSWORD = "ucop wjps bidd xciz"  # Gmail App Password
+EMAIL_HOST_USER = "5678community.office@gmail.com"
+EMAIL_HOST_PASSWORD = "gwrxovatjbbiinzi"  # Gmail App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
