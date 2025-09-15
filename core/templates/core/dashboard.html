@@ -122,7 +122,7 @@
 
 {% block extra_styles %}
 <style>
-  .dash-hero{
+  .dash-hero {
     background:#f8f9fa; border-radius:14px; padding:18px 22px; margin-bottom:18px;
     display:flex; align-items:center; justify-content:space-between; gap:16px;
   }
@@ -144,19 +144,23 @@
   .badge{ display:inline-block; background:#eef2ff; border-radius:10px;
     padding:2px 8px; font-size:.85rem; margin-left:.4rem; }
 
-  .table-wrap{ overflow:auto; }
+  .table-wrap{ overflow-x: auto; }
   .nice-table{ width:100%; border-collapse: collapse; }
-  .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; }
+  .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; vertical-align: middle; }
   .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
 
-  /* Buttons aligned left inside Actions */
+  /* Allow wrapping for long content (email, phone) */
+  .nice-table td { white-space: normal; word-break: break-word; }
+
+  /* Buttons inside Actions */
   .btn-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
+    justify-content: center;
   }
-
   .nice-table td .btn {
-    min-width: 65px;
+    min-width: 60px;
     height: 26px;
     font-size: 0.7rem;
     text-align: center;
@@ -164,20 +168,15 @@
     white-space: nowrap;
     line-height: 1.2;
   }
-  .nice-table td .btn.btn-delete {
-    min-width: 65px;
-  }
 
   .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
   .status-dot.ok{ background:#28a745; }
   .status-dot.warn{ background:#ffc107; }
 
-  /* Hide certain columns only on mobile */
+  /* Responsive tweaks */
   @media (max-width: 1024px) {
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .nice-table, .nice-table th, .nice-table td { white-space: nowrap; }
-    .nice-table { display: block; width: max-content; min-width: 100%; }
-    .nice-table thead th { position: sticky; top: 0; background: #fff; z-index: 2; }
+    .nice-table td .btn { min-width: 55px; font-size: 0.65rem; padding: 2px 4px; }
+    .btn-row { flex-direction: column; align-items: center; }
     .hide-mobile { display: none; }
   }
 </style>
