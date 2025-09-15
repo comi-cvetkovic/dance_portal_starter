@@ -41,14 +41,6 @@
             </tr>
         </thead>
         <tbody>
-            {% with labels={
-                'Baby':'Baby (5-6)',
-                'Mini Kids':'Mini Kids (7-8)',
-                'Kids':'Kids (9-11)',
-                'Teen':'Teen (12-14)',
-                'Youth':'Youth (15-17)',
-                'Adult':'Adult (18 and up)'
-            } %}
             {% for group in grouped_participations %}
             <tr>
                 <td class="center">{{ group.dancers|length }}</td>
@@ -61,7 +53,7 @@
                 <td>{{ group.style.name }}</td>
                 <td class="center">{{ group.difficulty }}</td>
                 <td class="center">{{ group.group_type }}</td>
-                <td class="center">{{ labels[group.age_group]|default:"–" }}</td>
+                <td class="center">{{ group.age_group }}</td>
                 <td>{{ group.choreographer_name }}</td>
                 <td>{{ group.choreography_name|default:"Untitled" }}</td>
                 <td class="center">
@@ -90,7 +82,6 @@
                 </td>
             </tr>
             {% endfor %}
-            {% endwith %}
         </tbody>
     </table>
 </div>
