@@ -150,19 +150,21 @@
   .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
   .right{ text-align:right; }
   /* === Dashboard table action buttons === */
-  .nice-table td .btn {
-    min-width: 80px;       /* all buttons same width */
-    height: 30px;          /* consistent height */
-    font-size: 0.75rem;    /* uniform smaller text */
-    text-align: center;
-    padding: 2px 8px;
-    white-space: nowrap;   /* prevent wrapping like "Delete" -> "Delet\ne" */
-    margin: 0 2px;         /* tighter spacing */
-  }
+  /* === Dashboard table action buttons === */
+.nice-table td .btn {
+  min-width: 65px;       /* smaller but consistent */
+  height: 26px;          /* shorter height */
+  font-size: 0.7rem;     /* smaller text */
+  text-align: center;
+  padding: 2px 6px;
+  white-space: nowrap;   /* prevent wrapping */
+  margin: 0 2px;
+  line-height: 1.2;
+}
 
-  .nice-table td .btn.btn-delete {
-    min-width: 80px;       /* ensure delete matches edit/dancers */
-  }
+.nice-table td .btn.btn-delete {
+  min-width: 65px;       /* keep same as edit/dancers */
+}
 
   .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
   .status-dot.ok{ background:#28a745; }
