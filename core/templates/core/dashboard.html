@@ -149,6 +149,20 @@
   .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; }
   .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
   .right{ text-align:right; }
+  /* === Dashboard table action buttons === */
+  .nice-table td .btn {
+    min-width: 80px;       /* all buttons same width */
+    height: 30px;          /* consistent height */
+    font-size: 0.75rem;    /* uniform smaller text */
+    text-align: center;
+    padding: 2px 8px;
+    white-space: nowrap;   /* prevent wrapping like "Delete" -> "Delet\ne" */
+    margin: 0 2px;         /* tighter spacing */
+  }
+
+  .nice-table td .btn.btn-delete {
+    min-width: 80px;       /* ensure delete matches edit/dancers */
+  }
 
   .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
   .status-dot.ok{ background:#28a745; }
