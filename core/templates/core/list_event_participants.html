@@ -50,10 +50,10 @@
                     {% endfor %}
                 </td>
                 <td>{{ group.dancers.0.club.club_name }}</td>
-                <td>{{ group.style.name }}</td>
+                <td class="style-col">{{ group.style.name }}</td>
                 <td class="center">{{ group.difficulty }}</td>
                 <td class="center">{{ group.group_type }}</td>
-                <td class="center">{{ group.age_group }}</td>
+                <td class="center">{{ group.age_group|default:"–" }}</td>
                 <td>{{ group.choreographer_name }}</td>
                 <td>{{ group.choreography_name|default:"Untitled" }}</td>
                 <td class="center">
@@ -95,8 +95,8 @@
   .participants-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.75rem;        /* smaller text so table fits */
-    table-layout: auto;        /* natural widths */
+    font-size: 0.75rem;
+    table-layout: auto;
   }
   .participants-table th,
   .participants-table td {
@@ -107,20 +107,24 @@
   .participants-table thead th {
     background: #f8f9fa;
     font-weight: 600;
-    white-space: nowrap;       /* headings stay one line */
+    white-space: nowrap;
     font-size: 0.8rem;
   }
 
-  /* Cells show full strings */
+  /* Cells show full strings by default */
   .participants-table td {
-    white-space: normal;       /* allow wrapping */
-    word-break: break-word;    /* break long words if needed */
+    white-space: normal;
+    word-break: break-word;
   }
 
-  /* Utility classes */
+  /* Style column: no awkward breaks */
+  .participants-table td.style-col {
+    white-space: normal;   /* allow wrapping */
+    word-break: keep-all;  /* don’t split inside words */
+  }
+
   .center { text-align: center; }
 
-  /* Actions cell layout */
   .actions-cell {
     text-align: right;
   }
@@ -130,36 +134,25 @@
     gap: 6px;
     flex-wrap: wrap;
   }
-  .actions-cell form {
-    margin: 0;
-  }
-  .actions-cell button {
-    margin: 0;
-  }
+  .actions-cell form { margin: 0; }
+  .actions-cell button { margin: 0; }
 
   .actions-cell .btn-edit,
-    .actions-cell .btn-delete {
-    min-width: 70px;       /* same width for both */
-    text-align: center;    /* keep text centered */
-    white-space: nowrap;   /* prevent wrapping */
-    font-size: 0.75rem;    /* slightly smaller text */
-    height: 28px;          /* consistent height */
-    padding: 2px 8px;      /* tighter padding */
-    line-height: 1.2;      /* fix vertical alignment */
-    }
+  .actions-cell .btn-delete {
+    min-width: 70px;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    height: 28px;
+    padding: 2px 8px;
+    line-height: 1.2;
+  }
 
-  /* Even smaller on mobile */
   @media (max-width: 768px) {
-    .participants-table {
-      font-size: 0.7rem;
-    }
+    .participants-table { font-size: 0.7rem; }
     .participants-table th,
-    .participants-table td {
-      padding: 4px 6px;
-    }
-    .actions-cell .btn-group {
-      justify-content: center;
-    }
+    .participants-table td { padding: 4px 6px; }
+    .actions-cell .btn-group { justify-content: center; }
   }
 </style>
 {% endblock %}
