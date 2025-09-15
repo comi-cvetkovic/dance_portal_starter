@@ -53,7 +53,13 @@
                 <td>{{ group.style.name }}</td>
                 <td class="center">{{ group.difficulty }}</td>
                 <td class="center">{{ group.group_type }}</td>
-                <td class="center">{{ group.age_group }}</td>
+                <td class="center">
+                    {% if group.age_group %}
+                        {{ group.get_age_group_display }}
+                    {% else %}
+                        –
+                    {% endif %}
+                </td>
                 <td>{{ group.choreographer_name }}</td>
                 <td>{{ group.choreography_name|default:"Untitled" }}</td>
                 <td class="center">

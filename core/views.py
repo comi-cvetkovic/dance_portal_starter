@@ -120,9 +120,9 @@ def calculate_age_group_view(request, event_id):
     })
 
 def calculate_age_group(dancers):
-    """Return (age_group_label, average_age) based on dancer DOB(s)."""
+    """Return (age_group_key, average_age) based on dancer DOB(s)."""
     if not dancers:
-        return None, None
+        return "Adult", None  # fallback
 
     today = date.today()
     ages = []
@@ -134,12 +134,14 @@ def calculate_age_group(dancers):
             ages.append(age)
 
     if not ages:
-        return None, None
+        return "Adult", None
 
     avg_age = sum(ages) / len(ages)
 
-    # Map average age to categories
-    if avg_age <= 6:
+    # Map average age to categories (keys from Participation.AGE_GROUP_CHOICES)
+    if avg_age < 5:
+        group = "Baby"
+    elif avg_age <= 6:
         group = "Baby"
     elif avg_age <= 8:
         group = "Mini Kids"
@@ -153,6 +155,7 @@ def calculate_age_group(dancers):
         group = "Adult"
 
     return group, round(avg_age, 1)
+
 
 @staff_member_required
 def event_music_view(request, event_id):
@@ -1019,9 +1022,13 @@ def edit_participation(request, participation_id):
     if request.method == 'POST':
         form = GroupParticipationForm(request.POST, request.FILES, club=club, event=event)
         if form.is_valid():
+            new_dancers = form.cleaned_data['dancers']
+            # ✅ Recalculate age group from selected dancers
+            age_group, avg_age = calculate_age_group(new_dancers)
+
             participation.style = form.cleaned_data['style']
             participation.group_type = form.cleaned_data['group_type']
-            participation.age_group = form.cleaned_data['age_group']
+            participation.age_group = age_group
             participation.difficulty = form.cleaned_data['difficulty']
             participation.choreographer_name = form.cleaned_data['choreographer_name']
             participation.choreography_name = form.cleaned_data['choreography_name']
@@ -1038,7 +1045,6 @@ def edit_participation(request, participation_id):
             participation.save()
 
             # dancers update
-            new_dancers = form.cleaned_data['dancers']
             DancerParticipation.objects.filter(participation=participation).exclude(dancer__in=new_dancers).delete()
             for dancer in new_dancers:
                 DancerParticipation.objects.get_or_create(participation=participation, dancer=dancer)
