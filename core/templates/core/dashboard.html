@@ -149,24 +149,24 @@
   .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; vertical-align: middle; }
   .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
 
-  /* Email column: keep on one line unless very tight */
+  /* Email column: keep on one line unless too tight */
   .nice-table td.email-col {
-    white-space: nowrap;         /* stay on one line */
-    word-break: keep-all;        /* don’t break words */
-    overflow-wrap: anywhere;     /* allow break at @ or . if needed */
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
-  /* Keep action buttons aligned in one row */
+  /* Action buttons: allow wrapping neatly */
   .btn-row {
     display: flex;
-    flex-wrap: nowrap; /* don’t wrap */
+    flex-wrap: wrap;
     gap: 6px;
     justify-content: flex-start;
   }
   .nice-table td .btn {
-    min-width: 65px;
-    height: 26px;
-    font-size: 0.7rem;
+    min-width: 70px;
+    height: 28px;
+    font-size: 0.75rem;
     text-align: center;
     padding: 2px 6px;
     white-space: nowrap;
@@ -179,7 +179,14 @@
 
   /* Responsive tweaks */
   @media (max-width: 1024px) {
-    .nice-table td .btn { min-width: 55px; font-size: 0.65rem; padding: 2px 4px; }
+    .btn-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .nice-table td .btn {
+      width: 100%;
+      min-width: unset;
+    }
     .hide-mobile { display: none; }
   }
 </style>
