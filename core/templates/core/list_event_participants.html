@@ -63,21 +63,22 @@
                         <span style="color:red;">&#10008;</span>
                     {% endif %}
                 </td>
-                <td class="right">
-                    <form method="get" action="{% url 'edit_participation' group.participation_id %}" style="margin-bottom:6px;">
-                        <button type="submit" class="btn-edit">{% trans "Edit" %}</button>
-                    </form>
-                    <form method="post" action="{% url 'delete_participation_group' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="event_id" value="{{ event.id }}">
-                        <input type="hidden" name="style_id" value="{{ group.style.id }}">
-                        <input type="hidden" name="group_type" value="{{ group.group_type }}">
-                        <input type="hidden" name="age_group" value="{{ group.age_group }}">
-                        <input type="hidden" name="difficulty" value="{{ group.difficulty }}">
-                        <input type="hidden" name="choreographer_name" value="{{ group.choreographer_name }}">
-                        <button type="submit" class="btn-delete"
-                            onclick="return confirm('Are you sure you want to delete this group?');">{% trans "Delete" %}</button>
-                    </form>
+                <td class="actions-cell">
+                    <div class="btn-group">
+                        <form method="get" action="{% url 'edit_participation' group.participation_id %}">
+                            <button type="submit" class="btn-edit">{% trans "Edit" %}</button>
+                        </form>
+                        <form method="post" action="{% url 'delete_participation_group' %}" onsubmit="return confirm('Are you sure you want to delete this group?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="event_id" value="{{ event.id }}">
+                            <input type="hidden" name="style_id" value="{{ group.style.id }}">
+                            <input type="hidden" name="group_type" value="{{ group.group_type }}">
+                            <input type="hidden" name="age_group" value="{{ group.age_group }}">
+                            <input type="hidden" name="difficulty" value="{{ group.difficulty }}">
+                            <input type="hidden" name="choreographer_name" value="{{ group.choreographer_name }}">
+                            <button type="submit" class="btn-delete">{% trans "Delete" %}</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -118,7 +119,23 @@
 
   /* Utility classes */
   .center { text-align: center; }
-  .right { text-align: right; }
+
+  /* Actions cell layout */
+  .actions-cell {
+    text-align: right;
+  }
+  .actions-cell .btn-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .actions-cell form {
+    margin: 0;
+  }
+  .actions-cell button {
+    margin: 0;
+  }
 
   /* Even smaller on mobile */
   @media (max-width: 768px) {
@@ -128,6 +145,9 @@
     .participants-table th,
     .participants-table td {
       padding: 4px 6px;
+    }
+    .actions-cell .btn-group {
+      justify-content: center;
     }
   }
 </style>
