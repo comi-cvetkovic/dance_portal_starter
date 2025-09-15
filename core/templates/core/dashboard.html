@@ -149,17 +149,17 @@
   .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; vertical-align: middle; }
   .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
 
-  /* Email column: only break at safe points */
+  /* Email column: keep on one line unless very tight */
   .nice-table td.email-col {
-    white-space: normal;
-    word-break: keep-all;
-    overflow-wrap: anywhere; /* breaks at @ or . */
+    white-space: nowrap;         /* stay on one line */
+    word-break: keep-all;        /* don’t break words */
+    overflow-wrap: anywhere;     /* allow break at @ or . if needed */
   }
 
   /* Keep action buttons aligned in one row */
   .btn-row {
     display: flex;
-    flex-wrap: nowrap; /* don’t wrap buttons */
+    flex-wrap: nowrap; /* don’t wrap */
     gap: 6px;
     justify-content: flex-start;
   }
