@@ -11,6 +11,8 @@
     {% endif %}
 </h2>
 
+<p><strong>{% trans "Total Dancers" %}:</strong> {{ dancers|length }}</p>
+
 <div style="margin-top: 2em;">
     {% if is_superuser %}
     <form method="get" action="{% url 'admin_add_dancer' club.id %}" style="display:inline;">
@@ -32,7 +34,7 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             background-color: #fafafa;
-            color: #000;              /* 👈 ensure text is black */
+            color: #000;
         ">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="color:#000;">{{ dancer.first_name }} {{ dancer.last_name }} – {{ dancer.date_of_birth }}</span>
