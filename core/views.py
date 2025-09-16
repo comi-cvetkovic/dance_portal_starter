@@ -883,17 +883,23 @@ def list_event_participants(request, event_id):
                 total_dancer_count += len(linked_dancers)
                 dancer_ids.update(linked_dancers)
 
+            unique_count = len(dancer_ids)
+
+            # 🚫 Skip clubs with no registered dancers
+            if unique_count == 0 and total_dancer_count == 0:
+                continue
+
             summary_data.append({
                 "club": club,
                 "group_type_counts": dict(group_type_counts),
-                "unique_dancer_count": len(dancer_ids),
+                "unique_dancer_count": unique_count,
                 "total_dancer_count": total_dancer_count
             })
 
-            # Update totals
+            # Update totals only for clubs with dancers
             for gt in ["Solo", "Duo", "Trio", "Group", "Formation", "Production"]:
                 total_counts[gt] += group_type_counts.get(gt, 0)
-            total_counts["unique_dancer_count"] += len(dancer_ids)
+            total_counts["unique_dancer_count"] += unique_count
             total_counts["total_dancer_count"] += total_dancer_count
 
         return render(request, "core/participant_summary_by_club.html", {
