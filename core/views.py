@@ -7,7 +7,7 @@ from django.contrib.auth import logout
 from collections import defaultdict
 from .models import ( 
     Event, Participation, DanceClub, Dancer, StyleCategory, 
-    DancerParticipation, EventPlaybackState, JudgeScore,
+    DancerParticipation, EventPlaybackState, JudgeScore, StartListSlot,
     Diploma,
 )
 from .forms import (
@@ -19,6 +19,7 @@ from .forms import (
     JudgeCreationFormSet,
     SingleJudgeForm,
     ClubLoginForm,
+    CeremonyForm,
 )
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
@@ -47,6 +48,7 @@ from django.utils.translation import gettext as _
 from PIL import Image, ImageDraw, ImageFont
 from decimal import Decimal
 import builtins
+from django.db.models import Min
 
 # Order definitions
 DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Jazz Performance', 'Open',
@@ -244,16 +246,27 @@ def delete_event(request, event_id):
 
     return redirect("event_list")
 
+from collections import defaultdict, OrderedDict
+from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+from django.contrib.admin.views.decorators import staff_member_required
+import json
+from datetime import datetime, timedelta
+
 @login_required
 def start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     is_admin = request.user.is_superuser
     show_entries = event.start_list_published or is_admin
 
-    participations = Participation.objects.filter(event=event).select_related("style").order_by(
-        "group_display_order", "display_order", "id"
+    participations = list(
+        Participation.objects.filter(event=event).select_related("style")
     )
+    ceremonies = list(StartListSlot.objects.filter(event=event))
 
+    # Prefetch dancers
     dancer_participations = DancerParticipation.objects.filter(
         participation__in=participations
     ).select_related("dancer", "dancer__club")
@@ -263,54 +276,65 @@ def start_list(request, event_id):
         dancer_map[dp.participation_id].append(dp.dancer)
 
     grouped_entries = OrderedDict()
-    group_key_to_index = {}
     global_counter = 1
+    current_time = datetime.combine(datetime.today(), event.start_time) if event.start_time else None
 
-    # Start time handling
-    current_time = None
-    if event.start_time:
-        current_time = datetime.combine(datetime.today(), event.start_time)
-
+    # Unified timeline
+    timeline = []
     for p in participations:
-        dancers = dancer_map.get(p.id, [])
-        club = dancers[0].club if dancers else None
-        group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
-        group_index = p.group_display_order or 0
+        timeline.append((p.display_order, "performance", p))
+    for c in ceremonies:
+        timeline.append((c.display_order, "ceremony", c))
+    timeline.sort(key=lambda x: x[0])
 
-        if group_key not in group_key_to_index:
-            group_key_to_index[group_key] = group_index
-            grouped_entries[group_key] = []
+    for _, entry_type, obj in timeline:
+        if entry_type == "performance":
+            dancers = dancer_map.get(obj.id, [])
+            club = dancers[0].club if dancers else None
+            group_key = (obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
 
-        display_dancers = p.group_name if not is_admin and len(dancers) > 3 and p.group_name else dancers
-        start_time_str = current_time.strftime("%H:%M") if current_time else None
+            if group_key not in grouped_entries:
+                grouped_entries[group_key] = []
 
-        grouped_entries[group_key].append({
-            "id": p.id,
-            "style": p.style.name,
-            "difficulty": p.difficulty,
-            "group_type": p.group_type,
-            "age_group": p.age_group,
-            "dancers": display_dancers,
-            "num_dancers": len(dancers),
-            "group_name": p.group_name,
-            "choreographer": p.choreographer_name,
-            "choreography_name": p.choreography_name,
-            "club_name": club.club_name if club else "–",
-            "club_city": club.city if club else "–",
-            "global_row_number": global_counter,
-            "start_time": start_time_str,
-        })
-        global_counter += 1
+            start_time_str = current_time.strftime("%H:%M") if current_time else None
+            grouped_entries[group_key].append({
+                "id": obj.id,
+                "style": obj.style.name,
+                "difficulty": obj.difficulty,
+                "group_type": obj.group_type,
+                "age_group": obj.age_group,
+                "dancers": obj.group_name if not is_admin and len(dancers) > 3 and obj.group_name else dancers,
+                "num_dancers": len(dancers),
+                "group_name": obj.group_name,
+                "choreographer": obj.choreographer_name,
+                "choreography_name": obj.choreography_name,
+                "club_name": club.club_name if club else "–",
+                "club_city": club.city if club else "–",
+                "global_row_number": global_counter,
+                "start_time": start_time_str,
+                "is_ceremony": False,
+            })
+            global_counter += 1
+            if current_time:
+                current_time += timedelta(seconds=get_music_duration(obj))
 
-        if current_time:
-            duration = get_music_duration(p)
-            current_time += timedelta(seconds=duration)
+        elif entry_type == "ceremony":
+            start_time_str = current_time.strftime("%H:%M") if current_time else None
+            end_time_str = (current_time + timedelta(minutes=obj.duration_minutes)).strftime("%H:%M") if current_time else None
+            group_key = ("Ceremony", "", obj.age_group or "", obj.id)
+            grouped_entries[group_key] = [{
+                "id": f"ceremony-{obj.id}",
+                "title": obj.title,
+                "start_time": start_time_str,
+                "end_time": end_time_str,
+                "duration": obj.duration_minutes,
+                "is_ceremony": True,
+                "age_group": obj.age_group,
+            }]
+            if current_time:
+                current_time += timedelta(minutes=obj.duration_minutes)
 
-    sorted_grouped_entries = OrderedDict(
-        sorted(grouped_entries.items(), key=lambda item: group_key_to_index[item[0]])
-    )
-
-    # 🔹 Get highlight key from EventPlaybackState
+    # Highlight
     highlight_key = None
     try:
         highlight_key = EventPlaybackState.objects.get(event=event).current_highlight_key
@@ -319,7 +343,7 @@ def start_list(request, event_id):
 
     return render(request, "core/start_list.html", {
         "event": event,
-        "grouped_entries": sorted_grouped_entries if show_entries else {},
+        "grouped_entries": grouped_entries if show_entries else {},
         "is_admin": is_admin,
         "is_published": event.start_list_published,
         "show_entries": show_entries,
@@ -331,18 +355,10 @@ def start_list(request, event_id):
 def manage_start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
-    if request.method == "POST":
-        try:
-            new_order = request.POST.getlist("ordered_ids[]")
-            for idx, pid in enumerate(new_order):
-                Participation.objects.filter(id=int(pid)).update(display_order=idx)
-            return JsonResponse({"status": "success"})
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=500)
-
-    participations = Participation.objects.filter(event=event).select_related("style").order_by(
-        "group_display_order", "display_order", "id"
+    participations = list(
+        Participation.objects.filter(event=event).select_related("style")
     )
+    ceremonies = list(StartListSlot.objects.filter(event=event))
 
     dancer_participations = DancerParticipation.objects.filter(
         participation__in=participations
@@ -353,52 +369,65 @@ def manage_start_list(request, event_id):
         dancer_map[dp.participation_id].append(dp.dancer)
 
     grouped_entries = OrderedDict()
-    group_key_to_index = {}
     global_counter = 1
+    current_time = datetime.combine(datetime.today(), event.start_time) if event.start_time else None
 
-    current_time = None
-    if event.start_time:
-        current_time = datetime.combine(datetime.today(), event.start_time)
-
+    # Unified timeline
+    timeline = []
     for p in participations:
-        dancers = dancer_map.get(p.id, [])
-        club = dancers[0].club if dancers else None
-        group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
-        group_index = p.group_display_order or 0
+        timeline.append((p.display_order, "performance", p))
+    for c in ceremonies:
+        timeline.append((c.display_order, "ceremony", c))
+    timeline.sort(key=lambda x: x[0])
 
-        if group_key not in group_key_to_index:
-            group_key_to_index[group_key] = group_index
-            grouped_entries[group_key] = []
+    for _, entry_type, obj in timeline:
+        if entry_type == "performance":
+            dancers = dancer_map.get(obj.id, [])
+            club = dancers[0].club if dancers else None
+            group_key = (obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
 
-        start_time_str = current_time.strftime("%H:%M") if current_time else None
+            if group_key not in grouped_entries:
+                grouped_entries[group_key] = []
 
-        grouped_entries[group_key].append({
-            "start_time": start_time_str,
-            "id": p.id,
-            "style": p.style.name,
-            "difficulty": p.difficulty,
-            "group_type": p.group_type,
-            "age_group": p.age_group,
-            "dancers": dancers,
-            "num_dancers": len(dancers),
-            "group_name": p.group_name,
-            "choreographer": p.choreographer_name,
-            "choreography_name": p.choreography_name,
-            "club_name": club.club_name if club else "–",
-            "club_city": club.city if club else "–",
-            "global_row_number": global_counter,
-        })
-        global_counter += 1
+            start_time_str = current_time.strftime("%H:%M") if current_time else None
+            grouped_entries[group_key].append({
+                "id": obj.id,
+                "style": obj.style.name,
+                "difficulty": obj.difficulty,
+                "group_type": obj.group_type,
+                "age_group": obj.age_group,
+                "dancers": dancers,
+                "num_dancers": len(dancers),
+                "group_name": obj.group_name,
+                "choreographer": obj.choreographer_name,
+                "choreography_name": obj.choreography_name,
+                "club_name": club.club_name if club else "–",
+                "club_city": club.city if club else "–",
+                "global_row_number": global_counter,
+                "start_time": start_time_str,
+                "is_ceremony": False,
+            })
+            global_counter += 1
+            if current_time:
+                current_time += timedelta(seconds=get_music_duration(obj))
 
-        if current_time:
-            duration = get_music_duration(p)
-            current_time += timedelta(seconds=duration)
+        elif entry_type == "ceremony":
+            start_time_str = current_time.strftime("%H:%M") if current_time else None
+            end_time_str = (current_time + timedelta(minutes=obj.duration_minutes)).strftime("%H:%M") if current_time else None
+            group_key = ("Ceremony", "", obj.age_group or "", obj.id)
+            grouped_entries[group_key] = [{
+                "id": f"ceremony-{obj.id}",
+                "title": obj.title,
+                "start_time": start_time_str,
+                "end_time": end_time_str,
+                "duration": obj.duration_minutes,
+                "is_ceremony": True,
+                "age_group": obj.age_group,
+            }]
+            if current_time:
+                current_time += timedelta(minutes=obj.duration_minutes)
 
-    sorted_grouped_entries = OrderedDict(
-        sorted(grouped_entries.items(), key=lambda item: group_key_to_index[item[0]])
-    )
-
-    # 🔹 Get highlight key from EventPlaybackState
+    # Highlight
     highlight_key = None
     try:
         highlight_key = EventPlaybackState.objects.get(event=event).current_highlight_key
@@ -407,7 +436,7 @@ def manage_start_list(request, event_id):
 
     return render(request, "core/manage_start_list.html", {
         "event": event,
-        "grouped_entries": sorted_grouped_entries,
+        "grouped_entries": grouped_entries,
         "is_admin": True,
         "is_published": event.is_published,
         "show_entries": True,
@@ -415,34 +444,14 @@ def manage_start_list(request, event_id):
     })
 
 
-
-def get_music_duration(p):
-    # Fallback duration if no music or no .duration attribute
-    if p.music_file and hasattr(p.music_file, "duration") and p.music_file.duration:
-        duration = int(p.music_file.duration)
-    else:
-        if p.group_type in ["Solo", "Duo", "Trio"]:
-            duration = 135  # 2:15
-        elif p.group_type in ["Group", "Formation"]:
-            duration = 180  # 3:00
-        else:
-            duration = 240  # Production or undefined
-
-    # Add buffer
-    if p.group_type in ["Baby", "Mini"]:
-        duration += 60
-    else:
-        duration += 30
-
-    return duration
-
 @staff_member_required
 @require_POST
 def publish_start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     mode = request.POST.get("mode", "default")
 
-    participations = list(Participation.objects.filter(event=event).select_related("style"))
+    participations = list(Participation.objects.filter(event=event))
+    ceremonies = list(StartListSlot.objects.filter(event=event))
 
     if mode == "current":
         ordered_json = request.POST.get("ordered_ids_json", "[]")
@@ -451,38 +460,44 @@ def publish_start_list(request, event_id):
         except Exception:
             ordered_ids = []
 
-        id_to_order = {int(pid): idx for idx, pid in enumerate(ordered_ids)}
-
         group_index_map = {}
         current_index = 0
 
-        for pid in ordered_ids:
-            try:
-                p = Participation.objects.get(id=pid)
-                group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
+        for idx, pid in enumerate(ordered_ids):
+            if str(pid).startswith("ceremony-"):
+                slot_id = int(pid.split("-")[1])
+                try:
+                    c = StartListSlot.objects.get(id=slot_id, event=event)
+                    c.display_order = idx
+                    c.save(update_fields=["display_order"])
+                except StartListSlot.DoesNotExist:
+                    continue
+            else:
+                try:
+                    p = Participation.objects.get(id=int(pid), event=event)
+                    group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
+                    if group_key not in group_index_map:
+                        group_index_map[group_key] = current_index
+                        current_index += 1
 
-                if group_key not in group_index_map:
-                    group_index_map[group_key] = current_index
-                    current_index += 1
+                    p.display_order = idx
+                    p.group_display_order = group_index_map[group_key]
+                    p.save(update_fields=["display_order", "group_display_order"])
+                except Participation.DoesNotExist:
+                    continue
 
-                p.display_order = id_to_order[p.id]
-                p.group_display_order = group_index_map[group_key]
-                p.save(update_fields=["display_order", "group_display_order"])
-            except Participation.DoesNotExist:
-                continue
-
-        # ✅ Only publish if 'current'
         event.start_list_published = True
         event.save(update_fields=["start_list_published"])
         messages.success(request, _("Start list published successfully."))
+
     elif mode == "default":
+        # Reset to default group ordering
         def group_sort_key(p):
-            difficulty_rank = 0 if p.difficulty == 'A' else 1
             return (
-                difficulty_rank,
-                get_order_index(p.style.name, STYLE_ORDER),
-                get_order_index(p.group_type, GROUP_TYPE_ORDER),
                 get_order_index(p.age_group, AGE_GROUP_ORDER),
+                get_order_index(p.group_type, GROUP_TYPE_ORDER),
+                get_order_index(p.style.name, STYLE_ORDER),
+                0 if p.difficulty == 'B' else 1,   # 🔄 B before A
             )
 
         group_map = defaultdict(list)
@@ -491,22 +506,43 @@ def publish_start_list(request, event_id):
             group_map[key].append(p)
 
         sorted_keys = sorted(group_map.keys(), key=lambda key: (
-            0 if key[3] == 'A' else 1,
-            get_order_index(key[0], STYLE_ORDER),
-            get_order_index(key[1], GROUP_TYPE_ORDER),
             get_order_index(key[2], AGE_GROUP_ORDER),
+            get_order_index(key[1], GROUP_TYPE_ORDER),
+            get_order_index(key[0], STYLE_ORDER),
+            0 if key[3] == 'B' else 1,   # 🔄 B before A
         ))
 
+        display_counter = 0
         for group_index, group_key in enumerate(sorted_keys):
             for p in group_map[group_key]:
                 p.group_display_order = group_index
-                p.save(update_fields=["group_display_order"])
+                p.display_order = display_counter   # ✅ ensure global row order is updated
+                p.save(update_fields=["group_display_order", "display_order"])
+                display_counter += 1
 
     else:
         messages.error(request, "Invalid publish mode.")
-        return redirect('manage_start_list', event_id=event.id)
+        return redirect("manage_start_list", event_id=event.id)
 
-    return redirect('manage_start_list', event_id=event.id)
+    return redirect("manage_start_list", event_id=event.id)
+
+
+def get_music_duration(p):
+    if p.music_file and hasattr(p.music_file, "duration") and p.music_file.duration:
+        duration = int(p.music_file.duration)
+    else:
+        if p.group_type in ["Solo", "Duo", "Trio"]:
+            duration = 135
+        elif p.group_type in ["Group", "Formation"]:
+            duration = 180
+        else:
+            duration = 240
+    if p.group_type in ["Baby", "Mini"]:
+        duration += 60
+    else:
+        duration += 30
+    return duration
+
 
 
 @staff_member_required
@@ -847,10 +883,22 @@ def list_event_participants(request, event_id):
     view_mode = request.GET.get("view")
 
     if request.user.is_superuser:
-        participations = Participation.objects.filter(event=event)
+        participations = (
+            Participation.objects.filter(event=event)
+            .select_related("style")
+            .prefetch_related("dancer_links__dancer__club")
+            .order_by("dancer_links__dancer__club__club_name", "id")
+            .distinct()
+        )
     else:
         club = get_object_or_404(DanceClub, user=request.user)
-        participations = Participation.objects.filter(event=event, dancer_links__dancer__club=club).distinct()
+        participations = (
+            Participation.objects.filter(event=event, dancer_links__dancer__club=club)
+            .select_related("style")
+            .prefetch_related("dancer_links__dancer__club")
+            .order_by("dancer_links__dancer__club__club_name", "id")
+            .distinct()
+        )
 
     # 📊 Club Summary Mode
     if request.user.is_superuser and view_mode == "summary":
@@ -908,37 +956,44 @@ def list_event_participants(request, event_id):
             "total_counts": total_counts
         })
 
-    # 🧑‍🎤 Regular participant view
-    grouped = defaultdict(list)
-    for p in participations:
-        key = (
-            p.style_id,
-            p.group_type,
-            p.age_group,
-            p.difficulty,
-            p.choreographer_name,
-        )
-        grouped[key].append(p)
+    # 🧑‍🎤 Regular participant view (grouped by club first)
+    clubs = DanceClub.objects.filter(
+        id__in=participations.values_list("dancer_links__dancer__club_id", flat=True)
+    ).order_by("club_name")
 
-    grouped_participations = [
-        {
-            "style": StyleCategory.objects.get(id=key[0]),
-            "group_type": key[1],
-            "age_group": key[2],
-            "difficulty": key[3],
-            "choreographer_name": key[4],
-            "choreography_name": plist[0].choreography_name if plist and plist[0].choreography_name else "Untitled",
-            "dancers": list({dp.dancer for p in plist for dp in p.dancer_links.all()}),
-            "participation_id": plist[0].id,
-            "music_file": plist[0].music_file,
-        }
-        for key, plist in grouped.items()
-    ]
+    grouped_participations = []
+    for club in clubs:
+        club_entries = participations.filter(dancer_links__dancer__club=club).distinct()
+        club_grouped = defaultdict(list)
+        for p in club_entries:
+            key = (
+                p.style_id,
+                p.group_type,
+                p.age_group,
+                p.difficulty,
+                p.choreographer_name,
+            )
+            club_grouped[key].append(p)
 
-    return render(request, 'core/list_event_participants.html', {
-        'event': event,
-        'grouped_participations': grouped_participations
+        for key, plist in club_grouped.items():
+            grouped_participations.append({
+                "club": club,
+                "style": StyleCategory.objects.get(id=key[0]),
+                "group_type": key[1],
+                "age_group": key[2],
+                "difficulty": key[3],
+                "choreographer_name": key[4],
+                "choreography_name": plist[0].choreography_name if plist and plist[0].choreography_name else "Untitled",
+                "dancers": list({dp.dancer for p in plist for dp in p.dancer_links.all()}),
+                "participation_id": plist[0].id,
+                "music_file": plist[0].music_file,
+            })
+
+    return render(request, "core/list_event_participants.html", {
+        "event": event,
+        "grouped_participations": grouped_participations
     })
+
 
 @staff_member_required
 def manage_styles(request, event_id):
@@ -1665,3 +1720,42 @@ def participation_scores(request, participation_id):
         "final_score": final_score,
         "group_index": group_index,
     })
+
+@staff_member_required
+def add_ceremony(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if request.method == "POST":
+        form = CeremonyForm(request.POST)
+        if form.is_valid():
+            slot = form.save(commit=False)
+            slot.event = event
+            slot.display_order = StartListSlot.objects.filter(event=event).count() + 1
+            slot.save()
+            messages.success(request, _("Ceremony added successfully."))
+            return redirect("manage_start_list", event_id=event.id)
+    else:
+        form = CeremonyForm()
+    return render(request, "core/add_ceremony.html", {"form": form, "event": event})
+
+
+@staff_member_required
+def edit_ceremony(request, slot_id):
+    slot = get_object_or_404(StartListSlot, id=slot_id)
+    if request.method == "POST":
+        form = CeremonyForm(request.POST, instance=slot)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Ceremony updated successfully."))
+            return redirect("manage_start_list", event_id=slot.event.id)
+    else:
+        form = CeremonyForm(instance=slot)
+    return render(request, "core/edit_ceremony.html", {"form": form, "event": slot.event})
+
+
+@staff_member_required
+def delete_ceremony(request, slot_id):
+    slot = get_object_or_404(StartListSlot, id=slot_id)
+    event_id = slot.event.id
+    slot.delete()
+    messages.info(request, _("Ceremony deleted."))
+    return redirect("manage_start_list", event_id=event_id)

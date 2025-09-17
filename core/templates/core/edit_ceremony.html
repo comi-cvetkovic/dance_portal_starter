@@ -1,0 +1,32 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Edit Ceremony" %} – {{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Edit Ceremony" %} – {{ event.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div>
+        <label for="id_title">{% trans "Heading" %}:</label><br>
+        {{ form.title }}
+    </div>
+
+    <div style="margin-top: 1em;">
+        <label for="id_duration_minutes">{% trans "Duration (minutes)" %}:</label><br>
+        {{ form.duration_minutes }}
+    </div>
+
+    <div style="margin-top: 1em;">
+        <label for="id_age_group">{% trans "Age Group (optional)" %}:</label><br>
+        {{ form.age_group }}
+    </div>
+
+    <div style="margin-top: 2em;">
+        <button type="submit" class="btn-green">{% trans "Save Changes" %}</button>
+        <a href="{% url 'manage_start_list' event.id %}" class="btn-default">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}
+

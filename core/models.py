@@ -198,3 +198,22 @@ class Diploma(models.Model):
 
     def __str__(self):
         return f"{self.dancer} – {self.category} – Place {self.placement}"
+    
+class StartListSlot(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="slots")
+    title = models.CharField(max_length=255, verbose_name=_("Heading"))
+    duration_minutes = models.PositiveIntegerField(verbose_name=_("Duration (minutes)"))
+    display_order = models.PositiveIntegerField(default=0)
+    age_group = models.CharField(
+        max_length=20,
+        choices=Participation.AGE_GROUP_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name=_("Age Group (optional)"),
+    )
+
+    class Meta:
+        ordering = ["display_order"]
+
+    def __str__(self):
+        return f"{self.title} ({self.age_group}, {self.duration_minutes} min)"

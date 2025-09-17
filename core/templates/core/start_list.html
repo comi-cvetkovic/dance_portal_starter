@@ -3,15 +3,15 @@
 {% block title %}Start List | {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>Start List for {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
+<h2>{% trans "Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
 
 {% if show_entries %}
 <div class="table-wrapper">
-<table class="start-group" id="group-container" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
+<table class="start-group" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
     <thead>
         <tr>
             <th>#</th>
-            <th>{% trans "Dancer(s)" %}</th>
+            <th>{% trans "Dancer(s) / Ceremony" %}</th>
             <th>{% trans "Choreographer" %}</th>
             <th>{% trans "Choreography" %}</th>
             <th>{% trans "Club" %}</th>
@@ -20,40 +20,38 @@
 
     {% for group_key, group_entries in grouped_entries.items %}
     <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
-        <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
-            <td colspan="6">
-                <strong>
-                    {% if event.results_published %}
-                    <a href="{% url 'category_results' event.id group_key|join:'|' %}" style="text-decoration: none;">
-                        {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
-                    </a>
-                    {% else %}
-                    {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
-                    {% endif %}
-                </strong>
+        {% if group_key.0 == "Ceremony" %}
+        <tr class="group-header">
+            <td colspan="5" style="font-weight:bold; background:#f0f0f0;">
+                Ceremony{% if group_key.2 %} – {{ group_key.2 }}{% endif %}
             </td>
         </tr>
+        {% else %}
+        <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
+            <td colspan="5"><strong>{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</strong></td>
+        </tr>
+        {% endif %}
 
         {% for entry in group_entries %}
-        <tr>
-            <td>
-                {{ entry.global_row_number }}
-                {% if entry.start_time %}
-                <br><span class="start-time">{{ entry.start_time }}</span>
-                {% endif %}
-            </td>
-            <td>
-                {% if entry.dancers|stringformat:"s" == entry.dancers %}
-                {{ entry.dancers }}
-                {% else %}
-                {% for dancer in entry.dancers %}
-                {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                {% endif %}
-            </td>
-            <td>{{ entry.choreographer }}</td>
-            <td>{{ entry.choreography_name }}</td>
-            <td>{{ entry.club_name }}</td>
+        <tr class="{% if entry.is_ceremony %}ceremony-row{% endif %}">
+            {% if entry.is_ceremony %}
+                <td>🎉</td>
+                <td colspan="4"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }} – {{ entry.end_time }}</td>
+            {% else %}
+                <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="start-time">{{ entry.start_time }}</span>{% endif %}</td>
+                <td>
+                    {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
+                        {{ entry.group_name }}
+                    {% else %}
+                        {% for dancer in entry.dancers %}
+                            {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>{{ entry.choreographer }}</td>
+                <td>{{ entry.choreography_name }}</td>
+                <td>{{ entry.club_name }}</td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
@@ -90,6 +88,14 @@
     border-left: 6px solid #ff9800;
 }
 
+.ceremony-row {
+    background-color: #e3f2fd !important;
+    font-size: 1.1em;
+    text-align: center;
+    border-top: 3px solid #2196f3;
+    border-bottom: 3px solid #2196f3;
+}
+
 @media (max-width: 1024px) {
     .start-group th,
     .start-group td {
@@ -105,14 +111,7 @@
 <script>
     // 🔄 Auto refresh every 10s
     setInterval(() => location.reload(), 10000);
-
-    // 🎯 Scroll to highlighted category
-    document.addEventListener("DOMContentLoaded", () => {
-        const highlighted = document.querySelector('.highlighted-group');
-        if (highlighted) {
-            highlighted.scrollIntoView({behavior: 'smooth', block: 'center'});
-        }
-    });
 </script>
 {% endblock %}
+
 

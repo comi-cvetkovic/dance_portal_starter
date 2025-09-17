@@ -85,7 +85,9 @@ urlpatterns = [
 
     path("events/<int:event_id>/diplomas/", views.diploma_list, name="diploma_list"),
 
-
+    path("events/<int:event_id>/add_ceremony/", views.add_ceremony, name="add_ceremony"),
+    path("ceremony/<int:slot_id>/edit/", views.edit_ceremony, name="edit_ceremony"),
+    path("ceremony/<int:slot_id>/delete/", views.delete_ceremony, name="delete_ceremony"),
 
 ]
 

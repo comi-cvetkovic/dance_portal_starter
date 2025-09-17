@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
 from django.utils.translation import gettext_lazy as _
-from .models import Dancer, Event, Participation, DanceClub, StyleCategory, JudgeScore
+from .models import Dancer, Event, Participation, DanceClub, StyleCategory, JudgeScore, StartListSlot
 from mutagen.mp3 import MP3
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
@@ -276,4 +276,13 @@ class ClubLoginForm(AuthenticationForm):
                 _("Your club registration is pending admin approval."),
                 code="inactive",
             )
-
+        
+class CeremonyForm(forms.ModelForm):
+    class Meta:
+        model = StartListSlot
+        fields = ["title", "duration_minutes", "age_group"]
+        labels = {
+            "title": _("Heading"),
+            "duration_minutes": _("Duration"),
+            "age_group": _("Age Group (optional)"),
+        }
