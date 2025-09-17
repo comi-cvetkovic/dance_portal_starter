@@ -118,65 +118,74 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // 🔹 Group-level drag (move entire categories/ceremonies)
     new Sortable(document.getElementById("group-container"), {
         animation: 200,
         handle: ".group-header",
         draggable: "tbody.group-wrapper",
         ghostClass: "dragging-group",
-        scroll: true,                 // ✅ enable scrolling
-        scrollSensitivity: 300,       // how close to edge before scroll
-        scrollSpeed: 30               // scroll speed
+        scroll: true,
+        scrollSensitivity: 50,   // ✅ trigger scroll earlier
+        scrollSpeed: 20,
+        scrollFn: function(offsetX, offsetY) {
+            window.scrollBy(offsetX, offsetY);  // ✅ force page scroll
+        }
     });
 
+    // 🔹 Entry-level drag (move dancers/ceremonies inside group)
     document.querySelectorAll("tbody.group-wrapper").forEach(tbody => {
         new Sortable(tbody, {
             animation: 150,
             handle: ".drag-handle",
             draggable: "tr.draggable-row",
             ghostClass: "dragging",
-            scroll: true,             // ✅ enable scrolling
-            scrollSensitivity: 300,
-            scrollSpeed: 30
+            scroll: true,
+            scrollSensitivity: 50,
+            scrollSpeed: 20,
+            scrollFn: function(offsetX, offsetY) {
+                window.scrollBy(offsetX, offsetY);
+            }
         });
     });
 
+    // 🔹 Publish form submit handler
     window.submitPublish = function(mode, source=null) {
-        const ids=[];
-        document.querySelectorAll("tbody.group-wrapper").forEach(wrapper=>{
-            wrapper.querySelectorAll("tr.draggable-row").forEach(row=>{
+        const ids = [];
+        document.querySelectorAll("tbody.group-wrapper").forEach(wrapper => {
+            wrapper.querySelectorAll("tr.draggable-row").forEach(row => {
                 ids.push(row.dataset.id);
             });
         });
-        document.getElementById("publish-mode").value=mode;
-        document.getElementById("ordered-ids-json").value=JSON.stringify(ids);
-        if(source){
-            document.getElementById("publish-form").elements["source"].value=source;
+        document.getElementById("publish-mode").value = mode;
+        document.getElementById("ordered-ids-json").value = JSON.stringify(ids);
+        if (source) {
+            document.getElementById("publish-form").elements["source"].value = source;
         }
         document.getElementById("publish-form").submit();
     };
 
-    // 🎯 Auto-scroll toggle controls auto-refresh
-    const toggle=document.getElementById('autoscroll-toggle');
-    const highlighted=document.querySelector('.highlighted-group');
-    let refreshTimer=null;
+    // 🔹 Auto-scroll toggle controls auto-refresh
+    const toggle = document.getElementById('autoscroll-toggle');
+    const highlighted = document.querySelector('.highlighted-group');
+    let refreshTimer = null;
 
     function enableAutoScroll(){
-        if(highlighted){
+        if (highlighted) {
             highlighted.scrollIntoView({behavior:'smooth', block:'center'});
         }
-        refreshTimer=setInterval(()=>location.reload(),10000);
+        refreshTimer = setInterval(() => location.reload(), 10000);
     }
     function disableAutoScroll(){
-        if(refreshTimer){ clearInterval(refreshTimer); refreshTimer=null; }
+        if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
     }
 
-    if(toggle){
-        const saved=localStorage.getItem("autoscroll_enabled");
-        toggle.checked=(saved===null || saved==="true");
-        if(toggle.checked){ enableAutoScroll(); }
-        toggle.addEventListener('change',()=>{
+    if (toggle) {
+        const saved = localStorage.getItem("autoscroll_enabled");
+        toggle.checked = (saved === null || saved === "true");
+        if (toggle.checked) { enableAutoScroll(); }
+        toggle.addEventListener('change', () => {
             localStorage.setItem("autoscroll_enabled", toggle.checked);
-            if(toggle.checked){ enableAutoScroll(); } else { disableAutoScroll(); }
+            if (toggle.checked) { enableAutoScroll(); } else { disableAutoScroll(); }
         });
     }
 });
