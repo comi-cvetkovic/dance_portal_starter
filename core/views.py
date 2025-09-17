@@ -245,16 +245,6 @@ def delete_event(request, event_id):
         return redirect("event_list")
 
     return redirect("event_list")
-
-from collections import defaultdict, OrderedDict
-from django.contrib import messages
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
-from django.contrib.admin.views.decorators import staff_member_required
-import json
-from datetime import datetime, timedelta
-
 @login_required
 def start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -285,7 +275,9 @@ def start_list(request, event_id):
         timeline.append((p.display_order, "performance", p))
     for c in ceremonies:
         timeline.append((c.display_order, "ceremony", c))
-    timeline.sort(key=lambda x: x[0])
+
+    # ✅ safe sort (handles NULLs in display_order)
+    timeline.sort(key=lambda x: x[0] if x[0] is not None else 999999)
 
     for _, entry_type, obj in timeline:
         if entry_type == "performance":
@@ -378,7 +370,9 @@ def manage_start_list(request, event_id):
         timeline.append((p.display_order, "performance", p))
     for c in ceremonies:
         timeline.append((c.display_order, "ceremony", c))
-    timeline.sort(key=lambda x: x[0])
+
+    # ✅ safe sort (handles NULLs in display_order)
+    timeline.sort(key=lambda x: x[0] if x[0] is not None else 999999)
 
     for _, entry_type, obj in timeline:
         if entry_type == "performance":
