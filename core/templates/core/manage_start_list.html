@@ -119,17 +119,24 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     new Sortable(document.getElementById("group-container"), {
-        animation:200,
-        handle:".group-header",
-        draggable:"tbody.group-wrapper",
-        ghostClass:"dragging-group"
+        animation: 200,
+        handle: ".group-header",
+        draggable: "tbody.group-wrapper",
+        ghostClass: "dragging-group",
+        scroll: true,                 // ✅ enable scrolling
+        scrollSensitivity: 100,       // how close to edge before scroll
+        scrollSpeed: 30               // scroll speed
     });
+
     document.querySelectorAll("tbody.group-wrapper").forEach(tbody => {
         new Sortable(tbody, {
-            animation:150,
-            handle:".drag-handle",
-            draggable:"tr.draggable-row",
-            ghostClass:"dragging"
+            animation: 150,
+            handle: ".drag-handle",
+            draggable: "tr.draggable-row",
+            ghostClass: "dragging",
+            scroll: true,             // ✅ enable scrolling
+            scrollSensitivity: 100,
+            scrollSpeed: 30
         });
     });
 
