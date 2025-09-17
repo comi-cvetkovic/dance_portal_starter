@@ -68,8 +68,7 @@
         <tr data-id="{{ entry.id }}" class="draggable-row {% if entry.is_ceremony %}ceremony-row{% endif %}">
             <td class="drag-handle">☰</td>
             {% if entry.is_ceremony %}
-                <td>🎉</td>
-                <td colspan="3"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }} – {{ entry.end_time }}</td>
+                <td colspan="3"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
                 <td colspan="2">
                     <a href="{% url 'edit_ceremony' entry.id|cut:'ceremony-' %}" class="btn-edit">{% trans "Edit" %}</a>
                     <a href="{% url 'delete_ceremony' entry.id|cut:'ceremony-' %}" class="btn-delete"

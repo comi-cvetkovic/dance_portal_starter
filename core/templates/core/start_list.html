@@ -35,8 +35,7 @@
         {% for entry in group_entries %}
         <tr class="{% if entry.is_ceremony %}ceremony-row{% endif %}">
             {% if entry.is_ceremony %}
-                <td>🎉</td>
-                <td colspan="4"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }} – {{ entry.end_time }}</td>
+                <td colspan="3"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
             {% else %}
                 <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="start-time">{{ entry.start_time }}</span>{% endif %}</td>
                 <td>
