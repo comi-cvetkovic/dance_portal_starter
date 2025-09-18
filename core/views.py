@@ -1796,8 +1796,14 @@ def list_event_participants_by_category(request, event_id):
         Participation.objects.filter(event=event)
         .values("style__name", "group_type", "age_group", "difficulty")
         .annotate(competitors=Count("id"))
-        .order_by("style__name", "group_type", "age_group", "difficulty")
+        .order_by("difficulty", "style__name", "group_type", "age_group")
     )
+
+    # Make sure 'A' comes before 'B' explicitly
+    categories = sorted(categories, key=lambda x: (0 if x["difficulty"] == "A" else 1,
+                                                   x["style__name"],
+                                                   x["group_type"],
+                                                   x["age_group"]))
 
     return render(request, "core/list_event_participants_by_category.html", {
         "event": event,
