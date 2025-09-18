@@ -1787,16 +1787,16 @@ def delete_ceremony(request, slot_id):
     messages.success(request, _("Ceremony deleted successfully."))
     return redirect("add_ceremony", event_id=event_id)
 
-@staff_member_required
+@login_required
 def list_event_participants_by_category(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
-    # Group participations by (style, group_type, age_group)
+    # Group participations by (style, group_type, age_group, difficulty)
     categories = (
         Participation.objects.filter(event=event)
-        .values("style__name", "group_type", "age_group")
+        .values("style__name", "group_type", "age_group", "difficulty")
         .annotate(competitors=Count("id"))
-        .order_by("style__name", "group_type", "age_group")
+        .order_by("style__name", "group_type", "age_group", "difficulty")
     )
 
     return render(request, "core/list_event_participants_by_category.html", {
