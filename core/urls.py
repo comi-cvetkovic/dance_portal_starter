@@ -89,6 +89,11 @@ urlpatterns = [
     path("ceremony/<int:slot_id>/edit/", views.edit_ceremony, name="edit_ceremony"),
     path("ceremony/<int:slot_id>/delete/", views.delete_ceremony, name="delete_ceremony"),
 
+    path(
+        "events/<int:event_id>/participants/categories/", views.list_event_participants_by_category, 
+        name="list_event_participants_by_category",
+        ),
+
 ]
 
 if settings.DEBUG:

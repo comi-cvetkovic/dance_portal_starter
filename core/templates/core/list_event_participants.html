@@ -23,6 +23,9 @@
                     <form method="get" action="">
                         <button type="submit" name="view" value="summary" class="btn-default">{% trans "View Registered by Club" %}</button>
                     </form>
+                    <form method="get" action="{% url 'list_event_participants_by_category' event.id %}" style="display:inline;">
+                        <button type="submit" class="btn-default">View Registered by Categories</button>
+                    </form>
                 </td>
             </tr>
             {% endif %}

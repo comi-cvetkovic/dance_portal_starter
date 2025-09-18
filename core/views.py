@@ -49,6 +49,7 @@ from PIL import Image, ImageDraw, ImageFont
 from decimal import Decimal
 import builtins
 from django.db.models import Min
+from django.db.models import Count
 
 # Order definitions
 DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Jazz Performance', 'Open',
@@ -1785,3 +1786,20 @@ def delete_ceremony(request, slot_id):
     slot.delete()
     messages.success(request, _("Ceremony deleted successfully."))
     return redirect("add_ceremony", event_id=event_id)
+
+@staff_member_required
+def list_event_participants_by_category(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    # Group participations by (style, group_type, age_group)
+    categories = (
+        Participation.objects.filter(event=event)
+        .values("style__name", "group_type", "age_group")
+        .annotate(competitors=Count("id"))
+        .order_by("style__name", "group_type", "age_group")
+    )
+
+    return render(request, "core/list_event_participants_by_category.html", {
+        "event": event,
+        "categories": categories
+    })

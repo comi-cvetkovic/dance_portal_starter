@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ event.name }} – View by Categories{% endblock %}
+
+{% block content %}
+<h2>{{ event.name }} – Registered Participants by Categories</h2>
+
+<table class="table-default">
+    <thead>
+        <tr>
+            <th>No.</th>
+            <th>Style</th>
+            <th>Category</th>
+            <th>Age</th>
+            <th>Competitors</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in categories %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ c.style__name }}</td>
+            <td>{{ c.group_type }}</td>
+            <td>{{ c.age_group }}</td>
+            <td>{{ c.competitors }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'event_list' %}" class="btn-default">Back</a>
+{% endblock %}
