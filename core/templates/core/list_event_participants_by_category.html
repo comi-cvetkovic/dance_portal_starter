@@ -18,15 +18,25 @@
         </tr>
     </thead>
     <tbody>
-        {% for c in categories %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ c.style__name }}</td>
-            <td>{{ c.group_type }}</td>
-            <td>{{ c.age_group }}</td>
-            <td>{{ c.difficulty }}</td>
-            <td>{{ c.competitors }}</td>
-        </tr>
+        {% regroup categories by difficulty as difficulty_list %}
+        {% for group in difficulty_list %}
+            <!-- Subheading Row -->
+            <tr style="background-color:#ddd; font-weight:bold;">
+                <td colspan="6" style="text-align:center;">
+                    {{ group.grouper }} LEVEL
+                </td>
+            </tr>
+
+            {% for c in group.list %}
+            <tr>
+                <td>{{ forloop.parentloop.counter }}.{{ forloop.counter }}</td>
+                <td>{{ c.style__name }}</td>
+                <td>{{ c.group_type }}</td>
+                <td>{{ c.age_group }}</td>
+                <td>{{ c.difficulty }}</td>
+                <td>{{ c.competitors }}</td>
+            </tr>
+            {% endfor %}
         {% endfor %}
     </tbody>
 </table>
