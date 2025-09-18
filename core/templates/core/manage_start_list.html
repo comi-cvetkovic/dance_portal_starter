@@ -69,6 +69,8 @@
             <td class="drag-handle">☰</td>
             {% if entry.is_ceremony %}
                 <td colspan="3"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
+                <td colspan="2">
+                </td>
             {% else %}
                 <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="start-time">{{ entry.start_time }}</span>{% endif %}</td>
                 <td>
