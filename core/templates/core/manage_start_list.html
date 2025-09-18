@@ -11,8 +11,21 @@
         <input type="hidden" name="mode" id="publish-mode">
         <input type="hidden" name="ordered_ids_json" id="ordered-ids-json">
         <input type="hidden" name="source" value="manage">
-        <button type="button" class="btn-default" onclick="submitPublish('current', 'manage')">{% trans "Publish Start List" %}</button>
-        <button type="button" class="btn-default" onclick="submitPublish('default')">{% trans "Reset to Default Order" %}</button>
+
+        <!-- Save -->
+        <button type="button" class="btn-green" onclick="submitPublish('save', 'manage')">
+            {% trans "Save Start List" %}
+        </button>
+
+        <!-- Publish -->
+        <button type="button" class="btn-default" onclick="submitPublish('publish', 'manage')">
+            {% trans "Publish Start List" %}
+        </button>
+
+        <!-- Reset -->
+        <button type="button" class="btn-default" onclick="submitPublish('default')">
+            {% trans "Reset to Default Order" %}
+        </button>
     </form>
 
     <form method="get" action="{% url 'add_ceremony' event.id %}" style="display:inline;">

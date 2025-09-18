@@ -447,7 +447,7 @@ def publish_start_list(request, event_id):
     participations = list(Participation.objects.filter(event=event))
     ceremonies = list(StartListSlot.objects.filter(event=event))
 
-    if mode == "current":
+    if mode in ("save", "publish"):
         ordered_json = request.POST.get("ordered_ids_json", "[]")
         try:
             ordered_ids = json.loads(ordered_json)
@@ -480,9 +480,12 @@ def publish_start_list(request, event_id):
                 except Participation.DoesNotExist:
                     continue
 
-        event.start_list_published = True
-        event.save(update_fields=["start_list_published"])
-        messages.success(request, _("Start list published successfully."))
+        if mode == "publish":
+            event.start_list_published = True
+            event.save(update_fields=["start_list_published"])
+            messages.success(request, _("Start list published successfully."))
+        else:
+            messages.success(request, _("Start list saved successfully."))
 
     elif mode == "default":
         # Reset to default group ordering
@@ -503,22 +506,25 @@ def publish_start_list(request, event_id):
             get_order_index(key[2], AGE_GROUP_ORDER),
             get_order_index(key[1], GROUP_TYPE_ORDER),
             get_order_index(key[0], STYLE_ORDER),
-            0 if key[3] == 'B' else 1,   # 🔄 B before A
+            0 if key[3] == 'B' else 1,
         ))
 
         display_counter = 0
         for group_index, group_key in enumerate(sorted_keys):
             for p in group_map[group_key]:
                 p.group_display_order = group_index
-                p.display_order = display_counter   # ✅ ensure global row order is updated
+                p.display_order = display_counter
                 p.save(update_fields=["group_display_order", "display_order"])
                 display_counter += 1
 
+        messages.success(request, _("Start list reset to default order."))
+
     else:
-        messages.error(request, "Invalid publish mode.")
+        messages.error(request, "Invalid mode.")
         return redirect("manage_start_list", event_id=event.id)
 
     return redirect("manage_start_list", event_id=event.id)
+
 
 
 def get_music_duration(p):
