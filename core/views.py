@@ -1715,41 +1715,67 @@ def participation_scores(request, participation_id):
         "group_index": group_index,
     })
 
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.utils.translation import gettext as _
+from .models import Event, StartListSlot
+from .forms import CeremonyForm
+
+
 @staff_member_required
 def add_ceremony(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+
+    # fetch ceremonies for this event
+    ceremonies = StartListSlot.objects.filter(event=event, is_ceremony=True).order_by("display_order")
+
     if request.method == "POST":
         form = CeremonyForm(request.POST)
         if form.is_valid():
             slot = form.save(commit=False)
             slot.event = event
+            slot.is_ceremony = True   # ✅ mark as ceremony
             slot.display_order = StartListSlot.objects.filter(event=event).count() + 1
             slot.save()
             messages.success(request, _("Ceremony added successfully."))
-            return redirect("manage_start_list", event_id=event.id)
+            return redirect("add_ceremony", event_id=event.id)
     else:
         form = CeremonyForm()
-    return render(request, "core/add_ceremony.html", {"form": form, "event": event})
+
+    return render(request, "core/add_ceremony.html", {
+        "form": form,
+        "event": event,
+        "ceremonies": ceremonies,
+    })
 
 
 @staff_member_required
 def edit_ceremony(request, slot_id):
-    slot = get_object_or_404(StartListSlot, id=slot_id)
+    slot = get_object_or_404(StartListSlot, id=slot_id, is_ceremony=True)
+    event = slot.event
+
     if request.method == "POST":
         form = CeremonyForm(request.POST, instance=slot)
         if form.is_valid():
             form.save()
             messages.success(request, _("Ceremony updated successfully."))
-            return redirect("manage_start_list", event_id=slot.event.id)
+            return redirect("add_ceremony", event_id=event.id)
     else:
         form = CeremonyForm(instance=slot)
-    return render(request, "core/edit_ceremony.html", {"form": form, "event": slot.event})
+
+    return render(request, "core/add_ceremony.html", {
+        "form": form,
+        "event": event,
+        "ceremonies": StartListSlot.objects.filter(event=event, is_ceremony=True).order_by("display_order"),
+        "edit_mode": True,
+    })
 
 
 @staff_member_required
 def delete_ceremony(request, slot_id):
-    slot = get_object_or_404(StartListSlot, id=slot_id)
+    slot = get_object_or_404(StartListSlot, id=slot_id, is_ceremony=True)
     event_id = slot.event.id
     slot.delete()
-    messages.info(request, _("Ceremony deleted."))
-    return redirect("manage_start_list", event_id=event_id)
+    messages.success(request, _("Ceremony deleted successfully."))
+    return redirect("add_ceremony", event_id=event_id)

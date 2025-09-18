@@ -25,7 +25,7 @@
 
     <div style="margin-top: 2em;">
         <button type="submit" class="btn-green">{% trans "Save Changes" %}</button>
-        <a href="{% url 'manage_start_list' event.id %}" class="btn-default">{% trans "Cancel" %}</a>
+        <a href="{% url 'add_ceremony' event.id %}" class="btn-default">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

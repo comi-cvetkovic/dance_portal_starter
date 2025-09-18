@@ -1,10 +1,11 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
-{% block title %}{% trans "Add Ceremony" %} – {{ event.name }}{% endblock %}
+{% block title %}{% trans "Ceremonies" %} – {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Add Awards Ceremony" %} – {{ event.name }}</h2>
+<h2>{% trans "Awards Ceremonies" %} – {{ event.name }}</h2>
 
+<!-- Add Ceremony Form -->
 <form method="post">
     {% csrf_token %}
     
@@ -25,8 +26,37 @@
 
     <div style="margin-top: 2em;">
         <button type="submit" class="btn-green">{% trans "Add Ceremony" %}</button>
-        <a href="{% url 'manage_start_list' event.id %}" class="btn-default">{% trans "Cancel" %}</a>
+        <a href="{% url 'manage_start_list' event.id %}" class="btn-default">{% trans "Back to Start List" %}</a>
     </div>
 </form>
-{% endblock %}
 
+<hr>
+
+<!-- Existing Ceremonies -->
+<h3 style="margin-top:2em;">{% trans "Existing Ceremonies" %}</h3>
+{% if ceremonies %}
+    <ul style="list-style:none; padding:0;">
+        {% for ceremony in ceremonies %}
+            <li style="margin:0.5em 0;">
+                <strong>{{ ceremony.title }}</strong> 
+                {% if ceremony.age_group %} ({{ ceremony.age_group }}){% endif %}
+                – {{ ceremony.duration_minutes }} {% trans "min" %}
+
+                <!-- Edit button -->
+                <form method="post" action="{% url 'edit_ceremony' ceremony.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-default">{% trans "Edit" %}</button>
+                </form>
+                <!-- Delete button -->
+                <form method="post" action="{% url 'delete_ceremony' ceremony.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete">{% trans "Delete" %}</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>{% trans "No ceremonies added yet." %}</p>
+{% endif %}
+
+{% endblock %}

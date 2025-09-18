@@ -16,7 +16,7 @@
     </form>
 
     <form method="get" action="{% url 'add_ceremony' event.id %}" style="display:inline;">
-        <button type="submit" class="btn-green">+ {% trans "Add Ceremony" %}</button>
+        <button type="submit" class="btn-default">{% trans "Ceremonies" %}</button>
     </form>
 
     {% if event.start_list_published %}
