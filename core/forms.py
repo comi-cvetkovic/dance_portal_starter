@@ -102,16 +102,70 @@ class EventForm(forms.ModelForm):
         label=_("Start Time")
     )
 
+    registration_start = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label=_("Registration Start Date")
+    )
+
+    registration_end = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label=_("Registration End Date")
+    )
+
+    music_end = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label=_("Music Upload End Date (optional)")
+    )
+
     class Meta:
         model = Event
-        fields = ['name', 'location', 'city', 'date', 'start_time', 'notice_image', "is_published", "allow_registrations", "diploma_template"]
+        fields = [
+            'name', 'location', 'city',
+            'date', 'start_time',
+            'notice_image', 'is_published',
+            'allow_registrations', 'diploma_template',
+            'registration_start', 'registration_end', 'music_end'
+        ]
         labels = {
             'name': _("Event Name"),
             'location': _("Location"),
             'city': _("City"),
             'date': _("Date"),
             'notice_image': _("Event Poster / Notice (optional)"),
+            'is_published': _("Is Published"),
+            'allow_registrations': _("Allow Registrations"),
+            'diploma_template': _("Diploma Template"),
+            'registration_start': _("Registration Start Date"),
+            'registration_end': _("Registration End Date"),
+            'music_end': _("Music Upload End Date"),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        reg_start = cleaned_data.get("registration_start")
+        reg_end = cleaned_data.get("registration_end")
+        music_end = cleaned_data.get("music_end")
+        event_date = cleaned_data.get("date")
+
+        if reg_start and reg_end and reg_start > reg_end:
+            raise forms.ValidationError(
+                _("Registration start date cannot be after registration end date.")
+            )
+
+        if music_end and reg_start and music_end < reg_start:
+            raise forms.ValidationError(
+                _("Music upload deadline cannot be before registration start date.")
+            )
+
+        if music_end and event_date and music_end > event_date:
+            raise forms.ValidationError(
+                _("Music upload deadline cannot be after the event date.")
+            )
+
+        return cleaned_data
 
 
 class ParticipationForm(forms.ModelForm):

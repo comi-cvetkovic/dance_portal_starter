@@ -13,6 +13,23 @@
 </ul>
 {% endif %}
 
+{# 🔔 Show registration and music deadlines #}
+<div style="margin: 1em 0; padding: 0.8em; background: #333 ; border: 1px solid #d1d5db; border-radius: 6px;">
+  <strong>{% trans "Registration period" %}:</strong>
+  {% if event.registration_start and event.registration_end %}
+    {{ event.registration_start }} → {{ event.registration_end }}
+  {% else %}
+    {% trans "Not set" %}
+  {% endif %}
+  <br>
+  <strong>{% trans "Music upload deadline" %}:</strong>
+  {% if event.music_end %}
+    {{ event.music_end }}
+  {% else %}
+    {% trans "Open until event date" %} ({{ event.date }})
+  {% endif %}
+</div>
+
 {% if is_superuser %}
 <form method="get" style="margin-bottom: 1em;">
     <label for="club_id">{% trans "Select Club" %}:</label>
@@ -42,6 +59,12 @@
 </ul>
 {% endif %}
 
+{# ⛔ If registration is closed for clubs, disable form #}
+{% if not is_superuser and not event.registration_open %}
+  <p style="color: red; font-weight: bold; margin-top:1em;">
+    {% trans "Registration is currently closed for this event." %}
+  </p>
+{% else %}
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -88,16 +111,22 @@
         {{ form.choreography_name }}
     </p>
 
+    {# 🔒 Hide/disable music upload if outside deadline #}
     <p>
         <label for="id_music_file">{% trans "Upload Music File:" %}</label><br>
-        {{ form.music_file }}
-        {% if form.music_file.errors %}
-        <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
+        {% if event.music_open or is_superuser %}
+          {{ form.music_file }}
+          {% if form.music_file.errors %}
+          <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
+          {% endif %}
+        {% else %}
+          <span style="color: gray;">{% trans "Music upload period is closed." %}</span>
         {% endif %}
     </p>
 
     <button type="submit" class="btn-green">{% trans "Register" %}</button>
 </form>
+{% endif %}
 {% endif %}
 {% endblock %}
 

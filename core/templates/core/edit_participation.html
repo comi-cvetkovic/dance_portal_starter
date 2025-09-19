@@ -13,6 +13,23 @@
 </ul>
 {% endif %}
 
+{# 🔔 Show registration and music deadlines #}
+<div style="margin: 1em 0; padding: 0.8em; background: #333; border: 1px solid #d1d5db; border-radius: 6px; color:#fff;">
+  <strong>{% trans "Registration period" %}:</strong>
+  {% if participation.event.registration_start and participation.event.registration_end %}
+    {{ participation.event.registration_start }} → {{ participation.event.registration_end }}
+  {% else %}
+    {% trans "Not set" %}
+  {% endif %}
+  <br>
+  <strong>{% trans "Music upload deadline" %}:</strong>
+  {% if participation.event.music_end %}
+    {{ participation.event.music_end }}
+  {% else %}
+    {% trans "Open until event date" %} ({{ participation.event.date }})
+  {% endif %}
+</div>
+
 {% if form.errors %}
 <ul style="color: red;">
     {% for field, errors in form.errors.items %}
@@ -23,76 +40,115 @@
 </ul>
 {% endif %}
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+{# ⚡ CASE 1: Both closed for clubs #}
+{% if not request.user.is_superuser and not participation.event.registration_open and not participation.event.music_open %}
+  <p style="color: red; font-weight: bold; margin-top:1em;">
+    {% trans "Editing is currently closed for this event." %}
+  </p>
 
-    <p>
-        <label for="id_group_type">{% trans "Group Type:" %}</label><br>
-        {{ form.group_type }}
-    </p>
+{# ⚡ CASE 2: Registration closed but music still open #}
+{% elif not request.user.is_superuser and not participation.event.registration_open and participation.event.music_open %}
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
 
-    <p>
-        <label for="id_dancers">{% trans "Select Dancer(s):" %}</label><br>
-        {{ form.dancers }}
-    </p>
+      {% if participation.music_file %}
+      <p>
+          <strong>{% trans "Current Music File:" %}</strong><br>
+          <audio controls style="max-width: 400px;">
+              <source src="{{ participation.music_file.url }}" type="audio/mpeg">
+              {% trans "Your browser does not support the audio tag" %}.
+          </audio><br>
+          <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
 
-    <p id="group-name-wrapper" style="display: none;">
-        <label for="id_group_name">{% trans "Group Name:" %}</label><br>
-        {{ form.group_name }}
-    </p>
+          <label style="color:red; font-weight:500;">
+              <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
+          </label>
+      </p>
+      {% endif %}
 
-    <p>
-        <label for="id_style">{% trans "Style:" %}</label><br>
-        {{ form.style }}
-    </p>
+      <p>
+          <label for="id_music_file">{% trans "Replace Music File (optional):" %}</label><br>
+          {{ form.music_file }}
+          {% if form.music_file.errors %}
+          <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
+          {% endif %}
+      </p>
 
-    <p>
-        <label for="id_difficulty">{% trans "Difficulty:" %}</label><br>
-        {{ form.difficulty }}
-    </p>
+      <button type="submit" class="btn-edit">{% trans "Save Music" %}</button>
+  </form>
 
-    <p>
-        <label for="id_age_group">{% trans "Age Group (auto-calculated)" %}:</label><br>
-        {{ form.age_group }}
-        <span style="margin-left:10px; color:gray;" id="avg-age-display"></span>
-    </p>
+{# ⚡ CASE 3: Registration open or admin #}
+{% else %}
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
 
-    <p>
-        <label for="id_choreographer_name">{% trans "Choreographer Name:" %}</label><br>
-        {{ form.choreographer_name }}
-    </p>
+      <p>
+          <label for="id_group_type">{% trans "Group Type:" %}</label><br>
+          {{ form.group_type }}
+      </p>
 
-    <p>
-        <label for="id_choreography_name">{% trans "Choreography Name:" %}</label><br>
-        {{ form.choreography_name }}
-    </p>
+      <p>
+          <label for="id_dancers">{% trans "Select Dancer(s):" %}</label><br>
+          {{ form.dancers }}
+      </p>
 
-    {% if participation.music_file %}
-<p>
-    <strong>Current Music File:</strong><br>
-    <audio controls style="max-width: 400px;">
-        <source src="{{ participation.music_file.url }}" type="audio/mpeg">
-        {% trans "Your browser does not support the audio tag" %}.
-    </audio><br>
-    <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
+      <p id="group-name-wrapper" style="display: none;">
+          <label for="id_group_name">{% trans "Group Name:" %}</label><br>
+          {{ form.group_name }}
+      </p>
 
-    <!-- ✅ Remove option -->
-    <label style="color:red; font-weight:500;">
-        <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
-    </label>
-</p>
+      <p>
+          <label for="id_style">{% trans "Style:" %}</label><br>
+          {{ form.style }}
+      </p>
+
+      <p>
+          <label for="id_difficulty">{% trans "Difficulty:" %}</label><br>
+          {{ form.difficulty }}
+      </p>
+
+      <p>
+          <label for="id_age_group">{% trans "Age Group (auto-calculated)" %}:</label><br>
+          {{ form.age_group }}
+          <span style="margin-left:10px; color:gray;" id="avg-age-display"></span>
+      </p>
+
+      <p>
+          <label for="id_choreographer_name">{% trans "Choreographer Name:" %}</label><br>
+          {{ form.choreographer_name }}
+      </p>
+
+      <p>
+          <label for="id_choreography_name">{% trans "Choreography Name:" %}</label><br>
+          {{ form.choreography_name }}
+      </p>
+
+      {% if participation.music_file %}
+      <p>
+          <strong>{% trans "Current Music File:" %}</strong><br>
+          <audio controls style="max-width: 400px;">
+              <source src="{{ participation.music_file.url }}" type="audio/mpeg">
+              {% trans "Your browser does not support the audio tag" %}.
+          </audio><br>
+          <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
+
+          <label style="color:red; font-weight:500;">
+              <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
+          </label>
+      </p>
+      {% endif %}
+
+      <p>
+          <label for="id_music_file">{% trans "Replace Music File (optional):" %}</label><br>
+          {{ form.music_file }}
+          {% if form.music_file.errors %}
+          <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
+          {% endif %}
+      </p>
+
+      <button type="submit" class="btn-edit">{% trans "Save Changes" %}</button>
+  </form>
 {% endif %}
-
-<p>
-    <label for="id_music_file">{% trans "Replace Music File (optional):" %}</label><br>
-    {{ form.music_file }}
-    {% if form.music_file.errors %}
-    <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
-    {% endif %}
-</p>
-
-    <button type="submit" class="btn-edit">{% trans "Save Changes" %}</button>
-</form>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -290,7 +346,7 @@
       }
 
       $.ajax({
-        url: "{% url 'calculate_age_group' participation.event.id %}",  // ✅ uses participation.event
+        url: "{% url 'calculate_age_group' participation.event.id %}",
         type: "POST",
         data: { "dancers[]": ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
         success: function (data) {

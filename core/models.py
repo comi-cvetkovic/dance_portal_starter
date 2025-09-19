@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 class DanceClub(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="club")
@@ -50,20 +51,39 @@ class Event(models.Model):
     results_published = models.BooleanField(default=False, verbose_name=_("Results Published"))
     start_time = models.TimeField(null=True, blank=True, verbose_name=_("Start Time"))
     notice_image = models.ImageField(
-        upload_to='event_posters/',
+        upload_to="event_posters/",
         blank=True,
         null=True,
-        verbose_name="Event Poster / Notice"
+        verbose_name=_("Event Poster / Notice"),
     )
-
     diploma_template = models.ImageField(
         upload_to="diploma_templates/",
         null=True,
         blank=True,
         verbose_name=_("Diploma Template"),
     )
-
     allow_registrations = models.BooleanField(default=False)
+
+    # NEW fields
+    registration_start = models.DateField(null=True, blank=True, verbose_name=_("Registration Start Date"))
+    registration_end = models.DateField(null=True, blank=True, verbose_name=_("Registration End Date"))
+    music_end = models.DateField(null=True, blank=True, verbose_name=_("Music Upload End Date"))
+
+    @property
+    def registration_open(self):
+        """Check if today is within registration period"""
+        today = timezone.now().date()
+        return (self.registration_start is None or today >= self.registration_start) and \
+               (self.registration_end is None or today <= self.registration_end)
+
+    @property
+    def music_open(self):
+        """Check if today is within music upload period"""
+        today = timezone.now().date()
+        if self.music_end:
+            return (self.registration_start is None or today >= self.registration_start) and today <= self.music_end
+        # if no music_end set, allow until event date
+        return (self.registration_start is None or today >= self.registration_start) and today <= self.date
 
     def __str__(self):
         return f"{self.name} - {self.city} ({self.date})"
@@ -71,7 +91,7 @@ class Event(models.Model):
     class Meta:
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
-        ordering = ["date"] 
+        ordering = ["date"]
 
 
 class Participation(models.Model):

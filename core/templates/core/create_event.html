@@ -34,13 +34,28 @@
     </p>
 
     <p>
+        <label for="id_registration_start">{% trans "Registration Start Date" %}:</label><br>
+        {{ form.registration_start }}
+    </p>
+
+    <p>
+        <label for="id_registration_end">{% trans "Registration End Date" %}:</label><br>
+        {{ form.registration_end }}
+    </p>
+
+    <p>
+        <label for="id_music_end">{% trans "Music Upload End Date (optional)" %}:</label><br>
+        {{ form.music_end }}
+    </p>
+
+    <p>
         <label for="id_notice_image">{% trans "Event Poster / Notice (optional)" %}:</label><br>
         {{ form.notice_image }}
     </p>
 
     <p>
-    <label for="id_diploma_template">{% trans "Diploma Template (optional)" %}:</label><br>
-    {{ form.diploma_template }}
+        <label for="id_diploma_template">{% trans "Diploma Template (optional)" %}:</label><br>
+        {{ form.diploma_template }}
     </p>
 
     <p>
@@ -50,6 +65,4 @@
     <button type="submit" class="btn-green">{% trans "Create Event" %}</button>
 </form>
 {% endblock %}
-
-
 

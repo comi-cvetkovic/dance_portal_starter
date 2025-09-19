@@ -774,12 +774,14 @@ def edit_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == 'POST':
-        # IMPORTANT: include request.FILES
         form = EventForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
             form.save()
             messages.success(request, _("Event updated successfully."))
             return redirect('event_list')
+        else:
+            messages.error(request, _("Please correct the errors below."))
+            print(form.errors)  # Optional: see in console/logs
     else:
         form = EventForm(instance=event)
 
@@ -803,6 +805,11 @@ def event_list(request):
 @login_required
 def register_dancer(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+
+    # ⛔ Block normal clubs if registration is closed
+    if not request.user.is_superuser and not event.registration_open:
+        messages.error(request, _("Registration is currently closed for this event."))
+        return redirect("event_list")
 
     if request.user.is_superuser:
         clubs = DanceClub.objects.all()
@@ -844,12 +851,17 @@ def register_dancer(request, event_id):
                 choreographer_name=form.cleaned_data['choreographer_name'],
                 choreography_name=form.cleaned_data['choreography_name'],
                 group_name=form.cleaned_data.get('group_name'),
-                music_file=form.cleaned_data.get('music_file')
+                # ⛔ only save music if window is open
+                music_file=form.cleaned_data.get('music_file') if event.music_open else None,
             )
 
             # save dancer links
             for dancer in dancers:
                 DancerParticipation.objects.create(participation=participation, dancer=dancer)
+
+            if form.cleaned_data.get('music_file') and not event.music_open():
+                messages.warning(request, _("Music file was not saved because the upload period is closed."))
+
             messages.success(request, _("Participation registered successfully."))
             return redirect(f'{request.path}?club_id={club_id}')
     else:
@@ -860,8 +872,7 @@ def register_dancer(request, event_id):
         dancers = form.cleaned_data.get('dancers')
         age_group, avg_age = calculate_age_group(dancers)
     elif request.method == 'GET' and selected_club:
-        # If GET with dancers in query (future: AJAX/JS), calculate too
-        pass
+        pass  # possible AJAX age calc
 
     # Force field value & disable editing
     if age_group:
@@ -1081,11 +1092,28 @@ def edit_participation(request, participation_id):
     if not request.user.is_superuser and (not club or club.user != request.user):
         return redirect('club_dashboard')
 
+    # Case 1: both closed → block
+    if not request.user.is_superuser and not event.registration_open and not event.music_open:
+        messages.error(request, _("Editing is closed for this event."))
+        return redirect("event_list")
+
     if request.method == 'POST':
+        # ⚡ Case 2: Only music open (skip GroupParticipationForm)
+        if not request.user.is_superuser and not event.registration_open and event.music_open:
+            if "remove_music" in request.POST:
+                if participation.music_file:
+                    participation.music_file.delete(save=False)
+                participation.music_file = None
+            elif "music_file" in request.FILES:
+                participation.music_file = request.FILES["music_file"]
+            participation.save()
+            messages.success(request, _("Music updated successfully."))
+            return redirect('list_event_participants', event_id=event.id)
+
+        # ⚡ Case 3: Full editing allowed
         form = GroupParticipationForm(request.POST, request.FILES, club=club, event=event)
         if form.is_valid():
             new_dancers = form.cleaned_data['dancers']
-            # ✅ Recalculate age group from selected dancers
             age_group, avg_age = calculate_age_group(new_dancers)
 
             participation.style = form.cleaned_data['style']
@@ -1096,45 +1124,45 @@ def edit_participation(request, participation_id):
             participation.choreography_name = form.cleaned_data['choreography_name']
             participation.group_name = form.cleaned_data.get('group_name')
 
-            # ✅ Handle music file
-            if "remove_music" in request.POST:
-                if participation.music_file:
-                    participation.music_file.delete(save=False)
-                participation.music_file = None
-            elif form.cleaned_data.get('music_file'):
-                participation.music_file = form.cleaned_data['music_file']
-
-            participation.save()
-
-            # dancers update
+            # update dancer links
             DancerParticipation.objects.filter(participation=participation).exclude(dancer__in=new_dancers).delete()
             for dancer in new_dancers:
                 DancerParticipation.objects.get_or_create(participation=participation, dancer=dancer)
 
+            # music (admin or within window)
+            if "remove_music" in request.POST:
+                if participation.music_file:
+                    participation.music_file.delete(save=False)
+                participation.music_file = None
+            elif form.cleaned_data.get("music_file"):
+                if event.music_open or request.user.is_superuser:
+                    participation.music_file = form.cleaned_data["music_file"]
+
+            participation.save()
             messages.success(request, _("Participation updated successfully."))
             return redirect('list_event_participants', event_id=event.id)
         else:
-            messages.error(request, "There was a problem updating the participation. Please correct the errors below.")
+            messages.error(request, _("Please correct the errors below."))
     else:
-        initial_dancers = DancerParticipation.objects.filter(participation=participation).values_list('dancer_id', flat=True)
+        initial_dancers = DancerParticipation.objects.filter(participation=participation).values_list("dancer_id", flat=True)
         form = GroupParticipationForm(
             club=club,
             event=event,
             initial={
-                'dancers': initial_dancers,
-                'style': participation.style,
-                'group_type': participation.group_type,
-                'age_group': participation.age_group,
-                'difficulty': participation.difficulty,
-                'choreographer_name': participation.choreographer_name,
-                'choreography_name': participation.choreography_name,
-                'group_name': participation.group_name,
-            }
+                "dancers": initial_dancers,
+                "style": participation.style,
+                "group_type": participation.group_type,
+                "age_group": participation.age_group,
+                "difficulty": participation.difficulty,
+                "choreographer_name": participation.choreographer_name,
+                "choreography_name": participation.choreography_name,
+                "group_name": participation.group_name,
+            },
         )
 
-    return render(request, 'core/edit_participation.html', {
-        'form': form,
-        'participation': participation
+    return render(request, "core/edit_participation.html", {
+        "form": form,
+        "participation": participation,
     })
 
     
@@ -1148,8 +1176,15 @@ def delete_participation(request):
         difficulty = request.POST.get("difficulty")
         choreographer_name = request.POST.get("choreographer_name")
 
+        event = get_object_or_404(Event, id=event_id)
+
+        # ⛔ Block normal clubs if registration is closed
+        if not request.user.is_superuser and not event.registration_open:
+            messages.error(request, _("You cannot delete participations after registration has closed."))
+            return redirect('list_event_participants', event_id=event.id)
+
         participations = Participation.objects.filter(
-            event_id=event_id,
+            event=event,
             style_id=style_id,
             group_type=group_type,
             age_group=age_group,
@@ -1162,13 +1197,13 @@ def delete_participation(request):
             club = get_object_or_404(DanceClub, user=request.user)
             participations = participations.filter(dancer__club=club)
 
-        event = get_object_or_404(Event, id=event_id)
         participations.delete()
         messages.success(request, _("Participation deleted successfully."))
 
-        return redirect('list_event_participants', event_id=event_id)
+        return redirect('list_event_participants', event_id=event.id)
 
     return redirect('event_list')
+
 
 @login_required
 def delete_participation_group(request):
@@ -1180,8 +1215,15 @@ def delete_participation_group(request):
         difficulty = request.POST.get("difficulty")
         choreographer_name = request.POST.get("choreographer_name")
 
+        event = get_object_or_404(Event, id=event_id)
+
+        # ⛔ Block normal clubs if registration is closed
+        if not request.user.is_superuser and not event.registration_open:
+            messages.error(request, _("You cannot delete participations after registration has closed."))
+            return redirect('list_event_participants', event_id=event.id)
+
         participations = Participation.objects.filter(
-            event_id=event_id,
+            event=event,
             style_id=style_id,
             group_type=group_type,
             age_group=age_group,
@@ -1195,7 +1237,7 @@ def delete_participation_group(request):
 
         participations.delete()
         messages.success(request, _("Participation deleted successfully."))
-        return redirect('list_event_participants', event_id=event_id)
+        return redirect('list_event_participants', event_id=event.id)
 
     return redirect('event_list')
 
