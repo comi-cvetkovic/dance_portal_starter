@@ -3,20 +3,16 @@ Description=gunicorn daemon for Dance Portal
 After=network.target
 
 [Service]
-User=django
+User=root
 Group=www-data
-WorkingDirectory=/home/django/dance_portal_starter
+WorkingDirectory=/opt/dance_portal_starter
 
 # Gunicorn start command
-ExecStart=/home/django/dance_portal_starter/venv/bin/gunicorn \
+ExecStart=/opt/dance_portal_starter/venv/bin/gunicorn \
           --workers 3 \
           --umask 007 \
-          --bind unix:/run/gunicorn/danceportal.sock \
+          --bind unix:/opt/dance_portal_starter/danceportal.sock \
           dance_portal.wsgi:application
-
-# Create and manage the runtime directory for the socket
-RuntimeDirectory=gunicorn
-RuntimeDirectoryMode=0755
 
 # ✅ Auto-restart settings
 Restart=always
@@ -28,3 +24,4 @@ KillMode=mixed
 
 [Install]
 WantedBy=multi-user.target
+
