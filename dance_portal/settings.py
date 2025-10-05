@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+load_dotenv("/opt/dance_portal_starter/.env")
 
 # ── Security & debug ────────────────────────────────────────────────────────────
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "1234")  # TODO: set env var in prod
