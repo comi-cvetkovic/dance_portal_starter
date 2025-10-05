@@ -3,7 +3,7 @@ Description=gunicorn daemon for Dance Portal
 After=network.target
 
 [Service]
-User=root
+User=www-data
 Group=www-data
 WorkingDirectory=/opt/dance_portal_starter
 
