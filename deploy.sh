@@ -5,7 +5,7 @@ set -e
 PROJECT_DIR=/opt/dance_portal_starter
 VENV_DIR=$PROJECT_DIR/venv
 SERVICE_NAME=gunicorn
-NGINX_CONF_NAME=danceportal
+NGINX_CONF_NAME=danceportal.conf
 NGINX_CONF_PATH=/etc/nginx/sites-available/$NGINX_CONF_NAME
 
 echo "🚀 Starting deployment for Dance Portal..."
