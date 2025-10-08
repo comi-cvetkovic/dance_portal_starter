@@ -147,3 +147,22 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "5678community.office@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "gwrxovatjbbiinzi")  # Gmail App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "django_errors.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}
+
