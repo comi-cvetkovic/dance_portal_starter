@@ -3,19 +3,162 @@
 {% block title %}{% trans "Notify Clubs" %} | {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Notify Clubs about " %}{{ event.name }} ({{ event.date }})</h2>
 
-<form method="post">
-    {% csrf_token %}
-    <p><strong>{% trans "Select Clubs" %}:</strong></p>
-    {{ form.clubs }}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">
+    {% trans "Notify Clubs about" %} {{ event.name }} ({{ event.date }})
+  </h2>
+  <a href="javascript:history.back()" class="btn btn-coral-outline">
+    {% trans "Back" %}
+  </a>
+</div>
 
-    <p><strong>{% trans "Subject:" %}</strong></p>
-    {{ form.subject }}
+<div class="dp-card">
+  <div class="card-body">
 
-    <p><strong>{% trans "Message" %}:</strong></p>
-    {{ form.message }}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger mb-3">{{ form.non_field_errors }}</div>
+    {% endif %}
 
-    <button type="submit" class="btn-green">{% trans "Send Emails" %}</button>
-</form>
+    <form method="post" class="notify-form" novalidate>
+      {% csrf_token %}
+
+      <!-- Clubs (multi-select) -->
+      <div class="mb-3">
+        <label for="{{ form.clubs.id_for_label }}" class="form-label fw-semibold">
+          {% trans "Select Clubs" %}
+        </label>
+
+        <div class="d-flex gap-2 mb-2 flex-wrap">
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="select-all">
+            {% trans "Select all" %}
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-all">
+            {% trans "Clear" %}
+          </button>
+        </div>
+
+        {{ form.clubs }}
+        {% if form.clubs.errors %}
+          <div class="text-danger small mt-1">{{ form.clubs.errors|join:", " }}</div>
+        {% endif %}
+        {% if form.clubs.help_text %}
+          <div class="form-text">{{ form.clubs.help_text|safe }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Subject -->
+      <div class="mb-3">
+        <label for="{{ form.subject.id_for_label }}" class="form-label fw-semibold">
+          {% trans "Subject" %}
+        </label>
+        {{ form.subject }}
+        {% if form.subject.errors %}
+          <div class="text-danger small mt-1">{{ form.subject.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Message -->
+      <div class="mb-3">
+        <label for="{{ form.message.id_for_label }}" class="form-label fw-semibold">
+          {% trans "Message" %}
+        </label>
+        {{ form.message }}
+        {% if form.message.errors %}
+          <div class="text-danger small mt-1">{{ form.message.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-coral">
+          {% trans "Send Emails" %}
+        </button>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+          {% trans "Cancel" %}
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Card shell, consistent with the rest of the app */
+  .dp-card{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+    overflow:hidden;
+  }
+  .dp-card .card-body{ padding:1.25rem 1.25rem; }
+
+  /* Ensure comfy inputs even if widgets lack Bootstrap classes */
+  .notify-form input[type="text"],
+  .notify-form input[type="email"],
+  .notify-form select,
+  .notify-form textarea{
+    display:block;
+    width:100%;
+    max-width: 820px;
+    border:1px solid #e1d5d1;
+    border-radius:10px;
+    background:#fff;
+    color:#2b2b2b;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+    box-sizing:border-box;
+  }
+  .notify-form input[type="text"],
+  .notify-form input[type="email"],
+  .notify-form select{ height:44px; padding:.6rem .8rem; }
+  .notify-form textarea{ min-height:180px; padding:.7rem .9rem; }
+
+  .notify-form select[multiple]{
+    min-height: 220px;
+    padding:.5rem .6rem; /* browsers often ignore height for multiple; padding keeps text off edges */
+  }
+
+  .notify-form input:focus,
+  .notify-form select:focus,
+  .notify-form textarea:focus{
+    outline:none;
+    border-color:#d76f54;
+    box-shadow:0 0 0 3px rgba(215,111,84,.15);
+  }
+</style>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+  // detect the Select2 dropdown or multiple select
+  const clubSelect = $('.notify-form select[multiple]');
+
+  // If select2 isn’t already initialized, initialize it (optional safeguard)
+  if (clubSelect.length && !clubSelect.hasClass('select2-hidden-accessible')) {
+    clubSelect.select2({
+      width: '100%',
+      placeholder: '{{ _("Select clubs") }}',
+      allowClear: true
+    });
+  }
+
+  // Select All
+  $('#select-all').on('click', function(e) {
+    e.preventDefault();
+    clubSelect.find('option').prop('selected', true);
+    clubSelect.trigger('change');  // important for select2 UI
+  });
+
+  // Clear
+  $('#clear-all').on('click', function(e) {
+    e.preventDefault();
+    clubSelect.val(null).trigger('change');
+  });
+});
+</script>
 {% endblock %}

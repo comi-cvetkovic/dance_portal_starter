@@ -1,51 +1,161 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
-{% block title %}Edit Club | Dance Portal
-{% endblock %}
+{% block title %}{% trans "Edit Club" %} | Dance Portal{% endblock %}
 
 {% block content %}
-    <h2>{% trans "Edit Club:" %} {{ club.club_name }}</h2>
+<div class="auth-card">
+  <div class="auth-head">
+    <h3 class="mb-0"> {% trans "Edit Club" %}</h3>
+  </div>
 
-    <form method="post">
-        {% csrf_token %}
+  <div class="auth-body">
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger mb-3">{{ form.non_field_errors }}</div>
+    {% endif %}
 
-        <p>
-            <label for="id_club_name">{% trans "Club Name:" %}</label><br>
-            {{ form.club_name }}
-        </p>
+    <form method="post" id="edit-club-form" novalidate>
+      {% csrf_token %}
 
-        <p>
-            <label for="id_country">{% trans "Country:" %}</label><br>
-            {{ form.country }}
-        </p>
+      {% for field in form %}
+        <div class="form-block">
+          <label for="{{ field.id_for_label }}" class="form-label">
+            {{ field.label }}{% if field.field.required %} *{% endif %}
+          </label>
 
-        <p>
-            <label for="id_city">{% trans "City:" %}</label><br>
-            {{ form.city }}
-        </p>
+          <div class="input-wrap" data-field-name="{{ field.name }}">
+            {{ field }}
+            {% if field.field.widget.input_type == "password" %}
+              <button type="button" class="pw-eye" aria-label="{% trans 'Show password' %}">🙈</button>
+            {% else %}
+              <span class="left-icon" aria-hidden="true"></span>
+            {% endif %}
+          </div>
 
-        <p>
-            <label for="id_phone_number">{% trans "Phone Number:" %}</label><br>
-            {{ form.phone_number }}
-        </p>
+          {% if field.help_text %}
+            <div class="form-help">{{ field.help_text|safe }}</div>
+          {% endif %}
+          {% if field.errors %}
+            <div class="text-danger small">{{ field.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
 
-        <p>
-            <label for="id_representative_name">{% trans "Representative Name:" %}</label><br>
-            {{ form.representative_name }}
-        </p>
-
-        <p>
-            <label for="id_email">{% trans "Email (used as login)" %}:</label><br>
-            {{ form.email }}
-        </p>
-
-        <p>
-            <label for="id_password">{% trans "Password (leave blank to keep unchanged)" %}:</label><br>
-            {{ form.password }}
-        </p>
-
-        <button type="submit" class = "btn-edit">{% trans "Save Changes" %}</button>
+      <br>
+      <button type="submit" class="btn btn-coral">
+        {% trans "Save Changes" %}
+      </button>
     </form>
-
+  </div>
+</div>
 {% endblock %}
 
+{% block extra_styles %}
+<style>
+  /* Same card style as login/register */
+  .auth-card{
+    width:min(92vw, 520px);
+    margin: 4rem auto 2rem;
+    border-radius: 16px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow: 0 20px 45px rgba(0,0,0,.15);
+  }
+  .auth-head{
+    padding: 16px 20px;
+    background: linear-gradient(180deg, #fff 0%, #fff7f4 100%);
+    border-bottom: 1px solid #f0e2de;
+  }
+  .auth-body{ padding: 18px 20px 22px; }
+
+  .form-block{ margin-bottom: 12px; }
+  .form-label{ font-weight:600; margin-bottom:6px; display:block; color:#333; }
+
+  /* Input wrapper with optional icon and password eye */
+  .input-wrap{ position:relative; }
+  .input-wrap .left-icon{
+    position:absolute; left:10px; top:50%; transform:translateY(-50%);
+    font-size:14px; opacity:.55;
+  }
+
+  .input-wrap input[type="text"],
+  .input-wrap input[type="email"],
+  .input-wrap input[type="password"],
+  .input-wrap input[type="tel"],
+  .input-wrap input[type="number"],
+  .input-wrap select,
+  .input-wrap textarea{
+    width:100%;
+    height:44px;
+    border:1px solid #e1d5d1;
+    border-radius:10px;
+    padding:.55rem .9rem;
+    padding-left:36px;                /* room for left icon */
+    box-sizing:border-box;
+    background:#fff;
+    color:#111;
+    outline:none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+  }
+  .input-wrap textarea{ min-height:100px; height:auto; padding-left:.9rem; }
+  .input-wrap:has(textarea) .left-icon{ display:none; }
+
+  .input-wrap input:focus,
+  .input-wrap select:focus,
+  .input-wrap textarea:focus{
+    border-color:#d76f54;
+    box-shadow:0 0 0 3px rgba(215,111,84,.15);
+  }
+
+  /* Password eye inside input */
+  .pw-eye{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    height:28px; padding:0 8px;
+    border:1px solid #e1d5d1; border-radius:6px;
+    background:#fff; font-size:12px; cursor:pointer;
+  }
+
+  .form-help{ color:#667085; font-size:.9rem; margin-top:.3rem; }
+
+  .w-100{ width:100%; }
+
+  @media (max-width: 480px){
+    .auth-card{ margin-top: 2.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Set nicer left icons by field name/type (cosmetic)
+  (function(){
+    const map = {
+      club: "", name: "", country:"🌍", city:"",
+      phone:"", tel:"", representative:"", email:"", password:""
+    };
+    document.querySelectorAll('#edit-club-form .input-wrap').forEach(w=>{
+      const fname = (w.dataset.fieldName || '').toLowerCase();
+      const input = w.querySelector('input, select, textarea');
+      const icon = w.querySelector('.left-icon');
+      if (!icon || !input) return;
+      if (input.type === 'email') icon.textContent = "";
+      else if (input.type === 'tel') icon.textContent = "";
+      else if (input.type === 'password') icon.textContent = "";
+      else {
+        for (const key in map){ if (fname.includes(key)){ icon.textContent = map[key]; break; } }
+      }
+    });
+
+    // Password eye toggles
+    document.querySelectorAll('#edit-club-form .pw-eye').forEach(btn=>{
+      const wrap = btn.closest('.input-wrap');
+      const pw = wrap && wrap.querySelector('input[type="password"], input[type="text"]');
+      btn.addEventListener('click', ()=>{
+        if (!pw) return;
+        const isPw = pw.type === 'password';
+        pw.type = isPw ? 'text' : 'password';
+        btn.textContent = isPw ? '👁️' : '🙈';
+      });
+    });
+  })();
+</script>
+{% endblock %}

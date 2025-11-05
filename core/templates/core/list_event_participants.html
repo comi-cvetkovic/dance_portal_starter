@@ -3,159 +3,182 @@
 {% block title %}{% trans "Participants | Dance Portal" %}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Participants for " %}{{ event.city }} ({{ event.date }})</h2>
 
-{% if messages %}
-<ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
+<!-- Header + admin toolbar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">{% trans "Participants for " %}{{ event.city }} ({{ event.date }})</h2>
+
+  {% if user.is_superuser %}
+  <div class="d-flex flex-wrap gap-2">
+    <form method="get" action="">
+      <button type="submit" name="view" value="summary"
+              class="btn btn-coral-outline btn-sm btn-fixed">
+        {% trans "View Registered by Club" %}
+      </button>
+    </form>
+    <form method="get" action="{% url 'list_event_participants_by_category' event.id %}">
+      <button type="submit" class="btn btn-coral-outline btn-sm btn-fixed">
+        {% trans "View Registered by Categories" %}
+      </button>
+    </form>
+  </div>
+  {% endif %}
+</div>
 
 {% if grouped_participations %}
-<div class="table-wrapper">
-    <table class="participants-table">
-        <thead>
-            {% if user.is_superuser %}
-            <tr>
-                <td colspan="11" style="text-align:right; padding-bottom: 10px;">
-                    <form method="get" action="">
-                        <button type="submit" name="view" value="summary" class="btn-default">{% trans "View Registered by Club" %}</button>
-                    </form>
-                    <form method="get" action="{% url 'list_event_participants_by_category' event.id %}" style="display:inline;">
-                        <button type="submit" class="btn-default">View Registered by Categories</button>
-                    </form>
-                </td>
-            </tr>
-            {% endif %}
-            <tr>
-                <th>{% trans "# Dancers" %}</th>
-                <th>{% trans "Dancer(s)" %}</th>
-                <th>{% trans "Club" %}</th>
-                <th>{% trans "Style" %}</th>
-                <th>{% trans "Difficulty" %}</th>
-                <th>{% trans "Group Type" %}</th>
-                <th>{% trans "Age Group" %}</th>
-                <th>{% trans "Choreographer" %}</th>
-                <th>{% trans "Choreography" %}</th>
-                <th>{% trans "Music" %}</th>
-                <th>{% trans "Actions" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for group in grouped_participations %}
-            <tr>
-                <td class="center">{{ group.dancers|length }}</td>
-                <td>
-                    {% for dancer in group.dancers %}
-                    {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                </td>
-                <td>{{ group.dancers.0.club.club_name }}</td>
-                <td class="style-col">{{ group.style.name }}</td>
-                <td class="center">{{ group.difficulty }}</td>
-                <td class="center">{{ group.group_type }}</td>
-                <td class="center">{{ group.age_group|default:"–" }}</td>
-                <td>{{ group.choreographer_name }}</td>
-                <td>{{ group.choreography_name|default:"Untitled" }}</td>
-                <td class="center">
-                    {% if group.music_file %}
-                        <span style="color:green;">&#10004;</span>
-                    {% else %}
-                        <span style="color:red;">&#10008;</span>
-                    {% endif %}
-                </td>
-                <td class="actions-cell">
-                    <div class="btn-group">
-                        <form method="get" action="{% url 'edit_participation' group.participation_id %}">
-                            <button type="submit" class="btn-edit">{% trans "Edit" %}</button>
-                        </form>
-                        <form method="post" action="{% url 'delete_participation_group' %}" onsubmit="return confirm('Are you sure you want to delete this group?');">
-                            {% csrf_token %}
-                            <input type="hidden" name="event_id" value="{{ event.id }}">
-                            <input type="hidden" name="style_id" value="{{ group.style.id }}">
-                            <input type="hidden" name="group_type" value="{{ group.group_type }}">
-                            <input type="hidden" name="age_group" value="{{ group.age_group }}">
-                            <input type="hidden" name="difficulty" value="{{ group.difficulty }}">
-                            <input type="hidden" name="choreographer_name" value="{{ group.choreographer_name }}">
-                            <button type="submit" class="btn-delete">{% trans "Delete" %}</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="table-responsive">
+  <table class="table table-striped table-hover table-sm align-middle participants-table">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">{% trans "# Dancers" %}</th>
+        <th scope="col">{% trans "Dancer(s)" %}</th>
+        <th scope="col">{% trans "Club" %}</th>
+        <th scope="col">{% trans "Style" %}</th>
+        <th scope="col">{% trans "Difficulty" %}</th>
+        <th scope="col">{% trans "Group Type" %}</th>
+        <th scope="col">{% trans "Age Group" %}</th>
+        <th scope="col">{% trans "Choreographer" %}</th>
+        <th scope="col">{% trans "Choreography" %}</th>
+        <th scope="col" class="text-center">{% trans "Music" %}</th>
+        <th scope="col" class="text-end">{% trans "Actions" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for group in grouped_participations %}
+      <tr>
+        <td class="text-center">{{ group.dancers|length }}</td>
+        <td>
+          {% for dancer in group.dancers %}
+            {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+        <td>{{ group.dancers.0.club.club_name }}</td>
+        <td class="style-col">{{ group.style.name }}</td>
+        <td class="text-center">{{ group.difficulty }}</td>
+        <td class="text-center">{{ group.group_type }}</td>
+        <td class="text-center">{{ group.age_group|default:"–" }}</td>
+        <td>{{ group.choreographer_name }}</td>
+        <td>{{ group.choreography_name|default:"Untitled" }}</td>
+
+        <td class="text-center">
+          {% if group.music_file %}
+            <i class="bi bi-check-circle-fill text-success"></i>
+          {% else %}
+            <i class="bi bi-x-circle-fill text-danger"></i>
+          {% endif %}
+        </td>
+
+        <!-- Coral Actions Dropdown -->
+        <td class="text-end">
+          <div class="dropdown">
+            <button class="btn btn-coral btn-sm dropdown-toggle"
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {% trans "Actions" %}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li>
+                <a class="dropdown-item text-primary"
+                   href="{% url 'edit_participation' group.participation_id %}">
+                   <i class="bi bi-pencil-square me-1"></i> {% trans "Edit" %}
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="post" action="{% url 'delete_participation_group' %}"
+                      onsubmit="return confirm('Are you sure you want to delete this group?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="event_id" value="{{ event.id }}">
+                  <input type="hidden" name="style_id" value="{{ group.style.id }}">
+                  <input type="hidden" name="group_type" value="{{ group.group_type }}">
+                  <input type="hidden" name="age_group" value="{{ group.age_group }}">
+                  <input type="hidden" name="difficulty" value="{{ group.difficulty }}">
+                  <input type="hidden" name="choreographer_name" value="{{ group.choreographer_name }}">
+                  <button type="submit" class="dropdown-item text-danger">
+                    <i class="bi bi-trash me-1"></i> {% trans "Delete" %}
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
+
 {% else %}
-<p>{% trans "No participants yet." %}</p>
+<p><em>{% trans "No participants yet." %}</em></p>
 {% endif %}
+
 {% endblock %}
 
-{% block extra_styles %}
+{% block extra_head %}
 <style>
-  .participants-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.75rem;
-    table-layout: auto;
+  :root { --coral:#d76f54; }
+
+  /* === Coral outline and filled buttons === */
+  .btn-coral-outline{
+    --bs-btn-color: var(--coral);
+    --bs-btn-border-color: var(--coral);
+    --bs-btn-hover-bg: var(--coral);
+    --bs-btn-hover-border-color: var(--coral);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: var(--coral);
+    --bs-btn-active-border-color: var(--coral);
+    --bs-btn-focus-shadow-rgb: 215,111,84;
   }
-  .participants-table th,
-  .participants-table td {
-    padding: 6px 8px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
+
+  .btn-coral {
+    background-color: var(--coral);
+    border-color: var(--coral);
+    color: #fff;
   }
-  .participants-table thead th {
-    background: #f8f9fa;
-    font-weight: 600;
+  .btn-coral:hover,
+  .btn-coral:focus {
+    background-color: #c45f45;
+    border-color: #c45f45;
+    color: #fff;
+  }
+  .btn-coral:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba(215,111,84,.35);
+  }
+
+  /* === Table styling === */
+  .participants-table td { white-space: normal; word-break: break-word; }
+  .participants-table td.style-col { word-break: keep-all; }
+  .participants-table tbody tr:hover { background-color: rgba(0,0,0,.03); }
+
+  /* Custom alternating grey rows (soft tone) */
+  .participants-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  .participants-table tbody tr:nth-child(even) {
+    background-color: #fdfdfd;
+  }
+
+  /* Icons slightly larger */
+  .participants-table td .bi {
+    font-size: 1.15rem;
+    vertical-align: -2px;
+  }
+
+  /* === Dropdown tweaks === */
+  .dropdown-toggle::after { margin-left: .4rem; vertical-align: .15em; }
+  .dropdown-menu { font-size: 0.875rem; min-width: 8rem; }
+  .dropdown-item i { vertical-align: -1px; }
+
+  /* === Equal width for top toolbar buttons === */
+  .btn-fixed {
+    display: inline-flex !important;
+    justify-content: center;
+    align-items: center;
+    width: 220px !important;
     white-space: nowrap;
-    font-size: 0.8rem;
-  }
-
-  /* Cells show full strings by default */
-  .participants-table td {
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  /* Style column: no awkward breaks */
-  .participants-table td.style-col {
-    white-space: normal;   /* allow wrapping */
-    word-break: keep-all;  /* don’t split inside words */
-  }
-
-  .center { text-align: center; }
-
-  .actions-cell {
-    text-align: right;
-  }
-  .actions-cell .btn-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .actions-cell form { margin: 0; }
-  .actions-cell button { margin: 0; }
-
-  .actions-cell .btn-edit,
-  .actions-cell .btn-delete {
-    min-width: 70px;
     text-align: center;
-    white-space: nowrap;
-    font-size: 0.75rem;
-    height: 28px;
-    padding: 2px 8px;
-    line-height: 1.2;
-  }
-
-  @media (max-width: 768px) {
-    .participants-table { font-size: 0.7rem; }
-    .participants-table th,
-    .participants-table td { padding: 4px 6px; }
-    .actions-cell .btn-group { justify-content: center; }
   }
 </style>
 {% endblock %}
+
+
+

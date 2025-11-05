@@ -214,7 +214,7 @@ class GroupParticipationForm(forms.Form):
         max_length=255,
         required=False,
         label=_("Group Name"),
-        widget=forms.TextInput(attrs={'placeholder': _("Enter group name (for groups of 4+)"), 'id': 'id_group_name'})
+        widget=forms.TextInput(attrs={'placeholder': _("Group name (4+ dancers)"), 'id': 'id_group_name'})
     )
     music_file = forms.FileField(required=False, label=_("Music File"))
 

@@ -1,45 +1,139 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
-
-{% if messages %}
-<ul>
-  {% for message in messages %}
-    <li style="color: green;">{{ message }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
-
-{% block title %}Judges – {{ event.name }}{% endblock %}
+{% block title %}{% trans "Judges" %} – {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Judges for " %}{{ event.name }}</h2>
 
-{% if judges %}
-<ul>
-  {% for judge in judges %}
-    <li>
-      {{ judge.first_name }} {{ judge.last_name }} ({{ judge.username }})
-      <form method="post" action="{% url 'delete_single_judge' event.id judge.id %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn-delete" onclick="return confirm('Delete this judge?');">
-          Delete
-        </button>
-      </form>
-    </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>No judges have been added for this event yet.</p>
+<!-- Header + toolbar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">{% trans "Judges for" %} {{ event.name }}</h2>
+  <div class="d-flex gap-2">
+    <a href="{% url 'event_list' %}" class="btn btn-coral-outline">
+      {% trans "All Events" %}
+    </a>
+  </div>
+</div>
+
+<!-- Flash messages -->
+{% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
 {% endif %}
 
-<hr>
+<div class="row g-4">
+  <!-- Judges list -->
+  <div class="col-12 col-lg-7">
+    <div class="dp-card">
+      <div class="card-header">
+        <h3 class="mb-0">{% trans "Current Judges" %}</h3>
+      </div>
+      <div class="card-body">
+        {% if judges %}
+          <ul class="list-group list-group-flush rounded-3 overflow-hidden">
+            {% for judge in judges %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex flex-column">
+                  <span class="fw-semibold">
+                    {{ judge.first_name }} {{ judge.last_name }}
+                  </span>
+                  <span class="text-muted small">
+                    {% trans "Username" %}: <span class="badge text-bg-light border">{{ judge.username }}</span>
+                  </span>
+                </div>
+                <form method="post" action="{% url 'delete_single_judge' event.id judge.id %}" class="ms-3">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="btn btn-outline-danger btn-sm"
+                          onclick="return confirm('Delete this judge?');">
+                    {% trans "Delete" %}
+                  </button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">{% trans "No judges have been added for this event yet." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 
-<h3>Add Judge</h3>
+  <!-- Add judge form -->
+  <div class="col-12 col-lg-5">
+    <div class="dp-card h-100">
+      <div class="card-header">
+        <h3 class="mb-0">➕ {% trans "Add Judge" %}</h3>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn-green">Add Judge</button>
-</form>
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-3">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          {% for field in form %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text">{{ field.help_text|safe }}</div>
+              {% endif %}
+              {% if field.errors %}
+                <div class="text-danger small">{{ field.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          <div class="text-center">
+            <button type="submit" class="btn btn-coral">
+              {% trans "Add Judge" %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
+{% block extra_head %}
+<style>
+  /* Card shell (consistent with other pages) */
+  .dp-card{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+    overflow:hidden;
+  }
+  .dp-card .card-header{
+    background:#fafafa;
+    border-bottom:1px solid #eee;
+    padding:.8rem 1rem;
+  }
+
+  /* Inputs consistent with theme */
+  .form-control, .form-select{
+    height:44px;
+    border-radius:10px;
+    border:1px solid #e1d5d1;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+  }
+  .form-control:focus, .form-select:focus{
+    border-color:#d76f54;
+    box-shadow:0 0 0 3px rgba(215,111,84,.15);
+  }
+
+  /* List group spacing */
+  .list-group-item{
+    padding:.75rem 1rem;
+  }
+</style>
+{% endblock %}

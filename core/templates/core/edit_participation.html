@@ -1,154 +1,231 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
-{% block title %}Edit Participation | {{ participation.event.name }}{% endblock %}
+{% block title %}{% trans "Edit Participation" %} | {{ participation.event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Edit Participation for " %}{{ participation.event.name }} – {{ participation.event.city }} {{ participation.event.date}}</h2>
+<div class="container-fluid">
+  <h2 class="mb-3">{% trans "Edit Participation for" %} {{ participation.event.name }} – {{ participation.event.city }} {{ participation.event.date }}</h2>
 
-{% if messages %}
-<ul class="messages">
+  {% if messages %}
     {% for message in messages %}
-    <li class="{{ message.tags }}">{{ message }}</li>
+      <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
     {% endfor %}
-</ul>
-{% endif %}
-
-{# 🔔 Show registration and music deadlines #}
-<div style="margin: 1em 0; padding: 0.8em; background: #333; border: 1px solid #d1d5db; border-radius: 6px; color:#fff;">
-  <strong>{% trans "Registration period" %}:</strong>
-  {% if participation.event.registration_start and participation.event.registration_end %}
-    {{ participation.event.registration_start }} → {{ participation.event.registration_end }}
-  {% else %}
-    {% trans "Not set" %}
   {% endif %}
-  <br>
-  <strong>{% trans "Music upload deadline" %}:</strong>
-  {% if participation.event.music_end %}
-    {{ participation.event.music_end }}
+
+  <!-- Event info -->
+  <div class="alert bg-dark text-light rounded-3 py-3 px-4 mb-4">
+    <p class="mb-1">
+      <strong>{% trans "Registration period" %}:</strong>
+      {% if participation.event.registration_start and participation.event.registration_end %}
+        {{ participation.event.registration_start }} → {{ participation.event.registration_end }}
+      {% else %}
+        {% trans "Not set" %}
+      {% endif %}
+    </p>
+    <p class="mb-0">
+      <strong>{% trans "Music upload deadline" %}:</strong>
+      {% if participation.event.music_end %}
+        {{ participation.event.music_end }}
+      {% else %}
+        {% trans "Open until event date" %} ({{ participation.event.date }})
+      {% endif %}
+    </p>
+  </div>
+
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    <strong>{% trans "Please correct the following errors:" %}</strong>
+    <ul class="mb-0 mt-1">
+      {% for field, errors in form.errors.items %}
+        {% if field != 'music_file' %}
+        <li><strong>{{ field|title }}:</strong> {{ errors|join:", " }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {# --- CASE 1: Editing closed --- #}
+  {% if not request.user.is_superuser and not participation.event.registration_open and not participation.event.music_open %}
+    <div class="alert alert-warning fw-bold">{% trans "Editing is currently closed for this event." %}</div>
+
+  {# --- CASE 2: Registration closed but music open --- #}
+  {% elif not request.user.is_superuser and not participation.event.registration_open and participation.event.music_open %}
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% if participation.music_file %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{% trans "Current Music File" %}</label><br>
+            <audio controls class="mt-2 mb-2 w-100" style="max-width:400px;">
+              <source src="{{ participation.music_file.url }}" type="audio/mpeg">
+              {% trans "Your browser does not support the audio tag" %}.
+            </audio>
+            <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
+            <div class="form-check mt-1">
+              <input class="form-check-input" type="checkbox" name="remove_music" id="remove_music">
+              <label class="form-check-label text-danger fw-semibold" for="remove_music">
+                {% trans "Remove current file" %}
+              </label>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="id_music_file" class="form-label fw-semibold">{% trans "Replace Music File (optional)" %}</label>
+            {{ form.music_file }}
+            {% if form.music_file.errors %}
+              <div class="text-danger small">{{ form.music_file.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-coral">{% trans "Save Music" %}</button>
+        </form>
+      </div>
+    </div>
+
+  {# --- CASE 3: Registration open or admin --- #}
   {% else %}
-    {% trans "Open until event date" %} ({{ participation.event.date }})
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" id="editParticipationForm">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="id_group_type" class="form-label fw-semibold">{% trans "Group Type" %}</label>
+          {{ form.group_type }}
+        </div>
+
+        <hr>
+        <div class="mb-3">
+          <label for="id_dancers" class="form-label fw-semibold">{% trans "Select Dancer(s)" %}</label>
+          {{ form.dancers }}
+          <div class="dancer-tools mt-2" id="dancer-tools" style="display:none;">
+            <button type="button" class="btn-mini" id="btn-select-all">{% trans "Select all" %}</button>
+            <button type="button" class="btn-mini" id="btn-clear">{% trans "Clear" %}</button>
+            <span id="sel-count" class="text-muted ms-2"></span>
+          </div>
+        </div>
+
+        <hr>
+        <div class="mb-3" id="group-name-wrapper" style="display:none;">
+          <label for="id_group_name" class="form-label fw-semibold">{% trans "Group Name" %}</label>
+          {{ form.group_name }}
+        </div>
+
+        
+        <div class="mb-3">
+          <label for="id_style" class="form-label fw-semibold">{% trans "Style" %}</label>
+          {{ form.style }}
+        </div>
+
+        <hr>
+        <div class="mb-3">
+          <label for="id_difficulty" class="form-label fw-semibold">{% trans "Difficulty" %}</label>
+          {{ form.difficulty }}
+        </div>
+
+        <hr>
+        <div class="mb-3">
+          <label for="id_age_group" class="form-label fw-semibold">{% trans "Age Group (auto-calculated)" %}</label>
+          {{ form.age_group }}
+          <span id="avg-age-display" class="ms-2 text-secondary small"></span>
+        </div>
+
+        <hr>
+        <div class="mb-3">
+          <label for="id_choreographer_name" class="form-label fw-semibold">{% trans "Choreographer Name" %}</label>
+          {{ form.choreographer_name }}
+        </div>
+
+        <hr>
+        <div class="mb-3">
+          <label for="id_choreography_name" class="form-label fw-semibold">{% trans "Choreography Name" %}</label>
+          {{ form.choreography_name }}
+        </div>
+
+        <hr>
+        {% if participation.music_file %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{% trans "Current Music File" %}</label><br>
+          <audio controls class="mt-2 mb-2 w-100" style="max-width:400px;">
+            <source src="{{ participation.music_file.url }}" type="audio/mpeg">
+            {% trans "Your browser does not support the audio tag" %}.
+          </audio>
+          <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
+          <div class="form-check mt-1">
+            <input class="form-check-input" type="checkbox" name="remove_music" id="remove_music2">
+            <label class="form-check-label text-danger fw-semibold" for="remove_music2">
+              {% trans "Remove current file" %}
+            </label>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label for="id_music_file" class="form-label fw-semibold">{% trans "Replace Music File (optional)" %}</label>
+          {{ form.music_file }}
+          {% if form.music_file.errors %}
+            <div class="text-danger small">{{ form.music_file.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mt-4">
+          <button type="submit" class="btn btn-coral">{% trans "Save Changes" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
   {% endif %}
 </div>
+{% endblock %}
 
-{% if form.errors %}
-<ul style="color: red;">
-    {% for field, errors in form.errors.items %}
-    {% if field != 'music_file' %}
-    <li><strong>{{ field|title }}:</strong> {{ errors|join:", " }}</li>
-    {% endif %}
-    {% endfor %}
-</ul>
-{% endif %}
+{% block extra_styles %}
+<style>
+  :root { --coral:#d76f54; }
+  .btn-coral {
+    background-color: var(--coral);
+    border-color: var(--coral);
+    color:#fff;
+  }
+  .btn-coral:hover, .btn-coral:focus {
+    background-color:#c45f45;
+    border-color:#c45f45;
+    color:#fff;
+  }
 
-{# ⚡ CASE 1: Both closed for clubs #}
-{% if not request.user.is_superuser and not participation.event.registration_open and not participation.event.music_open %}
-  <p style="color: red; font-weight: bold; margin-top:1em;">
-    {% trans "Editing is currently closed for this event." %}
-  </p>
+  /* Small gray toolbar buttons */
+  .btn-mini {
+    font-size:13px; padding:6px 12px; border-radius:6px;
+    border:1px solid #4b5563; background:#374151; color:#fff;
+    font-weight:500; cursor:pointer; margin-right:8px;
+    transition:background .2s, transform .1s;
+  }
+  .btn-mini:hover { background:#1f2937; transform:translateY(-1px); }
+  .btn-mini:active { background:#111827; transform:translateY(0); }
 
-{# ⚡ CASE 2: Registration closed but music still open #}
-{% elif not request.user.is_superuser and not participation.event.registration_open and participation.event.music_open %}
-  <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      {% if participation.music_file %}
-      <p>
-          <strong>{% trans "Current Music File:" %}</strong><br>
-          <audio controls style="max-width: 400px;">
-              <source src="{{ participation.music_file.url }}" type="audio/mpeg">
-              {% trans "Your browser does not support the audio tag" %}.
-          </audio><br>
-          <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
-
-          <label style="color:red; font-weight:500;">
-              <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
-          </label>
-      </p>
-      {% endif %}
-
-      <p>
-          <label for="id_music_file">{% trans "Replace Music File (optional):" %}</label><br>
-          {{ form.music_file }}
-          {% if form.music_file.errors %}
-          <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
-          {% endif %}
-      </p>
-
-      <button type="submit" class="btn-edit">{% trans "Save Music" %}</button>
-  </form>
-
-{# ⚡ CASE 3: Registration open or admin #}
-{% else %}
-  <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      <p>
-          <label for="id_group_type">{% trans "Group Type:" %}</label><br>
-          {{ form.group_type }}
-      </p>
-
-      <p>
-          <label for="id_dancers">{% trans "Select Dancer(s):" %}</label><br>
-          {{ form.dancers }}
-      </p>
-
-      <p id="group-name-wrapper" style="display: none;">
-          <label for="id_group_name">{% trans "Group Name:" %}</label><br>
-          {{ form.group_name }}
-      </p>
-
-      <p>
-          <label for="id_style">{% trans "Style:" %}</label><br>
-          {{ form.style }}
-      </p>
-
-      <p>
-          <label for="id_difficulty">{% trans "Difficulty:" %}</label><br>
-          {{ form.difficulty }}
-      </p>
-
-      <p>
-          <label for="id_age_group">{% trans "Age Group (auto-calculated)" %}:</label><br>
-          {{ form.age_group }}
-          <span style="margin-left:10px; color:gray;" id="avg-age-display"></span>
-      </p>
-
-      <p>
-          <label for="id_choreographer_name">{% trans "Choreographer Name:" %}</label><br>
-          {{ form.choreographer_name }}
-      </p>
-
-      <p>
-          <label for="id_choreography_name">{% trans "Choreography Name:" %}</label><br>
-          {{ form.choreography_name }}
-      </p>
-
-      {% if participation.music_file %}
-      <p>
-          <strong>{% trans "Current Music File:" %}</strong><br>
-          <audio controls style="max-width: 400px;">
-              <source src="{{ participation.music_file.url }}" type="audio/mpeg">
-              {% trans "Your browser does not support the audio tag" %}.
-          </audio><br>
-          <em>{{ participation.music_file.name|cut:"music_uploads/" }}</em><br>
-
-          <label style="color:red; font-weight:500;">
-              <input type="checkbox" name="remove_music"> {% trans "Remove current file" %}
-          </label>
-      </p>
-      {% endif %}
-
-      <p>
-          <label for="id_music_file">{% trans "Replace Music File (optional):" %}</label><br>
-          {{ form.music_file }}
-          {% if form.music_file.errors %}
-          <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
-          {% endif %}
-      </p>
-
-      <button type="submit" class="btn-edit">{% trans "Save Changes" %}</button>
-  </form>
-{% endif %}
+  /* Select2 styling */
+  .select2-container--default .select2-selection--multiple {
+    min-height:44px; border-radius:10px; border:1px solid #cbd5e1;
+    padding:6px 8px; background:#fff;
+  }
+  .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background:#f3f4f6; border:1px solid #d1d5db; color:#111827;
+    border-radius:16px; padding:6px 12px 6px 28px; font-size:14px;
+  }
+  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    position:absolute; left:6px; top:4px; font-size:14px; font-weight:bold;
+    color:#fff; background:#dc2626; border-radius:50%; width:18px; height:18px;
+    line-height:16px; text-align:center; opacity:1; cursor:pointer;
+  }
+  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background:#b91c1c;
+  }
+  .select2-results__option--highlighted {
+    background:#1f2937!important; color:#fff!important;
+  }
+</style>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -156,247 +233,74 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-{% block extra_styles %}
-<style>
-  /* Chip-style, clearer multi-select */
-  .select2-container--default .select2-selection--multiple {
-    min-height: 44px; 
-    border-radius: 10px; 
-    border: 1px solid #cbd5e1; 
-    padding: 6px 8px;
-    background: #fff;
-  }
-
-  .select2-container--default .select2-selection--multiple .select2-selection__rendered {
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 6px;
-  }
-
-  .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    position: relative; 
-    background: #f3f4f6; 
-    border: 1px solid #d1d5db;
-    color: #111827; 
-    border-radius: 16px; 
-    padding: 6px 12px 6px 28px; 
-    font-size: 14px;
-  }
-
-  /* More visible ❌ remove button */
-  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    position: absolute; 
-    left: 6px; 
-    top: 4px; 
-    font-size: 14px; 
-    font-weight: bold;
-    color: #fff; 
-    background: #dc2626;   /* bright red circle */
-    border-radius: 50%; 
-    width: 18px; 
-    height: 18px; 
-    line-height: 16px; 
-    text-align: center;
-    opacity: 1; 
-    cursor: pointer;
-  }
-
-  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-    background: #b91c1c;   /* darker red on hover */
-  }
-
-  /* Dropdown box */
-  .select2-container .select2-dropdown { 
-    border-radius: 8px; 
-    background: #fff;
-    color: #000;
-  }
-
-  /* Dropdown option text */
-  .select2-results__option { 
-    padding: 8px 12px; 
-    color: #000;
-    background: #fff;
-  }
-
-  /* Highlighted (hover/keyboard) option */
-  .select2-results__option--highlighted { 
-    background: #1f2937 !important; 
-    color: #fff !important; 
-  }
-
-  /* Tiny utility buttons */
-  .btn-mini {
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid #4b5563;
-    background: #374151;
-    color: #fff;
-    font-weight: 500;
-    cursor: pointer;
-    margin-right: 8px;
-    transition: background 0.2s, transform 0.1s;
-  }
-
-  .btn-mini:hover {
-    background: #1f2937;
-    transform: translateY(-1px);
-  }
-
-  .btn-mini:active {
-    background: #111827;
-    transform: translateY(0);
-  }
-
-  .dancer-tools {
-    margin: 8px 0 4px;
-    display: none;
-  }
-</style>
-{% endblock %}
-
-
-
 <script>
-  const dancerLimits = {
-    'Solo':[1,1], 'Duo':[2,2], 'Trio':[3,3],
-    'Group':[4,9], 'Formation':[10,29], 'Production':[30,200]
-  };
+const dancerLimits = {
+  'Solo':[1,1],'Duo':[2,2],'Trio':[3,3],
+  'Group':[4,9],'Formation':[10,29],'Production':[30,200]
+};
 
-  $(function () {
-    const dancerSelect = $('#id_dancers');
-    const groupTypeSelect = $('#id_group_type');
-    const groupNameWrapper = $('#group-name-wrapper');
-    const ageGroupField = $('#id_age_group');
-    const avgAgeSpan = $('<span style="margin-left:10px; color:gray;" id="avg-age-display"></span>');
-    ageGroupField.after(avgAgeSpan);
+$(function(){
+  const dancerSelect = $('#id_dancers');
+  const groupTypeSelect = $('#id_group_type');
+  const groupNameWrapper = $('#group-name-wrapper');
+  const ageGroupField = $('#id_age_group');
+  const avgAgeSpan = $('#avg-age-display');
 
-    // Toolbar (Select all / Clear)
-    const tools = $(`
-      <div class="dancer-tools" id="dancer-tools">
-        <button type="button" class="btn-mini" id="btn-select-all">Select all</button>
-        <button type="button" class="btn-mini" id="btn-clear">Clear</button>
-        <span id="sel-count" style="margin-left:8px; color:#6b7280;"></span>
-      </div>
-    `);
-    dancerSelect.after(tools);
-
-    function initSelect2Multi(max) {
-      dancerSelect.select2({
-        width: '100%',
-        placeholder: "Type to search…",
-        allowClear: true,
-        closeOnSelect: false,
-        maximumSelectionLength: max
-      });
-      $('#dancer-tools').show();
-    }
-    function initSelect2Single() {
-      dancerSelect.select2({
-        width: '100%',
-        placeholder: "Select a dancer",
-        allowClear: true,
-        closeOnSelect: true
-      });
-      $('#dancer-tools').hide();
-    }
-
-    function refreshCount() {
-      let vals = dancerSelect.val() || [];
-      if (!Array.isArray(vals)) vals = [vals];
-      const count = vals.filter(v => v && v.trim() !== '').length;
-      $('#sel-count').text(count ? `${count} selected` : '');
-    }
-
-    function updateGroupTypeSettings() {
-      const groupType = groupTypeSelect.val();
-      const [min,max] = dancerLimits[groupType] || [0,999];
-
-      dancerSelect.select2('destroy');
-
-      if (groupType === 'Solo') {
-        dancerSelect.prop('multiple', false).val(null).trigger('change');
-        initSelect2Single();
-      } else {
-        dancerSelect.prop('multiple', true);
-        initSelect2Multi(max);
-      }
-
-      if (['Group','Formation','Production'].includes(groupType)) {
-        groupNameWrapper.show();
-      } else {
-        groupNameWrapper.hide();
-        $('#id_group_name').val('');
-      }
-      refreshCount();
-    }
-
-    function updateAgeGroup() {
-      let ids = dancerSelect.val();
-      if (!ids) ids = [];
-      if (!Array.isArray(ids)) ids = [ids];
-      ids = ids.filter(x => x && x.trim() !== '');
-
-      if (ids.length === 0) {
-        ageGroupField.prop("value","").trigger("change");
-        avgAgeSpan.text('');
+  function initSelect2Multi(max){
+    dancerSelect.select2({width:'100%',placeholder:"Type to search…",allowClear:true,closeOnSelect:false,maximumSelectionLength:max});
+    $('#dancer-tools').show();
+  }
+  function initSelect2Single(){
+    dancerSelect.select2({width:'100%',placeholder:"Select a dancer",allowClear:true,closeOnSelect:true});
+    $('#dancer-tools').hide();
+  }
+  function refreshCount(){
+    let vals=dancerSelect.val()||[];
+    if(!Array.isArray(vals)) vals=[vals];
+    const count=vals.filter(v=>v&&v.trim()!=='').length;
+    $('#sel-count').text(count?`${count} selected`: '');
+  }
+  function updateGroupTypeSettings(){
+    const type=groupTypeSelect.val();
+    const [min,max]=dancerLimits[type]||[0,999];
+    dancerSelect.select2('destroy');
+    if(type==='Solo'){ dancerSelect.prop('multiple',false).val(null).trigger('change'); initSelect2Single(); }
+    else{ dancerSelect.prop('multiple',true); initSelect2Multi(max); }
+    if(['Group','Formation','Production'].includes(type)){ groupNameWrapper.show(); }
+    else{ groupNameWrapper.hide(); $('#id_group_name').val(''); }
+    refreshCount();
+  }
+  function updateAgeGroup(){
+    let ids=dancerSelect.val(); if(!ids) ids=[];
+    if(!Array.isArray(ids)) ids=[ids]; ids=ids.filter(x=>x&&x.trim()!=='');
+    if(ids.length===0){ ageGroupField.prop("value","").trigger("change"); avgAgeSpan.text(''); refreshCount(); return; }
+    $.ajax({
+      url:"{% url 'calculate_age_group' participation.event.id %}",
+      type:"POST", data:{"dancers[]":ids,csrfmiddlewaretoken:'{{ csrf_token }}'},
+      success:function(data){
+        if(data.age_group){ ageGroupField.prop("value",data.age_group).trigger("change"); avgAgeSpan.text(`(Average age: ${data.avg_age})`);}
+        else{ ageGroupField.prop("value","").trigger("change"); avgAgeSpan.text(''); }
         refreshCount();
-        return;
       }
-
-      $.ajax({
-        url: "{% url 'calculate_age_group' participation.event.id %}",
-        type: "POST",
-        data: { "dancers[]": ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
-        success: function (data) {
-          if (data.age_group) {
-            ageGroupField.prop("value", data.age_group).trigger("change");
-            avgAgeSpan.text(`(Average age: ${data.avg_age})`);
-          } else {
-            ageGroupField.prop("value","").trigger("change");
-            avgAgeSpan.text('');
-          }
-          refreshCount();
-        }
-      });
-    }
-
-    function validateGroupSize() {
-      const groupType = groupTypeSelect.val();
-      let selected = dancerSelect.val() || [];
-      if (!Array.isArray(selected)) selected = [selected];
-      const numSelected = selected.filter(x => x && x.trim() !== '').length;
-      const [min,max] = dancerLimits[groupType] || [0,999];
-      if (numSelected < min || numSelected > max) {
-        alert(`${groupType} requires between ${min} and ${max} dancers. You selected ${numSelected}.`);
-        return false;
-      }
-      return true;
-    }
-
-    // Toolbar actions
-    $(document).on('click', '#btn-select-all', function () {
-      dancerSelect.find('option').prop('selected', true);
-      dancerSelect.trigger('change');
-      updateAgeGroup();
     });
-    $(document).on('click', '#btn-clear', function () {
-      dancerSelect.val(null).trigger('change');
-      updateAgeGroup();
-    });
-
-    // Events
-    groupTypeSelect.on('change', updateGroupTypeSettings);
-    dancerSelect.on('change', updateAgeGroup);
-
-    $("form").on("submit", function (e) { if (!validateGroupSize()) e.preventDefault(); });
-
-    // init
-    dancerSelect.select2({ width:'100%', placeholder:"Type to search…", allowClear:true });
-    updateGroupTypeSettings();
-    updateAgeGroup();
-  });
+  }
+  function validateGroupSize(){
+    const type=groupTypeSelect.val();
+    let selected=dancerSelect.val()||[];
+    if(!Array.isArray(selected)) selected=[selected];
+    const num=selected.filter(x=>x&&x.trim()!=='').length;
+    const [min,max]=dancerLimits[type]||[0,999];
+    if(num<min||num>max){ alert(`${type} requires between ${min} and ${max} dancers. You selected ${num}.`); return false;}
+    return true;
+  }
+  $(document).on('click','#btn-select-all',function(){ dancerSelect.find('option').prop('selected',true); dancerSelect.trigger('change'); updateAgeGroup(); });
+  $(document).on('click','#btn-clear',function(){ dancerSelect.val(null).trigger('change'); updateAgeGroup(); });
+  groupTypeSelect.on('change',updateGroupTypeSettings);
+  dancerSelect.on('change',updateAgeGroup);
+  $("form").on("submit",function(e){ if(!validateGroupSize()) e.preventDefault(); });
+  dancerSelect.select2({width:'100%',placeholder:"Type to search…",allowClear:true});
+  updateGroupTypeSettings(); updateAgeGroup();
+});
 </script>
 {% endblock %}
 

@@ -433,7 +433,7 @@ def manage_start_list(request, event_id):
         "event": event,
         "grouped_entries": grouped_entries,
         "is_admin": True,
-        "is_published": event.is_published,
+        "is_published": event.start_list_published,
         "show_entries": True,
         "highlight_key": highlight_key,
     })

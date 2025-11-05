@@ -1,202 +1,212 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
-{% block title %}Manage Start List | {{ event.name }}{% endblock %}
+{% block title %}{% trans "Manage Start List" %} | {{ event.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* --- Coral themed sticky toolbar --- */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #d76f54;
+    padding: 0.8rem 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  .toolbar .btn {
+    background: #fff;
+    color: #d76f54;
+    border-color: #fff;
+    font-weight: 500;
+  }
+  .toolbar .btn:hover {
+    background: #c45f45;
+    border-color: #c45f45;
+    color: #fff;
+  }
+
+  /* --- Table styling --- */
+  .table-wrapper { overflow-x: auto; }
+  table th, table td { vertical-align: middle; padding: .6rem .75rem; }
+  table thead th { background:#f8f9fa; font-weight:600; }
+  .group-header { cursor: grab; background:#f6f6f6; font-weight:600; }
+  .highlighted-group { background-color:#fff7d6 !important; border-left:6px solid #ff9800; }
+  .ceremony-row { background-color:#e3f2fd !important; font-size:1.05em; border-top:3px solid #2196f3; border-bottom:3px solid #2196f3; }
+  .drag-handle { cursor: grab; color:#777; user-select:none; }
+  .drag-handle:active { cursor: grabbing; }
+  tr.dragging-group, tr.dragging { opacity:0.7; }
+
+  @media (max-width:1024px) {
+    table th, table td { font-size:.85rem; padding:4px; }
+    .toolbar { justify-content:center; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<h2>{% trans "Manage Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
+<div class="container-fluid">
+  <div class="toolbar">
+    <form id="publish-form" method="post" action="{% url 'publish_start_list' event.id %}" class="d-inline">
+      {% csrf_token %}
+      <input type="hidden" name="mode" id="publish-mode">
+      <input type="hidden" name="ordered_ids_json" id="ordered-ids-json">
+      <input type="hidden" name="source" value="manage">
 
-<div id="sticky-toolbar">
-    <form id="publish-form" method="post" action="{% url 'publish_start_list' event.id %}" style="display:inline;">
-        {% csrf_token %}
-        <input type="hidden" name="mode" id="publish-mode">
-        <input type="hidden" name="ordered_ids_json" id="ordered-ids-json">
-        <input type="hidden" name="source" value="manage">
-
-        <!-- Save -->
-        <button type="button" class="btn-green" onclick="submitPublish('save', 'manage')">
-            {% trans "Save Start List" %}
-        </button>
-
-        <!-- Publish -->
-        <button type="button" class="btn-default" onclick="submitPublish('publish', 'manage')">
-            {% trans "Publish Start List" %}
-        </button>
-
-        <!-- Reset -->
-        <button type="button" class="btn-default" onclick="submitPublish('default')">
-            {% trans "Reset to Default Order" %}
-        </button>
+      <button type="button" class="btn btn-light" onclick="submitPublish('save', 'manage')">
+        {% trans "Save Start List" %}
+      </button>
+      <button type="button" class="btn btn-light" onclick="submitPublish('default')">
+        {% trans "Reset to Default Order" %}
+      </button>
     </form>
 
-    <form method="get" action="{% url 'add_ceremony' event.id %}" style="display:inline;">
-        <button type="submit" class="btn-default">{% trans "Ceremonies" %}</button>
+    <form method="get" action="{% url 'add_ceremony' event.id %}" class="d-inline">
+      <button type="submit" class="btn btn-light">{% trans "Ceremonies" %}</button>
     </form>
 
     {% if event.start_list_published %}
-        <form method="post" action="{% url 'unpublish_start_list' event.id %}" style="display:inline;"
-              onsubmit="return confirm('Unpublish the start list?');">
-            {% csrf_token %}
-            <button type="submit" class="btn-delete">{% trans "Unpublish Start List" %}</button>
-        </form>
-    {% endif %}
-</div>
+  <form method="post" action="{% url 'unpublish_start_list' event.id %}" class="d-inline"
+        onsubmit="return confirm('Unpublish the start list?')">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">
+      <i class="bi bi-eye-slash"></i> {% trans "Unpublish Start List" %}
+    </button>
+  </form>
+{% else %}
+  <button type="button" class="btn btn-success" onclick="submitPublish('publish', 'manage')">
+    <i class="bi bi-upload"></i> {% trans "Publish Start List" %}
+  </button>
+{% endif %}
 
-<div style="margin-bottom:1em;">
-    <label>
-        <input type="checkbox" id="autoscroll-toggle">
-        {% trans "Auto-scroll to highlighted category" %}
-    </label>
-</div>
+  </div>
 
-<div class="table-wrapper">
-<table class="start-group" id="group-container" style="width:100%; border-collapse:collapse; margin-bottom:2em;">
-    <thead>
+  <h2 class="my-3">
+    {% trans "Manage Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})
+  </h2>
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="autoscroll-toggle">
+    <label class="form-check-label" for="autoscroll-toggle">{% trans "Auto-scroll to highlighted category" %}</label>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="group-container" class="table table-hover align-middle">
+      <thead>
         <tr>
-            <th></th>
-            <th>#</th>
-            <th>{% trans "Dancer(s) / Ceremony" %}</th>
-            <th>{% trans "Choreographer" %}</th>
-            <th>{% trans "Choreography" %}</th>
-            <th>{% trans "Club" %}</th>
+          <th></th>
+          <th>#</th>
+          <th>{% trans "Dancer(s) / Ceremony" %}</th>
+          <th>{% trans "Choreographer" %}</th>
+          <th>{% trans "Choreography" %}</th>
+          <th>{% trans "Club" %}</th>
         </tr>
-    </thead>
+      </thead>
 
-    {% for group_key, group_entries in grouped_entries.items %}
-    <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
-        {% if group_key.0 == "Ceremony" %}
-        <tr class="group-header">
-            <td colspan="7" style="font-weight:bold; background:#f0f0f0;">
-                Ceremony{% if group_key.2 %} – {{ group_key.2 }}{% endif %}
-            </td>
+      {% for group_key, group_entries in grouped_entries.items %}
+      <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
+        <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
+          <td colspan="6">{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</td>
         </tr>
-        {% else %}
-        <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}" style="cursor:grab;">
-            <td colspan="7" style="font-weight:bold; background:#f0f0f0;">
-                {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
-            </td>
-        </tr>
-        {% endif %}
 
         {% for entry in group_entries %}
         <tr data-id="{{ entry.id }}" class="draggable-row {% if entry.is_ceremony %}ceremony-row{% endif %}">
-            <td class="drag-handle">☰</td>
-            {% if entry.is_ceremony %}
-                <td colspan="3"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
-                <td colspan="2">
-                </td>
-            {% else %}
-                <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="start-time">{{ entry.start_time }}</span>{% endif %}</td>
-                <td>
-                    {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
-                        {{ entry.group_name }}
-                    {% else %}
-                        {% for dancer in entry.dancers %}
-                            {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                </td>
-                <td>{{ entry.choreographer }}</td>
-                <td>{{ entry.choreography_name }}</td>
-                <td>{{ entry.club_name }}</td>
-            {% endif %}
+          <td class="drag-handle">☰</td>
+          {% if entry.is_ceremony %}
+            <td colspan="5"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
+          {% else %}
+            <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="text-muted small">{{ entry.start_time }}</span>{% endif %}</td>
+            <td>
+              {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
+                {{ entry.group_name }}
+              {% else %}
+                {% for dancer in entry.dancers %}
+                  {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              {% endif %}
+            </td>
+            <td>{{ entry.choreographer }}</td>
+            <td>{{ entry.choreography_name }}</td>
+            <td>{{ entry.club_name }}</td>
+          {% endif %}
         </tr>
         {% endfor %}
-    </tbody>
-    {% endfor %}
-</table>
+      </tbody>
+      {% endfor %}
+    </table>
+  </div>
 </div>
-{% endblock %}
-
-{% block extra_styles %}
-<style>
-    #sticky-toolbar { display:flex; justify-content:flex-end; gap:10px; margin-bottom:1rem; }
-    .table-wrapper { overflow-x:auto; }
-    .start-group th, .start-group td { white-space:normal; word-break:break-word; padding:.6rem .75rem; }
-    .start-group .start-time { font-size:.85em; color:gray; }
-    .highlighted-group { background-color:#fff7d6 !important; border-left:6px solid #ff9800; }
-    .ceremony-row { background-color:#e3f2fd !important; font-size:1.1em; border-top:3px solid #2196f3; border-bottom:3px solid #2196f3; }
-    @media(max-width:1024px){
-        .start-group th, .start-group td { font-size:.8rem; padding:3px 4px; text-align:left; }
-        #sticky-toolbar { flex-wrap:wrap; justify-content:center; gap:6px; }
-        #sticky-toolbar button { font-size:.8rem; padding:4px 8px; }
-    }
-</style>
 {% endblock %}
 
 {% block extra_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // 🔹 Group-level drag (move entire categories/ceremonies)
-    new Sortable(document.getElementById("group-container"), {
-        animation: 200,
-        handle: ".group-header",
-        draggable: "tbody.group-wrapper",
-        ghostClass: "dragging-group",
-        scroll: true,
-        scrollSensitivity: 50,   // ✅ trigger scroll earlier
-        scrollSpeed: 20,
-        scrollFn: function(offsetX, offsetY) {
-            window.scrollBy(offsetX, offsetY);  // ✅ force page scroll
-        }
+  // ---- Move entire categories ----
+  new Sortable(document.getElementById("group-container"), {
+    animation: 200,
+    handle: ".group-header",
+    draggable: "tbody.group-wrapper",
+    ghostClass: "dragging-group",
+    scroll: true,
+    scrollSensitivity: 50,
+    scrollSpeed: 20,
+    scrollFn(offsetX, offsetY){ window.scrollBy(offsetX, offsetY); }
+  });
+
+  // ---- Move entries within a category ----
+  document.querySelectorAll("tbody.group-wrapper").forEach(tbody => {
+    new Sortable(tbody, {
+      animation: 150,
+      handle: ".drag-handle",
+      draggable: "tr.draggable-row",
+      ghostClass: "dragging",
+      scroll: true,
+      scrollSensitivity: 50,
+      scrollSpeed: 20,
+      scrollFn(offsetX, offsetY){ window.scrollBy(offsetX, offsetY); }
     });
+  });
 
-    // 🔹 Entry-level drag (move dancers/ceremonies inside group)
-    document.querySelectorAll("tbody.group-wrapper").forEach(tbody => {
-        new Sortable(tbody, {
-            animation: 150,
-            handle: ".drag-handle",
-            draggable: "tr.draggable-row",
-            ghostClass: "dragging",
-            scroll: true,
-            scrollSensitivity: 50,
-            scrollSpeed: 20,
-            scrollFn: function(offsetX, offsetY) {
-                window.scrollBy(offsetX, offsetY);
-            }
-        });
+  // ---- Save / Publish / Reset ----
+  window.submitPublish = function(mode, source=null) {
+    const ids = [];
+    document.querySelectorAll("tbody.group-wrapper").forEach(wrapper => {
+      wrapper.querySelectorAll("tr.draggable-row").forEach(row => ids.push(row.dataset.id));
     });
+    document.getElementById("publish-mode").value = mode;
+    document.getElementById("ordered-ids-json").value = JSON.stringify(ids);
+    if (source) document.getElementById("publish-form").elements["source"].value = source;
+    document.getElementById("publish-form").submit();
+  };
 
-    // 🔹 Publish form submit handler
-    window.submitPublish = function(mode, source=null) {
-        const ids = [];
-        document.querySelectorAll("tbody.group-wrapper").forEach(wrapper => {
-            wrapper.querySelectorAll("tr.draggable-row").forEach(row => {
-                ids.push(row.dataset.id);
-            });
-        });
-        document.getElementById("publish-mode").value = mode;
-        document.getElementById("ordered-ids-json").value = JSON.stringify(ids);
-        if (source) {
-            document.getElementById("publish-form").elements["source"].value = source;
-        }
-        document.getElementById("publish-form").submit();
-    };
+  // ---- Auto-scroll toggle + refresh ----
+  const toggle = document.getElementById('autoscroll-toggle');
+  const highlighted = document.querySelector('.highlighted-group');
+  let refreshTimer = null;
 
-    // 🔹 Auto-scroll toggle controls auto-refresh
-    const toggle = document.getElementById('autoscroll-toggle');
-    const highlighted = document.querySelector('.highlighted-group');
-    let refreshTimer = null;
+  function enableAutoScroll(){
+    if (highlighted) highlighted.scrollIntoView({behavior:'smooth', block:'center'});
+    refreshTimer = setInterval(()=>location.reload(),10000);
+  }
+  function disableAutoScroll(){
+    if (refreshTimer) clearInterval(refreshTimer);
+  }
 
-    function enableAutoScroll(){
-        if (highlighted) {
-            highlighted.scrollIntoView({behavior:'smooth', block:'center'});
-        }
-        refreshTimer = setInterval(() => location.reload(), 10000);
-    }
-    function disableAutoScroll(){
-        if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
-    }
-
-    if (toggle) {
-        const saved = localStorage.getItem("autoscroll_enabled");
-        toggle.checked = (saved === null || saved === "true");
-        if (toggle.checked) { enableAutoScroll(); }
-        toggle.addEventListener('change', () => {
-            localStorage.setItem("autoscroll_enabled", toggle.checked);
-            if (toggle.checked) { enableAutoScroll(); } else { disableAutoScroll(); }
-        });
-    }
+  if (toggle){
+    const saved = localStorage.getItem("autoscroll_enabled");
+    toggle.checked = (saved===null || saved==="true");
+    if (toggle.checked) enableAutoScroll();
+    toggle.addEventListener('change', ()=>{
+      localStorage.setItem("autoscroll_enabled", toggle.checked);
+      toggle.checked ? enableAutoScroll() : disableAutoScroll();
+    });
+  }
 });
 </script>
 {% endblock %}
+
+

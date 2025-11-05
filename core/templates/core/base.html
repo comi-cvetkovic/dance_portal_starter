@@ -1,501 +1,399 @@
-{% load i18n %}
-{% load static %}
-<!DOCTYPE html>
+
+{% load static i18n %}
+<!doctype html>
 <html lang="en">
-
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=1.0, user-scalable=yes">
-    <title>{% block title %}{% trans "Dance Portal" %}{% endblock %}</title>
+  <meta charset="utf-8">
+  <title>{% block title %}Dance Portal{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
-    <link rel="icon" href="{% static 'images/favicon.png' %}" sizes="32x32" type="image/png">
-    <link rel="apple-touch-icon" href="{% static 'images/favicon.png' %}">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-<style>
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-        scroll-behavior: smooth;
-    }
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
 
-    body {
-        font-family: 'Roboto', sans-serif;
-        color: #fff;
-        background-color: #fff;
-        position: relative; /* stacking context for overlay */
-    }
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}?v=7">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}?v=7">
+  <link rel="shortcut icon" href="{% static 'icons/favicon.ico' %}?v=7">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}?v=7">
+  <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
+  <meta name="theme-color" content="#d76f54">
 
-    /* --- Global subtle background image --- */
-   body::before {
-    content: "";
-    position: fixed;
-    inset: 0;  /* shorthand for top/right/bottom/left: 0 */
-    background-image: url("{% static 'images/5678.png' %}");
-    background-size: cover;          /* fill screen, crop if needed */
-    background-position: center;     /* keep centered */
-    background-repeat: no-repeat;    /* prevent tiling */
-    background-attachment: fixed;    /* keep fixed while scrolling */
-    background-color: #2b0a3d;       /* fallback fill (deep purple, instead of black) */
-    opacity: 0.9;                    /* adjust overlay visibility */
-    pointer-events: none;            /* don't block clicks */
-    z-index: 0;                      /* behind page content */
-}
+  {% block head_css %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 
-/* Mobile tweaks only */
-/* ------------------ MOBILE (≤1024px) ------------------ */
-/* =============== MOBILE (≤1024px) — single consolidated block =============== */
-@media (max-width: 1024px) {
-
-  html { font-size: 15px; }
-  .container { padding: 1.25rem; }
-
-  body::before {
-    background-size: contain;   /* fill height, not “contain” */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: #3B1373;
-    opacity: 0.9;
+  <!-- 🌺 Global Coral Button Theme -->
+  <style>
+    /* Global coral button theme override */
+    :root{
+    --brand-coral:#d76f54;
+    --brand-coral-d1:#c45f45;
+    --brand-coral-d2:#b34f3a;
+    --brand-coral-tint:#fff2ee;
   }
 
-  /* ---------------- NAVBAR ---------------- */
-  nav {
-    position: sticky;
-    top: 0; z-index: 1000;
-    display: flex; align-items: center;
-    justify-content: space-between;
-    background: #3B1373;
-    flex-wrap: wrap;
-    min-height: 56px;
-    padding: .6rem .75rem;
+  /* Filled coral */
+  .btn-coral,
+  button.btn-coral,
+  input[type="submit"].btn-coral,
+  a.btn-coral{
+    background: var(--brand-coral);
+    border-color: var(--brand-coral);
+    color:#fff !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
   }
-  nav .nav-left {
-    flex: 1 1 auto;
-    display: flex; gap: .75rem;
-    overflow-x: auto;           /* allow scrolling if too many links */
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  .btn-coral:hover,
+  .btn-coral:focus{
+    background: var(--brand-coral-d1);
+    border-color: var(--brand-coral-d1);
+    color:#fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,.15);
   }
-  nav .nav-left::-webkit-scrollbar { display: none; }
-  nav .nav-right {
-    flex: 0 0 auto;
-    display: flex; align-items: center; gap: .5rem;
-  }
-  nav a { font-size: .95rem; }
-
-  /* ---------------- Event cards ---------------- */
-    body.public-events .event-grid {
-    display: flex;
-    flex-direction: column; 
-    align-items: center;
-    gap: 5rem;
+  .btn-coral:active{
+    background: var(--brand-coral-d2);
+    border-color: var(--brand-coral-d2);
+    transform: translateY(0);
+    box-shadow:none;
   }
 
-  .event-card {
-    width: min(92vw, 440px);
-    margin: 0 auto;
-    border-radius: 18px;
-    overflow: hidden;
-    position: relative;
+  /* Outline coral */
+  .btn-coral-outline,
+  button.btn-coral-outline,
+  a.btn-coral-outline{
+    background:#fff;
+    border-color: var(--brand-coral);
+    color: var(--brand-coral) !important;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
   }
-  .event-card .poster {
-    position: relative;
-    width: 100%;
-    padding-top: 125%;         /* maintain aspect ratio */
-    background-size: cover;    /* fill nicely, no empty gaps */
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 16px;
+  .btn-coral-outline:hover,
+  .btn-coral-outline:focus{
+    background: var(--brand-coral-tint);
+    border-color: var(--brand-coral-d1);
+    color: var(--brand-coral-d1) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,.08);
   }
-  .event-card .event-title { font-size: clamp(1.1rem, 2.8vw, 1.35rem); }
-  .event-card .event-meta { font-size: .95rem; }
-
-  .event-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: .6rem;
-    margin-top: .75rem;
-  }
-  .event-actions .btn {
-    width: 100%;
-    padding: .55rem .75rem;
-    font-size: .95rem;
-    line-height: 1.2;
-    border-radius: .75rem;
-  }
-  .event-card .badge,
-  .event-card .status-pill {
-    transform: scale(.9);
-    transform-origin: top right;
+  .btn-coral-outline:active{
+    background:#fff;
+    border-color: var(--brand-coral-d2);
+    color: var(--brand-coral-d2) !important;
+    transform: translateY(0);
+    box-shadow:none;
   }
 
-  /* ===== Scroll Hint for horizontally scrollable containers ===== */
-.scroll-hint::after {
-  content: "↔ scroll";
-  position: absolute;
-  bottom: 6px;
-  right: 12px;
-  font-size: 0.75rem;
-  color: rgba(0,0,0,0.55);
-  background: rgba(255,255,255,0.85);
-  padding: 2px 6px;
-  border-radius: 6px;
-  pointer-events: none;
-  animation: fadeHint 3s ease forwards;
-}
-
-@keyframes fadeHint {
-  0%   { opacity: 0; transform: translateX(10px); }
-  15%  { opacity: 1; transform: translateX(0); }
-  85%  { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-10px); }
-}
-
-  @media (max-width: 480px) {
-  .event-meta {
-    font-size: 0.8rem;   /* was 0.95rem */
-    gap: 0.35rem;        /* tighter spacing */
+  /* Disabled states */
+  .btn-coral:disabled,
+  .btn-coral-outline:disabled{
+    opacity:.65;
+    transform:none;
+    box-shadow:none;
   }
-}
-}
-
-@media (max-width: 1024px) {
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .table-wrapper table {
-    min-width: 900px;   /* force wide table so it scrolls instead of squishes */
-    white-space: nowrap;
+  /* Comfy inputs everywhere (even when widgets don't have .form-control) */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  input[type="file"],
+  select,
+  textarea,
+  .form-control {
+    padding: .65rem .95rem !important;   /* <- more left/right space */
+    border-radius: 10px !important;
   }
 
-table {
-    white-space: normal !important; /* allow wrapping instead of forced inline */
-}
-td, th {
-    word-break: break-word; /* force long text to wrap */
-    white-space: normal; 
-}
+  /* Card breathing room */
+  .dp-card .card-header { padding: .9rem 1.25rem !important; }
+  .dp-card .card-body   { padding: 1.25rem 1.5rem !important; }
 
-}
-
-
-    nav,
-    .container {
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Navbar */
-    nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 999;
-        background-color: #3b1373;
-        color: white;
-        padding: 1em;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    nav a {
-        color: white;
-        text-decoration: none;
-        margin-right: 20px;
-        font-weight: bold;
-    }
-
-    nav .nav-left,
-    nav .nav-right {
-        display: flex;
-        align-items: center;
-    }
-
-    nav .nav-right span {
-        margin-left: 10px;
-        font-weight: normal;
-        font-size: 0.9em;
-        color: #ddd;
-    }
-
-    .badge-circle {
-        background-color: red;
-        color: white;
-        font-weight: bold;
-        font-size: 10px;
-        line-height: 1;
-        padding: 2px 6px;
-        border-radius: 999px;
-        vertical-align: middle;
-        display: inline-block;
-        min-width: 16px;
-        text-align: center;
-        box-shadow: 0 0 0 2px #333;
-    }
-
-    /* Page content container */
-       .container {
-        max-width: 1200px;
-        margin: 100px auto 40px auto; /* below navbar, centered */
-        padding: 2em;
-
-        /* make outer container transparent */
-        background: transparent;
-        box-shadow: none;
-
-        z-index: 1;
-    }
-
-    /* Headings */
-    h1, h2, h3, h4, h5, h6 {
-        color: #fff;
-    }
-
-    .heading-dark {
-        color: #000 !important; /* force black text */
-    }
-
-    /* Inside white elements (cards, containers, forms, tables) → dark */
-    .card,
-    .card * {
-        color: #333 !important;
-    }
-
-    .container.white-bg,
-    .container.white-bg * {
-        color: #333 !important;
-    }
-
-    hr {
-        border: 0;
-        border-top: 1px solid #ccc;
-        margin: 2em 0;
-    }
-
-    /* ==== Unified buttons ==== */
-        /* ==== Unified buttons ==== */
-    button,
-    a.btn,
-    a[class^="btn-"],
-    a[class*=" btn-"],
-    summary.btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: .35rem;
-        min-width: 0;
-        height: 32px;            /* ✅ force consistent height */
-        padding: 4px 10px;       /* ✅ consistent padding */
-        line-height: 1.4;        /* ✅ unify vertical alignment */
-        border-radius: 8px;
-        border: 1px solid rgba(0, 0, 0, .18);
-        color: #fff !important;
-        font: 600 13px/1 'Roboto', sans-serif;
-        text-decoration: none !important;
-        cursor: pointer;
-        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .08s ease;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
-        margin: 4px 6px;
-    }
-
-    button:active,
-    a.btn:active,
-    summary.btn:active {
-        transform: translateY(1px);
-    }
-
-    /* Size modifiers */
-    .btn-sm { height: 30px; padding: 3px 9px; font-size: 12.5px; }
-    .btn-xs { height: 26px; padding: 2px 8px; font-size: 12px; }
-
-    /* Variants */
-    .btn-default { background: #444; border-color: #333; }
-    .btn-default:hover { background: #1a1a1a; border-color: #1a1a1a; }
-
-    .btn-edit { background: #007bff; border-color: #0056b3; }
-    .btn-edit:hover { background: #0056b3; border-color: #00408d; }
-
-    .btn-delete { background: #dc3545; border-color: #a71d2a; }
-    .btn-delete:hover { background: #a71d2a; border-color: #7a1420; }
-
-    .btn-green { background: #28a745; border-color: #1f7a36; }
-    .btn-green:hover { background: #1f7a36; border-color: #175c29; }
-
-    .btn-outline {
-        background: transparent;
-        color: #222 !important;
-        border-color: rgba(0, 0, 0, .28);
-    }
-    .btn-outline:hover {
-        background: rgba(0, 0, 0, .05);
-        border-color: rgba(0, 0, 0, .38);
-    }
-
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-    th, td { padding: 8px; border-bottom: 1px solid #ccc; }
-
-    /* Centered popup messages */
-    #messages-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 2000;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .message-popup {
-        padding: 14px 22px;
-        border-radius: 8px;
-        font-size: 15px;
-        color: #fff;
-        font-weight: 500;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-        animation: fadeIn 0.4s ease, fadeOut 0.4s ease 3.5s forwards;
-        position: relative;
-        min-width: 260px;
-        text-align: center;
-    }
-
-    .message-popup.success { background: #28a745; }
-    .message-popup.error   { background: #dc3545; }
-    .message-popup.warning { background: #ffc107; color: #333; }
-    .message-popup.info    { background: #17a2b8; }
-
-    .message-popup .close-btn {
-        position: absolute;
-        top: 6px;
-        right: 10px;
-        font-weight: bold;
-        cursor: pointer;
-        font-size: 18px;
-    }
-
-    table {
-    background: #fff;           /* white background */
-    color: #333;                /* dark text inside */
-    border-radius: 8px;         /* optional rounded corners */
-    overflow: hidden;           /* keep radius clean */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* subtle shadow */
-}
-
-/* Keep header row styled */
-    table thead th {
-        background: #f8f9fa;   /* light gray for contrast */
-        color: #333;
-        font-weight: 600;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translate(-50%, -60%); }
-        to   { opacity: 1; transform: translate(-50%, -50%); }
-    }
-    @keyframes fadeOut {
-        to { opacity: 0; transform: translate(-50%, -40%); }
-    }
-</style>
-
-
-
-    {% block extra_styles %}{% endblock %}
+  /* List items (e.g., existing ceremonies) */
+  .list-group-item { padding: .95rem 1.25rem !important; }
+  </style>
 </head>
 
-<body class="{% block body_class %}{% endblock %}">
-    <nav>
-        <div class="nav-left">
-            {% if user.is_authenticated %}
-            {% if user.username|slice:":5" == "judge" %}
-            <!-- Judge: only show logout -->
-            <a href="{% url 'logout' %}">{% trans "Logout" %}</a>
+<body class="d-flex flex-column min-vh-100">
 
-            {% elif user.is_superuser %}
-            <!-- Admin -->
-            <a href="{% url 'club_dashboard' %}">{% trans "Clubs" %}</a>
-            <a href="{% url 'event_list' %}">{% trans "Events" %}</a>
+  <!-- Background -->
+  <style>
+    body {
+      background-color: #f8d9ce;
+      margin: 0;
+      padding-bottom: 60px; /* keeps content above footer */
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("{% static 'images/5678background.png' %}");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: .35;
+      z-index: -1;
+      pointer-events: none;
+    }
 
-            <a href="{% url 'pending_club_requests' %}" class="pending-club-link" style="position: relative;">
-                {% trans "Pending Clubs" %}
-                {% if clubs_pending_count > 0 %}
-                <span class="badge-circle">{{ clubs_pending_count }}</span>
-                {% endif %}
+    /* Navbar + Footer colors */
+    .navbar, footer {
+      background-color: #d76f54 !important;
+    }
+    .navbar .nav-link,
+    .navbar .navbar-brand,
+    .navbar-text {
+      color: #fff !important;
+    }
+    .navbar .nav-link.active,
+    .navbar .nav-link:hover {
+      color: #fff !important;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    /* Footer fixed bottom */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      color: #fff;
+      text-align: center;
+      padding: 0.75rem 0;
+    }
+
+    /* Login/Register buttons */
+    .navbar .btn-outline-light {
+      border-color: #fff;
+      color: #fff;
+    }
+    .navbar .btn-outline-light:hover {
+      background-color: #fff;
+      color: #d76f54;
+    }
+    .navbar .btn-light {
+      background-color: #fff;
+      color: #d76f54;
+    }
+    .navbar .btn-light:hover {
+      background-color: #f0f0f0;
+      color: #d76f54;
+    }
+  </style>
+
+  {% url 'home' as home_url %}
+  {% url 'event_list' as event_list_url %}
+  {% url 'contacts' as contacts_url %}
+  {% url 'admin_clubs' as admin_clubs_url %}
+  {% url 'list_dancers' as dancers_url %}
+  {% url 'logout' as logout_url %}
+  {% url 'login' as login_url %}
+  {% url 'register' as register_url %}
+  {% load i18n %}
+  {% url 'pending_club_requests' as pending_clubs_url %}
+  {% url 'club_dashboard' as club_dashboard_url %}
+
+{% if not is_judge_user %}
+<nav class="navbar navbar-expand-lg border-bottom">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ home_url|default:'#' }}">
+      5678 Dance Portal
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {% if user.is_authenticated and user.is_staff %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">{% trans "Home" %}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == event_list_url %}active{% endif %}" href="{{ event_list_url }}">{% trans "Events" %}</a>
+          </li>
+
+          {# --- Admin: Clubs dropdown (All Clubs -> club_dashboard, Pending -> pending_club_requests) --- #}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if request.path == club_dashboard_url %}active{% endif %}"
+               href="#" id="clubsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {% trans "Clubs" %}
+              {% if clubs_pending_count and clubs_pending_count > 0 %}
+                <span class="badge rounded-pill text-bg-danger ms-1">{{ clubs_pending_count }}</span>
+              {% endif %}
             </a>
-            <a href="{% url 'logout' %}">{% trans "Logout" %}</a>
+            <ul class="dropdown-menu" aria-labelledby="clubsDropdown">
+              <li>
+                <a class="dropdown-item" href="{{ club_dashboard_url }}">
+                  {% trans "All Clubs" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ pending_clubs_url }}">
+                  <span>{% trans "Pending" %}</span>
+                  {% if clubs_pending_count and clubs_pending_count > 0 %}
+                    <span class="badge text-bg-danger ms-2">{{ clubs_pending_count }}</span>
+                  {% endif %}
+                </a>
+              </li>
+            </ul>
+          </li>
 
-            {% else %}
-            <!-- Regular club user -->
-            <a href="{% url 'club_dashboard' %}">{% trans "My Club" %}</a>
-            <a href="{% url 'list_dancers' %}">{% trans "Dancers" %}</a>
-            <a href="{% url 'event_list' %}">{% trans "Events" %}</a>
-            <a href="{% url 'logout' %}">{% trans "Logout" %}</a>
-            {% endif %}
-            {% else %}
-            <!-- Public/anonymous -->
-            <a href="{% url 'home' %}">{% trans "Home" %}</a>
-            <a href="{% url 'login' %}">{% trans "Login" %}</a>
-            <a href="{% url 'register_club' %}">{% trans "Register Club" %}</a>
-            <a href="{% url 'event_list_public' %}">{% trans "Events" %}</a>
-            {% endif %}
-        </div>
+        {% elif user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ club_dashboard_url }}">{% trans "Dashboard" %}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == event_list_url %}active{% endif %}" href="{{ event_list_url }}">{% trans "Events" %}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == dancers_url %}active{% endif %}" href="{{ dancers_url }}">{% trans "Dancers" %}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == contacts_url %}active{% endif %}" href="{{ contacts_url }}">{% trans "Contact" %}</a>
+          </li>
 
-        <div class="nav-right">
-            <!-- Language switcher -->
-           <form action="{% url 'set_language' %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <select name="language" onchange="this.form.submit()" style="margin-right: 10px;">
-                {% get_current_language as LANGUAGE_CODE %}
-                {% get_available_languages as LANGUAGES %}
-                {% for lang_code, lang_name in LANGUAGES %}
-                    <option value="{{ lang_code }}" {% if lang_code|lower == LANGUAGE_CODE|lower %}selected{% endif %}>
-                        {{ lang_name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </form>
+          {# Club users: Awaiting Confirmation pill --- #}
+          {% if user_club and not user_club_confirmed %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ club_dashboard_url }}" title="{% trans 'Your club is awaiting admin confirmation' %}">
+                <span class="badge rounded-pill text-bg-warning">{% trans "Awaiting Confirmation" %}</span>
+              </a>
+            </li>
+          {% endif %}
 
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">{% trans "Home" %}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == event_list_url %}active{% endif %}" href="{{ event_list_url }}">{% trans "Events" %}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == contacts_url %}active{% endif %}" href="{{ contacts_url }}">{% trans "Contact" %}</a>
+          </li>
+        {% endif %}
+      </ul>
 
-            {% if user.is_authenticated %}
-            <span>{% trans "Logged in as: " %}{{ user.username }}</span>
-            {% endif %}
-        </div>
-    </nav>
+      <ul class="navbar-nav ms-auto align-items-lg-center">
 
+        {# ---- Tap-friendly language buttons (POST to set_language) ---- #}
+        <li class="nav-item d-flex align-items-center">
+          {% get_current_language as LANGUAGE_CODE %}
+          <div class="lang-switch d-flex align-items-center gap-2 me-3">
+            {# EN button #}
+            <form action="{% url 'set_language' %}" method="post" class="m-0">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="language" value="en">
+              <button type="submit"
+                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'en' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
+                English
+              </button>
+            </form>
+
+            {# SR button #}
+            <form action="{% url 'set_language' %}" method="post" class="m-0">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="language" value="sr">
+              <button type="submit"
+                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'sr' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
+                Srpski
+              </button>
+            </form>
+          </div>
+        </li>
+
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <span class="navbar-text me-2">
+              {% trans "Hello," %} {{ user.representative_name|default:user.username }}
+            </span>
+          </li>
+          {% if logout_url %}
+            <li class="nav-item">
+              <a class="btn btn-outline-light btn-sm" href="{{ logout_url }}">{% trans "Logout" %}</a>
+            </li>
+          {% endif %}
+        {% else %}
+          {% if login_url %}
+            <li class="nav-item">
+              <a class="btn btn-light btn-sm me-2" href="{{ login_url }}">{% trans "Login" %}</a>
+            </li>
+          {% endif %}
+          {% if register_url %}
+            <li class="nav-item">
+              <a class="btn btn-outline-light btn-sm" href="{{ register_url }}">{% trans "Register" %}</a>
+            </li>
+          {% endif %}
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+  <!-- Flash messages -->
+  <div class="container mt-3">
     {% if messages %}
-    <div id="messages-container">
-    {% for message in messages %}
-    <div class="message-popup {{ message.tags }}">
-        {{ message }}
-        <span class="close-btn" onclick="this.parentElement.style.display='none';">×</span>
-    </div>
-    {% endfor %}
-    </div>
+      {% for message in messages %}
+        {% with message.tags as tags %}
+          <div class="alert {% if 'error' in tags %}alert-danger{% elif 'success' in tags %}alert-success{% elif 'warning' in tags %}alert-warning{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endwith %}
+      {% endfor %}
     {% endif %}
+  </div>
 
+  <!-- Main content -->
+  <main class="container py-3">
+    {% block page_header %}{% endblock %}
+    {% block content %}{% endblock %}
+  </main>
 
+  <!-- Fixed footer -->
+  <footer>
     <div class="container">
-        {% block content %}{% endblock %}
-        {% block extra_scripts %}{% endblock %}
+      &copy; {% now "Y" %} 5678 Community
     </div>
+  </footer>
+
+  <!-- Bootstrap bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"></script>
+
+  <!-- Optional legacy scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js" crossorigin="anonymous"></script>
+  <script src="{% static 'core/js/Sortable.min.js' %}"></script>
+
+  <!-- CSRF setup -->
+  <script>
+    (function() {
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      }
+      const csrftoken = getCookie('csrftoken');
+      if (window.jQuery) $.ajaxSetup({ headers: { 'X-CSRFToken': csrftoken } });
+    })();
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
 </body>
-
-<script>
-  // Auto-hide after 4 seconds
-  document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-      document.querySelectorAll(".message-popup").forEach(el => el.style.display = "none");
-    }, 4000);
-  });
-</script>
-
 </html>

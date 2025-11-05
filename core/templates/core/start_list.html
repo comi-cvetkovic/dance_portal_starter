@@ -3,114 +3,108 @@
 {% block title %}Start List | {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="text-white">
+    {% trans "Start List for" %} {{ event.name }} – {{ event.city }} ({{ event.date }})
+  </h2>
+</div>
 
 {% if show_entries %}
-<div class="table-wrapper">
-<table class="start-group" style="width: 100%; border-collapse: collapse; margin-bottom: 2em;">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>{% trans "Dancer(s) / Ceremony" %}</th>
-            <th>{% trans "Choreographer" %}</th>
-            <th>{% trans "Choreography" %}</th>
-            <th>{% trans "Club" %}</th>
-        </tr>
+<div class="table-responsive shadow-sm rounded bg-white p-2">
+  <table class="table table-bordered align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">{% trans "Dancer(s) / Ceremony" %}</th>
+        <th scope="col">{% trans "Choreographer" %}</th>
+        <th scope="col">{% trans "Choreography" %}</th>
+        <th scope="col">{% trans "Club" %}</th>
+      </tr>
     </thead>
 
     {% for group_key, group_entries in grouped_entries.items %}
     <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
-        {% if group_key.0 == "Ceremony" %}
-        <tr class="group-header">
-            <td colspan="5" style="font-weight:bold; background:#f0f0f0;">
-                Ceremony{% if group_key.2 %} – {{ group_key.2 }}{% endif %}
-            </td>
-        </tr>
-        {% else %}
-        <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
-            <td colspan="5"><strong>{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</strong></td>
-        </tr>
-        {% endif %}
+      {% if group_key.0 == "Ceremony" %}
+      <tr class="table-info fw-bold text-center">
+        <td colspan="5">
+          {% trans "Ceremony" %}{% if group_key.2 %} – {{ group_key.2 }}{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr class="table-secondary fw-semibold {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
+        <td colspan="5">
+          {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
+        </td>
+      </tr>
+      {% endif %}
 
-        {% for entry in group_entries %}
-        <tr class="{% if entry.is_ceremony %}ceremony-row{% endif %}">
-            {% if entry.is_ceremony %}
-                <td colspan="3"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
-            {% else %}
-                <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="start-time">{{ entry.start_time }}</span>{% endif %}</td>
-                <td>
-                    {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
-                        {{ entry.group_name }}
-                    {% else %}
-                        {% for dancer in entry.dancers %}
-                            {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                </td>
-                <td>{{ entry.choreographer }}</td>
-                <td>{{ entry.choreography_name }}</td>
-                <td>{{ entry.club_name }}</td>
+      {% for entry in group_entries %}
+      <tr class="{% if entry.is_ceremony %}ceremony-row{% endif %}">
+        {% if entry.is_ceremony %}
+          <td colspan="3"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
+        {% else %}
+          <td>
+            {{ entry.global_row_number }}
+            {% if entry.start_time %}
+              <br><span class="text-muted small">{{ entry.start_time }}</span>
             {% endif %}
-        </tr>
-        {% endfor %}
+          </td>
+          <td>
+            {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
+              {{ entry.group_name }}
+            {% else %}
+              {% for dancer in entry.dancers %}
+                {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td>{{ entry.choreographer }}</td>
+          <td>{{ entry.choreography_name }}</td>
+          <td>{{ entry.club_name }}</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
     </tbody>
     {% endfor %}
-</table>
+  </table>
 </div>
 {% else %}
-<p>{% trans "The start list has not been published yet" %}.</p>
+<div class="alert alert-warning mt-3">
+  {% trans "The start list has not been published yet." %}
+</div>
 {% endif %}
 {% endblock %}
 
 {% block extra_styles %}
 <style>
-.table-wrapper { overflow-x: auto; }
-.start-group th,
-.start-group td {
-    white-space: normal;
-    word-break: break-word;
-    padding: .6rem .75rem;
-}
-.start-group thead th {
-    background: #f8f9fa;
-    font-weight: 600;
-    white-space: nowrap;
-}
-.start-group .start-time {
-    font-size: 0.85em;
-    color: gray;
-}
-
-/* ✅ Highlight style */
-.highlighted-group {
+  .highlighted-group {
     background-color: #fff7d6 !important;
     border-left: 6px solid #ff9800;
-}
+  }
 
-.ceremony-row {
+  .ceremony-row {
     background-color: #e3f2fd !important;
-    font-size: 1.1em;
+    font-size: 1.05em;
     text-align: center;
     border-top: 3px solid #2196f3;
     border-bottom: 3px solid #2196f3;
-}
+  }
 
-@media (max-width: 1024px) {
-    .start-group th,
-    .start-group td {
-        font-size: 0.8rem;
-        padding: 3px 4px;
-        text-align: left;
+  @media (max-width: 1024px) {
+    table th, table td {
+      font-size: 0.8rem;
+      padding: 0.35rem;
     }
-}
+  }
 </style>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-    // 🔄 Auto refresh every 10s
-    setInterval(() => location.reload(), 10000);
+  // 🔄 Auto-refresh every 10s
+  setInterval(() => location.reload(), 10000);
 </script>
 {% endblock %}
+
 
 

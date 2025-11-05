@@ -3,7 +3,7 @@ from django.urls import path, include
 from core.views import CustomLoginView, custom_logout_view
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth import views as auth_views  # 👈 add this
+from django.contrib.auth import views as auth_views  
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -44,6 +44,7 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

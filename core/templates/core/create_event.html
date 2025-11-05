@@ -1,68 +1,127 @@
 {% extends 'core/base.html' %}
-{% load i18n %}
-{% block title %}Create Event | Dance Portal{% endblock %}
+{% load i18n static %}
+
+{% block title %}{% trans "Create Event" %} | Dance Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+  .btn-coral { background:#d76f54; border-color:#d76f54; color:#fff; }
+  .btn-coral:hover { background:#c55f46; border-color:#c55f46; color:#fff; }
+  .btn-coral-outline { color:#d76f54; border-color:#d76f54; background:#fff; }
+  .btn-coral-outline:hover { background:#d76f54; color:#fff; }
+
+  .card { border:0; box-shadow:0 6px 18px rgba(0,0,0,.06); }
+  .divider { height:1px; background:rgba(0,0,0,.1); margin:1.5rem 0; }
+
+  .sticky-save {
+    position:sticky;
+    top:10px;
+    z-index:20;
+    display:flex;
+    justify-content:flex-end;
+    gap:.5rem;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<h2>{% trans "Create Competition Event" %}</h2>
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+<div class="sticky-save mb-3">
+  <button type="submit" form="eventForm" class="btn btn-coral">{% trans "Create Event" %}</button>
+  <a href="{% url 'event_list' %}" class="btn btn-coral-outline">{% trans "Back to Events" %}</a>
+</div>
 
-    <p>
-        <label for="id_name">{% trans "Event Name" %}:</label><br>
-        {{ form.name }}
-    </p>
+<h2 class="mb-3">{% trans "Create Competition Event" %}</h2>
 
-    <p>
-        <label for="id_location">{% trans "Location" %}:</label><br>
-        {{ form.location }}
-    </p>
+<form method="post" enctype="multipart/form-data" id="eventForm" class="mb-4">
+  {% csrf_token %}
+  <div class="row g-4">
+    <!-- LEFT COLUMN -->
+    <div class="col-12 col-lg-8">
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="id_name">{% trans "Event Name" %}</label>
+              {{ form.name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_location">{% trans "Location" %}</label>
+              {{ form.location }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_city">{% trans "City" %}</label>
+              {{ form.city }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_date">{% trans "Date" %}</label>
+              {{ form.date }}
+              <div class="form-text">{% trans "Format" %}: YYYY-MM-DD</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_start_time">{% trans "Start Time (optional)" %}</label>
+              {{ form.start_time }}
+              <div class="form-text">{% trans "Format" %}: HH:MM</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_registration_start">{% trans "Registration Start Date" %}</label>
+              {{ form.registration_start }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_registration_end">{% trans "Registration End Date" %}</label>
+              {{ form.registration_end }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_music_end">{% trans "Music Upload End Date (optional)" %}</label>
+              {{ form.music_end }}
+            </div>
+          </div>
 
-    <p>
-        <label for="id_city">{% trans "City" %}:</label><br>
-        {{ form.city }}
-    </p>
+          <div class="divider"></div>
 
-    <p>
-        <label for="id_date">{% trans "Date" %}:</label><br>
-        {{ form.date }}
-    </p>
+          <div class="form-check mt-2">
+            {{ form.is_published }}
+            <label class="form-check-label ms-1" for="id_is_published">{% trans "Publish Event" %}</label>
+          </div>
+        </div>
+      </div>
 
-    <p>
-        <label for="id_start_time">{% trans "Start Time (optional)" %}:</label><br>
-        {{ form.start_time }}
-    </p>
+      <!-- DIPLOMA TEMPLATE -->
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <h6 class="text-muted mb-2">{% trans "Diploma Template (optional)" %}</h6>
+          {{ form.diploma_template }}
+          <div class="form-text">{% trans "Used to generate diplomas at awards time." %}</div>
+        </div>
+      </div>
+    </div>
 
-    <p>
-        <label for="id_registration_start">{% trans "Registration Start Date" %}:</label><br>
-        {{ form.registration_start }}
-    </p>
-
-    <p>
-        <label for="id_registration_end">{% trans "Registration End Date" %}:</label><br>
-        {{ form.registration_end }}
-    </p>
-
-    <p>
-        <label for="id_music_end">{% trans "Music Upload End Date (optional)" %}:</label><br>
-        {{ form.music_end }}
-    </p>
-
-    <p>
-        <label for="id_notice_image">{% trans "Event Poster / Notice (optional)" %}:</label><br>
-        {{ form.notice_image }}
-    </p>
-
-    <p>
-        <label for="id_diploma_template">{% trans "Diploma Template (optional)" %}:</label><br>
-        {{ form.diploma_template }}
-    </p>
-
-    <p>
-        <label for="id_is_published">{{ form.is_published }} {% trans "Publish Event" %}</label>
-    </p>
-
-    <button type="submit" class="btn-green">{% trans "Create Event" %}</button>
+    <!-- RIGHT COLUMN -->
+    <div class="col-12 col-lg-4">
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <h6 class="text-muted mb-2">{% trans "Event Poster / Notice (optional)" %}</h6>
+          {{ form.notice_image }}
+          <div class="form-text">{% trans "PNG or JPG recommended. Large images will be resized by the browser." %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </form>
+
+{% endblock %}
+
+{% block extra_js_bottom %}
+<script>
+  (function () {
+    const form = document.getElementById('eventForm');
+    if (!form) return;
+    form.querySelectorAll('input[type="text"], input[type="date"], input[type="time"], select, textarea')
+      .forEach(el => el.classList.add('form-control'));
+    form.querySelectorAll('input[type="file"]').forEach(el => el.classList.add('form-control'));
+    form.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('form-check-input'));
+    form.querySelectorAll('label:not(.form-check-label)').forEach(l => l.classList.add('form-label'));
+  })();
+</script>
 {% endblock %}
 

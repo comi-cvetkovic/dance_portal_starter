@@ -3,22 +3,22 @@ from pathlib import Path
 from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
 
+# ── Base directories ────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv("/opt/dance_portal_starter/.env")
+load_dotenv(BASE_DIR / ".env")  # safer path for local + prod (was /opt/...)
 
 # ── Security & debug ────────────────────────────────────────────────────────────
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "1234")  # TODO: set env var in prod
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "1234")  # TODO: change in prod
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 
 ALLOWED_HOSTS = [
-    "91.98.154.49",                 # NEW VPS IP
+    "91.98.154.49",                 # VPS IP
     "5678danceportal.com",
     "www.5678danceportal.com",
     "127.0.0.1",
     "localhost",
 ]
 
-# Django 4+ needs this when using IP/domain over HTTP/HTTPS
 CSRF_TRUSTED_ORIGINS = [
     "http://91.98.154.49",
     "https://91.98.154.49",
@@ -26,7 +26,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.5678danceportal.com",
 ]
 
-# If you’ll terminate TLS at Nginx and proxy to Django, these are useful:
+# TLS proxy headers (useful if nginx terminates SSL)
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
@@ -46,7 +46,6 @@ LANGUAGE_COOKIE_ALLOW_GET = True
 
 TIME_ZONE = "UTC"
 USE_TZ = True
-
 # LOCALE_PATHS = [ BASE_DIR / "locale" ]
 
 # ── Apps & middleware ───────────────────────────────────────────────────────────
@@ -85,10 +84,13 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "core.context_processors.add_pending_club_count",
             ],
         },
     },
+]
+
+TEMPLATES[0]["OPTIONS"]["context_processors"] += [
+    "core.context_processors.navbar_context",
 ]
 
 WSGI_APPLICATION = "dance_portal.wsgi.application"
@@ -99,14 +101,26 @@ LOGOUT_REDIRECT_URL = "/"
 
 # ── Static & media ─────────────────────────────────────────────────────────────
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "core" / "static"]
+
+# Where collectstatic gathers files (for production)
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Where Django looks for app-level static files (for DEBUG=True / local dev)
+STATICFILES_DIRS = [
+    BASE_DIR / "core" / "static",
+]
+
+# Ensure finders are enabled
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
+
+# Uploaded media
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # ── Database ───────────────────────────────────────────────────────────────────
-# Default: SQLite (quick start). To switch to Postgres, set USE_POSTGRES=1 and the vars below.
 USE_POSTGRES = os.getenv("USE_POSTGRES", "0").lower() in ("1", "true", "yes")
 
 if USE_POSTGRES:
@@ -138,31 +152,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ── Email (consider env vars in production) ─────────────────────────────────────
+# ── Email (Gmail App Password) ─────────────────────────────────────────────────
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "5678community.office@gmail.com")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "gwrxovatjbbiinzi")  # Gmail App Password
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "gwrxovatjbbiinzi")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "django_errors.log",
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["file"],
-            "level": "ERROR",
-            "propagate": True,
-        },
-    },
-}
+
 

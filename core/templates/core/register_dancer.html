@@ -3,131 +3,255 @@
 {% block title %}{% trans "Register Dancers" %} | {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Register Dancers for" %} {{ event.location }} – {{ event.city }} ({{ event.date }})</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">{% trans "Register Dancers" %}</h2>
+  <small class="text-muted">{{ event.location }} — {{ event.city }} ({{ event.date }})</small>
+</div>
 
 {% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li class="{{ message.tags }}">{{ message }}</li>
-    {% endfor %}
-</ul>
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
 {% endif %}
 
-{# 🔔 Show registration and music deadlines #}
-<div style="margin: 1em 0; padding: 0.8em; background: #333 ; border: 1px solid #d1d5db; border-radius: 6px;">
-  <strong>{% trans "Registration period" %}:</strong>
-  {% if event.registration_start and event.registration_end %}
-    {{ event.registration_start }} → {{ event.registration_end }}
-  {% else %}
-    {% trans "Not set" %}
-  {% endif %}
-  <br>
-  <strong>{% trans "Music upload deadline" %}:</strong>
-  {% if event.music_end %}
-    {{ event.music_end }}
-  {% else %}
-    {% trans "Open until event date" %} ({{ event.date }})
-  {% endif %}
+<!-- 🕒 Registration & Music Deadlines -->
+<div class="alert alert-dark mb-4">
+  <p class="mb-1">
+    <strong>{% trans "Registration period" %}:</strong>
+    {% if event.registration_start and event.registration_end %}
+      {{ event.registration_start }} → {{ event.registration_end }}
+    {% else %}
+      {% trans "Not set" %}
+    {% endif %}
+  </p>
+  <p class="mb-0">
+    <strong>{% trans "Music upload deadline" %}:</strong>
+    {% if event.music_end %}
+      {{ event.music_end }}
+    {% else %}
+      {% trans "Open until event date" %} ({{ event.date }})
+    {% endif %}
+  </p>
 </div>
 
 {% if is_superuser %}
-<form method="get" style="margin-bottom: 1em;">
-    <label for="club_id">{% trans "Select Club" %}:</label>
-    <select name="club_id" id="club_id" onchange="this.form.submit()">
+  <form method="get" class="mb-4">
+    <div class="mb-3">
+      <label for="club_id" class="form-label fw-semibold">{% trans "Select Club" %}</label>
+      <select name="club_id" id="club_id" class="form-select" onchange="this.form.submit()">
         <option value="">— {% trans "Select a club" %} —</option>
         {% for club in clubs %}
-        <option value="{{ club.id }}" {% if selected_club and club.id == selected_club.id %} selected {% endif %}>
+          <option value="{{ club.id }}" {% if selected_club and club.id == selected_club.id %}selected{% endif %}>
             {{ club.club_name }}
-        </option>
+          </option>
         {% endfor %}
-    </select>
-</form>
+      </select>
+    </div>
+  </form>
 {% endif %}
 
 {% if form %}
-{% if selected_club %}
-<h3>{% trans "Registering dancers for" %} {{ selected_club.club_name }}</h3>
-{% endif %}
+  {% if selected_club %}
+    <h4 class="fw-semibold mb-3">{% trans "Registering dancers for" %} {{ selected_club.club_name }}</h4>
+  {% endif %}
 
-{% if form.errors %}
-<ul style="color: red;">
-    {% for field, errors in form.errors.items %}
-    {% if field != 'music_file' %}
-    <li><strong>{{ field|title }}:</strong> {{ errors|join:", " }}</li>
-    {% endif %}
-    {% endfor %}
-</ul>
-{% endif %}
-
-{# ⛔ If registration is closed for clubs, disable form #}
-{% if not is_superuser and not event.registration_open %}
-  <p style="color: red; font-weight: bold; margin-top:1em;">
-    {% trans "Registration is currently closed for this event." %}
-  </p>
-{% else %}
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-
-    <p>
-        <label for="id_group_type">{% trans "Group Type" %}:</label><br>
-        {{ form.group_type }}
-    </p>
-
-    <p>
-        <label for="id_dancers">{% trans "Select Dancer(s)" %}:</label><br>
-        {{ form.dancers }}
-    </p>
-
-    <p id="group-name-wrapper" style="display:none;">
-        <label for="id_group_name">{% trans "Group Name:" %}</label><br>
-        {{ form.group_name }}
-    </p>
-
-    <p>
-        <label for="id_style">{% trans "Style" %}:</label><br>
-        {{ form.style }}
-    </p>
-
-    <p>
-        <label for="id_difficulty">{% trans "Difficulty" %}:</label><br>
-        {{ form.difficulty }}
-    </p>
-
-    <p>
-        <label for="id_age_group">{% trans "Age Group (auto-calculated):" %}</label><br>
-        {{ form.age_group }}
-        {% if avg_age %}
-        <span style="margin-left:10px; color:gray;">({% trans "Average age" %}: {{ avg_age }})</span>
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      {% for field, errors in form.errors.items %}
+        {% if field != 'music_file' %}
+          <li><strong>{{ field|title }}:</strong> {{ errors|join:", " }}</li>
         {% endif %}
-    </p>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
-    <p>
-        <label for="id_choreographer_name">{% trans "Choreographer Name:" %}</label><br>
+  {% if not is_superuser and not event.registration_open %}
+    <div class="alert alert-warning fw-bold mt-3">
+      {% trans "Registration is currently closed for this event." %}
+    </div>
+  {% else %}
+    <form method="post" enctype="multipart/form-data" class="p-4 rounded-3 shadow-sm bg-white">
+      {% csrf_token %}
+      
+      <!-- Each section separated visually -->
+      <div class="form-section">
+        <label for="id_group_type" class="form-label fw-semibold">{% trans "Group Type: " %}</label>
+        {{ form.group_type }}
+      </div>
+
+      <div class="form-section">
+        <hr>
+        <label for="id_dancers" class="form-label fw-semibold">{% trans "Select Dancer(s): " %}</label>
+        {{ form.dancers }}
+        <div id="dancer-tools" class="mt-2">
+          <button type="button" class="btn-mini" id="btn-select-all">{% trans "Select all" %}</button>
+          <button type="button" class="btn-mini" id="btn-clear">{% trans "Clear" %}</button>
+          <span id="sel-count" class="ms-3 text-muted"></span>
+        </div>
+      </div>
+
+      <div id="group-name-wrapper" class="form-section" style="display:none;">
+        <hr>
+        <label for="id_group_name" class="form-label fw-semibold">{% trans "Group Name: " %}</label>
+        {{ form.group_name }}
+      </div>
+
+      <div class="form-section">
+        <hr>
+        <label for="id_style" class="form-label fw-semibold">{% trans "Style: " %}</label>
+        {{ form.style }}
+      </div>
+
+      <div class="form-section">
+        <hr>
+        <label for="id_difficulty" class="form-label fw-semibold">{% trans "Difficulty:" %}</label>
+        {{ form.difficulty }}
+      </div>
+
+      <div class="form-section">
+        <hr>
+        <label for="id_age_group" class="form-label fw-semibold">{% trans "Age Group (auto-calculated): " %}</label>
+        <div class="d-flex align-items-center">
+          {{ form.age_group }}
+          {% if avg_age %}
+            <span class="ms-2 text-muted small">({% trans "Average age" %}: {{ avg_age }})</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-section">
+        <hr>
+        <label for="id_choreographer_name" class="form-label fw-semibold">{% trans "Choreographer Name: " %}</label>
         {{ form.choreographer_name }}
-    </p>
+      </div>
 
-    <p>
-        <label for="id_choreography_name">{% trans "Choreography Name:" %}</label><br>
+      <div class="form-section">
+        <hr>
+        <label for="id_choreography_name" class="form-label fw-semibold">{% trans "Choreography Name: " %}</label>
         {{ form.choreography_name }}
-    </p>
+      </div>
 
-    {# 🔒 Hide/disable music upload if outside deadline #}
-    <p>
-        <label for="id_music_file">{% trans "Upload Music File:" %}</label><br>
+      <div class="form-section">
+        <hr>
+        <label for="id_music_file" class="form-label fw-semibold">{% trans "Upload Music File: " %}</label>
         {% if event.music_open or is_superuser %}
           {{ form.music_file }}
           {% if form.music_file.errors %}
-          <br><span style="color: red;">{{ form.music_file.errors.0 }}</span>
+            <div class="text-danger small mt-1">{{ form.music_file.errors.0 }}</div>
           {% endif %}
         {% else %}
-          <span style="color: gray;">{% trans "Music upload period is closed." %}</span>
+          <p class="text-muted">{% trans "Music upload period is closed." %}</p>
         {% endif %}
-    </p>
+      </div>
 
-    <button type="submit" class="btn-green">{% trans "Register" %}</button>
-</form>
+      <div class="text-center">
+          <button type="submit" class="btn btn-coral">
+            {% trans "Register" %}
+          </button>
+        </div>
+    </form>
+  {% endif %}
 {% endif %}
-{% endif %}
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+/* ✅ Vertical layout styling */
+.form-section {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1d4cc;
+  display: flex;
+}
+.form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+/* Bootstrap-style field consistency */
+select, input[type="text"], input[type="file"], textarea {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: .375rem;
+  padding: .5rem .75rem;
+  background-color: #fff;
+  font-size: 1rem;
+}
+select:focus, input:focus, textarea:focus {
+  border-color: #d76f54;
+  box-shadow: 0 0 0 0.25rem rgba(215,111,84,0.25);
+  outline: 0;
+}
+
+/* Select2 appearance */
+.select2-container--default .select2-selection--multiple {
+  min-height: 44px;
+  border-radius: .375rem;
+  border: 1px solid #ced4da;
+  padding: 4px 8px;
+  background: #fff;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 16px;
+  padding: 4px 10px;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+  color: #fff;
+  background: #dc3545;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  line-height: 14px;
+  text-align: center;
+  margin-right: 4px;
+}
+
+
+button.btn-coral,
+.btn.btn-coral,
+input.btn-coral[type="submit"],
+input.btn.btn-coral[type="submit"] {
+  background-color: #d76f54 !important;
+  border: 1px solid #d76f54 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 0.55rem 1.25rem !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  transition: all 0.2s ease-in-out !important;
+
+  /* override Bootstrap CSS variables */
+  --bs-btn-bg: #d76f54 !important;
+  --bs-btn-border-color: #d76f54 !important;
+  --bs-btn-color: #fff !important;
+}
+
+button.btn-coral:hover,
+.btn.btn-coral:hover,
+input.btn-coral[type="submit"]:hover {
+  background-color: #c45f45 !important;
+  border-color: #c45f45 !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+button.btn-coral:active,
+.btn.btn-coral:active,
+input.btn-coral[type="submit"]:active {
+  background-color: #b34f3a !important;
+  border-color: #b34f3a !important;
+  transform: translateY(0);
+  box-shadow: none;
+}
+</style>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -135,241 +259,131 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<style>
-  /* Chip-style, clearer multi-select */
-  .select2-container--default .select2-selection--multiple {
-    min-height: 44px; 
-    border-radius: 10px; 
-    border: 1px solid #cbd5e1; 
-    padding: 6px 8px;
-    background: #fff;  /* ensure white background */
-  }
-
-  .select2-container--default .select2-selection--multiple .select2-selection__rendered {
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 6px;
-  }
-
-  .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    position: relative; 
-    background: #f3f4f6; 
-    border: 1px solid #d1d5db;
-    color: #111827;       /* dark text for chips */
-    border-radius: 16px; 
-    padding: 6px 12px 6px 28px; 
-    font-size: 14px;
-  }
-
-  /* More visible ❌ remove button */
-  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-    position: absolute; 
-    left: 6px; 
-    top: 4px; 
-    font-size: 14px; 
-    font-weight: bold;
-    color: #fff; 
-    background: #dc2626;   /* bright red circle */
-    border-radius: 50%; 
-    width: 18px; 
-    height: 18px; 
-    line-height: 16px; 
-    text-align: center;
-    opacity: 1; 
-    cursor: pointer;
-  }
-  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-    background: #b91c1c;   /* darker red on hover */
-  }
-
-  /* Dropdown box */
-  .select2-container .select2-dropdown { 
-    border-radius: 8px; 
-    background: #fff;      /* white dropdown background */
-    color: #000;           /* dark text */
-  }
-
-  /* Dropdown option text */
-  .select2-results__option { 
-    padding: 8px 12px; 
-    color: #000;           /* black text */
-    background: #fff; 
-  }
-
-  /* Highlighted (hover/keyboard) option */
-  .select2-results__option--highlighted { 
-    background: #1f2937 !important;  /* dark gray/purple */
-    color: #fff !important;          /* white text */
-  }
-
-  /* Tiny utility buttons */
-  .btn-mini {
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid #4b5563;
-    background: #374151;
-    color: #fff;
-    font-weight: 500;
-    cursor: pointer;
-    margin-right: 8px;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .btn-mini:hover {
-    background: #1f2937;
-    transform: translateY(-1px);
-  }
-  .btn-mini:active {
-    background: #111827;
-    transform: translateY(0);
-  }
-
-  .dancer-tools {
-    margin: 8px 0 4px;
-    display: none;
-  }
-</style>
-
-
 <script>
-  const dancerLimits = {
-    'Solo':[1,1], 'Duo':[2,2], 'Trio':[3,3],
-    'Group':[4,9], 'Formation':[10,29], 'Production':[30,200]
-  };
+const dancerLimits = {
+  'Solo':[1,1], 'Duo':[2,2], 'Trio':[3,3],
+  'Group':[4,9], 'Formation':[10,29], 'Production':[30,200]
+};
 
-  $(function () {
-    const dancerSelect = $('#id_dancers');
-    const groupTypeSelect = $('#id_group_type');
-    const groupNameWrapper = $('#group-name-wrapper');
-    const ageGroupField = $('#id_age_group');
-    const avgAgeSpan = $('<span style="margin-left:10px; color:gray;" id="avg-age-display"></span>');
-    ageGroupField.after(avgAgeSpan);
+$(function () {
+  const dancerSelect = $('#id_dancers');
+  const groupTypeSelect = $('#id_group_type');
+  const groupNameWrapper = $('#group-name-wrapper');
+  const ageGroupField = $('#id_age_group');
+  const avgAgeSpan = $('<span style="margin-left:10px; color:gray;" id="avg-age-display"></span>');
+  ageGroupField.after(avgAgeSpan);
 
-    // Toolbar (Select all / Clear)
-    const tools = $(`
-      <div class="dancer-tools" id="dancer-tools">
-        <button type="button" class="btn-mini" id="btn-select-all">Select all</button>
-        <button type="button" class="btn-mini" id="btn-clear">Clear</button>
-        <span id="sel-count" style="margin-left:8px; color:#6b7280;"></span>
-      </div>
-    `);
-    dancerSelect.after(tools);
+  function initSelect2Multi(max) {
+    dancerSelect.select2({
+      width: '100%',
+      placeholder: "Type to search…",
+      allowClear: true,
+      closeOnSelect: false,
+      maximumSelectionLength: max
+    });
+  }
 
-    function initSelect2Multi(max) {
-      dancerSelect.select2({
-        width: '100%',
-        placeholder: "Type to search…",
-        allowClear: true,
-        closeOnSelect: false,        // keep open while picking
-        maximumSelectionLength: max
-      });
-      $('#dancer-tools').show();
+  function initSelect2Single() {
+    dancerSelect.select2({
+      width: '100%',
+      placeholder: "Select a dancer",
+      allowClear: true,
+      closeOnSelect: true
+    });
+  }
+
+  function refreshCount() {
+    let vals = dancerSelect.val() || [];
+    if (!Array.isArray(vals)) vals = [vals];
+    const count = vals.filter(v => v && v.trim() !== '').length;
+    $('#sel-count').text(count ? `${count} selected` : '');
+  }
+
+  function updateGroupTypeSettings() {
+    const groupType = groupTypeSelect.val();
+    const [min,max] = dancerLimits[groupType] || [0,999];
+    dancerSelect.select2('destroy');
+
+    if (groupType === 'Solo') {
+      dancerSelect.prop('multiple', false).val(null).trigger('change');
+      initSelect2Single();
+    } else {
+      dancerSelect.prop('multiple', true);
+      initSelect2Multi(max);
     }
-    function initSelect2Single() {
-      dancerSelect.select2({
-        width: '100%',
-        placeholder: "Select a dancer",
-        allowClear: true,
-        closeOnSelect: true
-      });
-      $('#dancer-tools').hide();
+
+    if (['Group','Formation','Production'].includes(groupType)) {
+      groupNameWrapper.show();
+    } else {
+      groupNameWrapper.hide();
+      $('#id_group_name').val('');
     }
+    refreshCount();
+  }
 
-    function refreshCount() {
-      let vals = dancerSelect.val() || [];
-      if (!Array.isArray(vals)) vals = [vals];
-      const count = vals.filter(v => v && v.trim() !== '').length;
-      $('#sel-count').text(count ? `${count} selected` : '');
-    }
+  function updateAgeGroup() {
+    let ids = dancerSelect.val();
+    if (!ids) ids = [];
+    if (!Array.isArray(ids)) ids = [ids];
+    ids = ids.filter(x => x && x.trim() !== '');
 
-    function updateGroupTypeSettings() {
-      const groupType = groupTypeSelect.val();
-      const [min,max] = dancerLimits[groupType] || [0,999];
-
-      dancerSelect.select2('destroy');
-
-      if (groupType === 'Solo') {
-        dancerSelect.prop('multiple', false).val(null).trigger('change');
-        initSelect2Single();
-      } else {
-        dancerSelect.prop('multiple', true);
-        initSelect2Multi(max);
-      }
-
-      if (['Group','Formation','Production'].includes(groupType)) {
-        groupNameWrapper.show();
-      } else {
-        groupNameWrapper.hide();
-        $('#id_group_name').val('');
-      }
+    if (ids.length === 0) {
+      ageGroupField.prop("value","").trigger("change");
+      avgAgeSpan.text('');
       refreshCount();
+      return;
     }
 
-    function updateAgeGroup() {
-      let ids = dancerSelect.val();
-      if (!ids) ids = [];
-      if (!Array.isArray(ids)) ids = [ids];
-      ids = ids.filter(x => x && x.trim() !== '');
-
-      if (ids.length === 0) {
-        ageGroupField.prop("value","").trigger("change");
-        avgAgeSpan.text('');
-        refreshCount();
-        return;
-      }
-
-      $.ajax({
-        url: "{% url 'calculate_age_group' event.id %}",
-        type: "POST",
-        data: { "dancers[]": ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
-        success: function (data) {
-          if (data.age_group) {
-            ageGroupField.prop("value", data.age_group).trigger("change");
-            avgAgeSpan.text(`(Average age: ${data.avg_age})`);
-          } else {
-            ageGroupField.prop("value","").trigger("change");
-            avgAgeSpan.text('');
-          }
-          refreshCount();
+    $.ajax({
+      url: "{% url 'calculate_age_group' event.id %}",
+      type: "POST",
+      data: { "dancers[]": ids, csrfmiddlewaretoken: '{{ csrf_token }}' },
+      success: function (data) {
+        if (data.age_group) {
+          ageGroupField.prop("value", data.age_group).trigger("change");
+          avgAgeSpan.text(`(Average age: ${data.avg_age})`);
+        } else {
+          ageGroupField.prop("value","").trigger("change");
+          avgAgeSpan.text('');
         }
-      });
-    }
-
-    function validateGroupSize() {
-      const groupType = groupTypeSelect.val();
-      let selected = dancerSelect.val() || [];
-      if (!Array.isArray(selected)) selected = [selected];
-      const numSelected = selected.filter(x => x && x.trim() !== '').length;
-      const [min,max] = dancerLimits[groupType] || [0,999];
-      if (numSelected < min || numSelected > max) {
-        alert(`${groupType} requires between ${min} and ${max} dancers. You selected ${numSelected}.`);
-        return false;
+        refreshCount();
       }
-      return true;
+    });
+  }
+
+  function validateGroupSize() {
+    const groupType = groupTypeSelect.val();
+    let selected = dancerSelect.val() || [];
+    if (!Array.isArray(selected)) selected = [selected];
+    const numSelected = selected.filter(x => x && x.trim() !== '').length;
+    const [min,max] = dancerLimits[groupType] || [0,999];
+    if (numSelected < min || numSelected > max) {
+      alert(`${groupType} requires between ${min} and ${max} dancers. You selected ${numSelected}.`);
+      return false;
     }
+    return true;
+  }
 
-    // Toolbar actions
-    $(document).on('click', '#btn-select-all', function () {
-      dancerSelect.find('option').prop('selected', true);
-      dancerSelect.trigger('change'); // updates select2 + count + age group
-      updateAgeGroup();
-    });
-    $(document).on('click', '#btn-clear', function () {
-      dancerSelect.val(null).trigger('change');
-      updateAgeGroup();
-    });
-
-    // Events
-    groupTypeSelect.on('change', updateGroupTypeSettings);
-    dancerSelect.on('change', updateAgeGroup);
-
-    $("form").on("submit", function (e) { if (!validateGroupSize()) e.preventDefault(); });
-
-    // init
-    dancerSelect.select2({ width:'100%', placeholder:"Type to search…", allowClear:true });
-    updateGroupTypeSettings();
+  $('#btn-select-all').on('click', function () {
+    dancerSelect.find('option').prop('selected', true);
+    dancerSelect.trigger('change');
     updateAgeGroup();
   });
+  $('#btn-clear').on('click', function () {
+    dancerSelect.val(null).trigger('change');
+    updateAgeGroup();
+  });
+
+  groupTypeSelect.on('change', updateGroupTypeSettings);
+  dancerSelect.on('change', updateAgeGroup);
+  $("form").on("submit", function (e) { if (!validateGroupSize()) e.preventDefault(); });
+
+  dancerSelect.select2({ width:'100%', placeholder:"Type to search…", allowClear:true });
+  updateGroupTypeSettings();
+  updateAgeGroup();
+});
 </script>
 {% endblock %}
+
+
 

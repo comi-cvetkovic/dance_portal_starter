@@ -2,117 +2,252 @@
 {% load i18n %}
 {% block title %}{% trans "Dashboard" %}{% endblock %}
 
+{% block extra_head %}
+<style>
+  :root { --coral:#d76f54; --ink:#2b2b2b; }
+
+  /* ===== HERO ===== */
+  .dash-hero {
+    background: #fff;
+    border: 1px solid #e8d4cd;
+    border-radius: 16px;
+    padding: 1.6rem 2rem;              /* ↑ more breathing room */
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .dash-hero h2 {
+    margin: 0;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .dash-hero .muted {
+    color: #777;
+    font-size: 0.95rem;
+  }
+  .dash-hero .btn {
+    font-weight: 600;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .dash-hero .btn:hover { transform: translateY(-1px); }
+
+  /* ===== CARDS ===== */
+  .dp-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  .dp-card .card-header {
+    background: #fafafa;
+    border-bottom: 1px solid #eee;
+    padding: .9rem 1.25rem;
+  }
+  .dp-card .card-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .dp-card .card-body {                 /* ↑ add inner padding */
+    padding: 1rem 1.25rem;
+  }
+
+  /* ===== STATUS CHIPS ===== */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+  }
+  .chip .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .dot-ok { background:#198754; }
+  .dot-warn { background:#ffc107; }
+
+  /* ===== TABLE ===== */
+  .table thead th { background:#f8f9fa; }
+  .email-nowrap { white-space: nowrap; }
+
+  /* Responsive tweaks */
+  @media (max-width: 992px) {
+    .hide-lg { display: none; }
+    .dash-hero {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      padding: 1.25rem 1.25rem;        /* tighter on mobile */
+    }
+    .dash-hero .btn {
+      width: 100%;
+      margin-top: 0.4rem;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 
 {% if user.is_superuser %}
-  <!-- ===================== ADMIN DASHBOARD ===================== -->
-  <div class="dash-hero">
+  {# ===================== ADMIN DASHBOARD ===================== #}
+  <div class="dash-hero mb-4">
     <div>
-      <h2 class="heading-dark">{% trans "Admin Dashboard" %}</h2>
+      <h2>{% trans "Admin Dashboard" %}</h2>
       <p class="muted">{% trans "Manage clubs and events from a single place." %}</p>
     </div>
-    <div class="hero-actions">
-      <a href="{% url 'event_list' %}" class="btn btn-green">{% trans "Manage Events" %}</a>
-      <a href="{% url 'pending_club_requests' %}" class="btn btn-default">{% trans "Pending Club Requests" %}</a>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'event_list' %}" class="btn btn-coral">
+        <i class="bi bi-calendar-event me-1"></i>{% trans "Manage Events" %}
+      </a>
+      <a href="{% url 'pending_club_requests' %}" class="btn btn-coral-outline">
+        <i class="bi bi-hourglass-split me-1"></i>{% trans "Pending Club Requests" %}
+      </a>
     </div>
   </div>
 
-  <div class="grid-2">
-    <div class="card" style="grid-column: 1 / -1;">
-      <h3 class="card-title">🏫 {% trans "All Clubs" %} <span class="badge">{{ clubs|length }}</span></h3>
-      {% if clubs %}
-        <div class="table-wrap">
-          <table class="nice-table">
-            <thead>
-              <tr>
-                <th>{% trans "Club" %}</th>
-                <th>{% trans "Representative" %}</th>
-                <th class="hide-mobile">{% trans "Country" %}</th>
-                <th class="hide-mobile">{% trans "City" %}</th>
-                <th class="hide-mobile">{% trans "Email" %}</th>
-                <th class="hide-mobile">{% trans "Phone" %}</th>
-                <th>{% trans "Status" %}</th>
-                <th>{% trans "Actions" %}</th>
-              </tr>
-            </thead>
-            <tbody>
-            {% for c in clubs %}
-              <tr>
-                <td>{{ c.club_name }}</td>
-                <td>{{ c.representative_name }}</td>
-                <td class="hide-mobile">{{ c.country.name }}</td>
-                <td class="hide-mobile">{{ c.city }}</td>
-                <td class="hide-mobile email-col">{{ c.user.email }}</td>
-                <td class="hide-mobile">{{ c.phone_number }}</td>
-                <td>
-                  {% if c.confirmed %}
-                    <span class="status-dot ok"></span> {% trans "Confirmed" %}
-                  {% else %}
-                    <span class="status-dot warn"></span> {% trans "Pending" %}
-                  {% endif %}
-                </td>
-                <td>
-                  <div class="btn-row">
-                    <a class="btn btn-default btn-sm" href="{% url 'admin_list_dancers' c.id %}">{% trans "Dancers" %}</a>
-                    <a href="{% url 'edit_club' c.id %}" class="btn btn-edit">{% trans "Edit" %}</a>
-                    <a class="btn btn-delete btn-sm"
-                       href="{% url 'delete_club' c.id %}"
-                       onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
-                       {% trans "Delete" %}
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="dp-card">
+        <div class="card-header">
+          <h3>🏫 {% trans "All Clubs" %}
+            <span class="badge text-bg-light border">{{ clubs|length }}</span>
+          </h3>
         </div>
-      {% else %}
-        <p class="muted">{% trans "No clubs yet." %}</p>
-      {% endif %}
+        <div class="card-body">
+          {% if clubs %}
+            <div class="table-responsive">
+              <table class="table table-sm table-hover table-striped align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">{% trans "Club" %}</th>
+                    <th scope="col">{% trans "Representative" %}</th>
+                    <th scope="col" class="hide-lg">{% trans "Country" %}</th>
+                    <th scope="col" class="hide-lg">{% trans "City" %}</th>
+                    <th scope="col" class="hide-lg">{% trans "Email" %}</th>
+                    <th scope="col" class="hide-lg">{% trans "Phone" %}</th>
+                    <th scope="col">{% trans "Status" %}</th>
+                    <th scope="col" class="text-end">{% trans "Actions" %}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for c in clubs %}
+                  <tr>
+                    <td>{{ c.club_name }}</td>
+                    <td>{{ c.representative_name }}</td>
+                    <td class="hide-lg">{{ c.country.name }}</td>
+                    <td class="hide-lg">{{ c.city }}</td>
+                    <td class="hide-lg email-nowrap">{{ c.user.email }}</td>
+                    <td class="hide-lg">{{ c.phone_number }}</td>
+                    <td>
+                      {% if c.confirmed %}
+                        <span class="chip"><span class="dot dot-ok"></span>{% trans "Confirmed" %}</span>
+                      {% else %}
+                        <span class="chip"><span class="dot dot-warn"></span>{% trans "Pending" %}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end">
+                      <div class="d-inline-flex flex-wrap gap-1">
+                        <a class="btn btn-coral-outline btn-sm" href="{% url 'admin_list_dancers' c.id %}">
+                          {% trans "Dancers" %}
+                        </a>
+                        <a href="{% url 'edit_club' c.id %}" class="btn btn-coral-outline btn-sm">
+                          {% trans "Edit" %}
+                        </a>
+                        <a class="btn btn-outline-danger btn-sm"
+                           href="{% url 'delete_club' c.id %}"
+                           onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
+                           {% trans "Delete" %}
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">{% trans "No clubs yet." %}</p>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 
 {% else %}
-  <!-- ===================== CLUB DASHBOARD ===================== -->
-  <div class="dash-hero">
+  {# ===================== CLUB DASHBOARD ===================== #}
+  <div class="dash-hero mb-4">
     <div>
-      <h2 class="heading-dark">{% trans "Welcome" %}, {{ club.representative_name|default:user.get_username }}</h2>
+      <h2>{% trans "Welcome" %}, {{ club.representative_name|default:user.get_username }}</h2>
       <p class="muted">{% trans "Here’s a quick overview of your club and useful shortcuts." %}</p>
     </div>
-    <div class="hero-actions">
-      <a href="{% url 'edit_own_club' %}" class="btn btn-edit">{% trans "Edit Club Details" %}</a>
-      <a href="{% url 'event_list' %}" class="btn btn-green">{% trans "Browse Events" %}</a>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'edit_own_club' %}" class="btn btn-coral-outline">
+        <i class="bi bi-pencil-square me-1"></i>{% trans "Edit Club Details" %}
+      </a>
+      <a href="{% url 'event_list' %}" class="btn btn-coral-outline">
+        <i class="bi bi-calendar2-check me-1"></i>{% trans "Browse Events" %}
+      </a>
     </div>
   </div>
 
-  <div class="grid-3">
-    <div class="card">
-      <h3 class="card-title">🏫 {% trans "Club Overview" %}</h3>
-      <ul class="kv">
-        <li><strong>{% trans "Club Name" %}:</strong> {{ club.club_name }}</li>
-        <li><strong>{% trans "Country" %}:</strong> {{ club.country.name }}</li>
-        <li><strong>{% trans "City" %}:</strong> {{ club.city }}</li>
-        <li><strong>{% trans "Email" %}:</strong> {{ club.user.email }}</li>
-        <li><strong>{% trans "Phone" %}:</strong> {{ club.phone_number }}</li>
-        <li><strong>{% trans "Dancers" %}:</strong> {{ club.dancers.count }}</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h3 class="card-title">👯 {% trans "Dancers" %}</h3>
-      <p class="muted">{% trans "Add or manage the dancers in your club." %}</p>
-      <div class="btn-row">
-        <a href="{% url 'list_dancers' %}" class="btn btn-default">{% trans "Manage Dancers" %}</a>
-        <a href="{% url 'add_dancer' %}" class="btn btn-green">{% trans "Add Dancer" %}</a>
+  <div class="row g-3">
+    <div class="col-12 col-lg-4">
+      <div class="dp-card h-100">
+        <div class="card-header">
+          <h3>🏫 {% trans "Club Overview" %}</h3>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="mb-1"><strong>{% trans "Club Name" %}:</strong> {{ club.club_name }}</li>
+            <li class="mb-1"><strong>{% trans "Country" %}:</strong> {{ club.country.name }}</li>
+            <li class="mb-1"><strong>{% trans "City" %}:</strong> {{ club.city }}</li>
+            <li class="mb-1"><strong>{% trans "Email" %}:</strong> {{ club.user.email }}</li>
+            <li class="mb-1"><strong>{% trans "Phone" %}:</strong> {{ club.phone_number }}</li>
+            <li class="mb-0"><strong>{% trans "Dancers" %}:</strong> {{ club.dancers.count }}</li>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <h3 class="card-title">📅 {% trans "Events & Registration" %}</h3>
-      <p class="muted">{% trans "Find events, register dancers, and view start lists." %}</p>
-      <div class="btn-row">
-        <a href="{% url 'event_list' %}" class="btn btn-default">{% trans "All Events" %}</a>
+    <div class="col-12 col-lg-4">
+      <div class="dp-card h-100">
+        <div class="card-header">
+          <h3>👯 {% trans "Dancers" %}</h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">{% trans "Add or manage the dancers in your club." %}</p>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'list_dancers' %}" class="btn btn-coral-outline">
+              {% trans "Manage Dancers" %}
+            </a>
+            <a href="{% url 'add_dancer' %}" class="btn btn-coral-outline">
+              {% trans "Add Dancer" %}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="dp-card h-100">
+        <div class="card-header">
+          <h3>📅 {% trans "Events & Registration" %}</h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">{% trans "Find events, register dancers, and view start lists." %}</p>
+          <a href="{% url 'event_list' %}" class="btn btn-coral-outline">
+            {% trans "All Events" %}
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -120,74 +255,4 @@
 
 {% endblock %}
 
-{% block extra_styles %}
-<style>
-  .dash-hero {
-    background:#f8f9fa; border-radius:14px; padding:18px 22px; margin-bottom:18px;
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-  }
-  .hero-actions .btn{ margin-left:8px; }
 
-  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .grid-3{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
-  @media (max-width: 900px){ .grid-2,.grid-3{ grid-template-columns:1fr; } }
-
-  .card{ background:#fff; border:1px solid #e8e8e8; border-radius:14px; padding:18px;
-    box-shadow:0 2px 8px rgba(0,0,0,.04); }
-  .card-title{ margin:0 0 .6rem 0; font-size:1.1rem; display:flex; align-items:center; gap:.5rem; }
-
-  .muted{ color:#666; }
-  .kv{ margin:0; padding-left:1rem; }
-  .kv li{ margin:.35rem 0; }
-
-  .btn-row .btn{ margin-right:8px; margin-bottom:8px; }
-  .badge{ display:inline-block; background:#eef2ff; border-radius:10px;
-    padding:2px 8px; font-size:.85rem; margin-left:.4rem; }
-
-  .table-wrap{ overflow-x: auto; }
-  .nice-table{ width:100%; border-collapse: collapse; }
-  .nice-table th, .nice-table td{ padding:10px 12px; border-bottom:1px solid #eee; vertical-align: middle; }
-  .nice-table thead th{ background:#fafafa; text-align:left; font-weight:600; }
-
-  /* Email column: keep on one line unless too tight */
-  .nice-table td.email-col {
-    white-space: nowrap;
-    word-break: keep-all;
-    overflow-wrap: anywhere;
-  }
-
-  /* Action buttons: allow wrapping neatly */
-  .btn-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: flex-start;
-  }
-  .nice-table td .btn {
-    min-width: 70px;
-    height: 28px;
-    font-size: 0.75rem;
-    text-align: center;
-    padding: 2px 6px;
-    white-space: nowrap;
-    line-height: 1.2;
-  }
-
-  .status-dot{ width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:6px; vertical-align:middle; }
-  .status-dot.ok{ background:#28a745; }
-  .status-dot.warn{ background:#ffc107; }
-
-  /* Responsive tweaks */
-  @media (max-width: 1024px) {
-    .btn-row {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .nice-table td .btn {
-      width: 100%;
-      min-width: unset;
-    }
-    .hide-mobile { display: none; }
-  }
-</style>
-{% endblock %}

@@ -1,88 +1,174 @@
 {% extends 'core/base.html' %}
-{% load i18n %}
+{% load i18n static %}
+
 {% block title %}{% trans "Manage Event" %} | {{ event.name }}{% endblock %}
 
-{% block content %}
-<h2>{% trans "Manage Event:" %} {{ event.name }}</h2>
+{% block extra_head %}
+<style>
+  .btn-coral { background:#d76f54; border-color:#d76f54; color:#fff; }
+  .btn-coral:hover { background:#c55f46; border-color:#c55f46; color:#fff; }
+  .btn-coral-outline { color:#d76f54; border-color:#d76f54; background:#fff; }
+  .btn-coral-outline:hover { background:#d76f54; color:#fff; }
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+  .card { border:0; box-shadow:0 6px 18px rgba(0,0,0,.06); }
+  .preview { width:100%; max-width:260px; border-radius:.5rem; border:1px solid rgba(0,0,0,.1); }
+  .divider { height:1px; background:rgba(0,0,0,.1); margin:1.5rem 0; }
 
-    <p>
-        <label for="id_name">{% trans "Event Name" %}:</label><br>
-        {{ form.name }}
-    </p>
+  .sticky-save {
+    position:sticky;
+    top:10px;
+    z-index:20;
+    display:flex;
+    justify-content:flex-end;
+    gap:.5rem;
+  }
 
-    <p>
-        <label for="id_location">{% trans "Location" %}:</label><br>
-        {{ form.location }}
-    </p>
-
-    <p>
-        <label for="id_city">{% trans "City" %}:</label><br>
-        {{ form.city }}
-    </p>
-
-    <p>
-        <label for="id_date">{% trans "Date" %}:</label><br>
-        {{ form.date }}
-    </p>
-
-    <p>
-        <label for="id_start_time">{% trans "Start Time (optional)" %}:</label><br>
-        {{ form.start_time }}
-    </p>
-
-    <p>
-        <label for="id_registration_start">{% trans "Registration Start Date" %}:</label><br>
-        {{ form.registration_start }}
-    </p>
-
-    <p>
-        <label for="id_registration_end">{% trans "Registration End Date" %}:</label><br>
-        {{ form.registration_end }}
-    </p>
-
-    <p>
-        <label for="id_music_end">{% trans "Music Upload End Date (optional)" %}:</label><br>
-        {{ form.music_end }}
-    </p>
-
-    <p>
-        <label for="id_notice_image">{% trans "Event Poster / Notice (optional)" %}:</label><br>
-        {{ form.notice_image }}
-        {% if event.notice_image %}
-            <br>
-            <img src="{{ event.notice_image.url }}" alt="Poster"
-                 style="max-height:150px; margin-top:8px; border:1px solid #ccc; border-radius:6px;">
-        {% endif %}
-    </p>
-
-    <p>
-        <label for="id_diploma_template">{% trans "Diploma Template (optional)" %}:</label><br>
-        {{ form.diploma_template }}
-    </p>
-
-    <p>
-        <label for="id_is_published">{{ form.is_published }} {% trans "Publish Event" %}</label>
-    </p>
-
-    <button type="submit" class="btn-green">{% trans "Save Changes" %}</button>
-</form>
-
-<hr style="margin: 2em 0;">
-
-<form method="post" action="{% url 'delete_event' event.id %}"
-      onsubmit="return confirm('{% blocktrans %}Are you sure you want to delete this event? All participations, styles, and scores will be removed.{% endblocktrans %}');">
-    {% csrf_token %}
-    <button type="submit" class="btn-delete">{% trans "Delete Event" %}</button>
-</form>
-
-<form method="get" action="{% url 'event_list' %}" style="margin-top: 1em;">
-    <button type="submit" class="btn-default">{% trans "Back to Events" %}</button>
-</form>
+  .file-clear {
+    display:inline-flex;
+    align-items:center;
+    gap:.3rem;
+    margin-left:.5rem;
+  }
+</style>
 {% endblock %}
 
+{% block content %}
 
+<div class="sticky-save mb-3">
+  <button type="submit" form="eventForm" class="btn btn-coral">{% trans "Save Changes" %}</button>
+  <a href="{% url 'event_list' %}" class="btn btn-coral-outline">{% trans "Back to Events" %}</a>
+</div>
 
+<h2 class="mb-3">{% trans "Manage Event" %}: <span class="fw-semibold">{{ event.name }}</span></h2>
 
+<form method="post" enctype="multipart/form-data" id="eventForm" class="mb-4">
+  {% csrf_token %}
+  <div class="row g-4">
+    <!-- LEFT COLUMN -->
+    <div class="col-12 col-lg-8">
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="id_name">{% trans "Event Name" %}</label>
+              {{ form.name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_location">{% trans "Location" %}</label>
+              {{ form.location }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_city">{% trans "City" %}</label>
+              {{ form.city }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_date">{% trans "Date" %}</label>
+              {{ form.date }}
+              <div class="form-text">{% trans "Format" %}: YYYY-MM-DD</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_start_time">{% trans "Start Time (optional)" %}</label>
+              {{ form.start_time }}
+              <div class="form-text">{% trans "Format" %}: HH:MM</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_registration_start">{% trans "Registration Start Date" %}</label>
+              {{ form.registration_start }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_registration_end">{% trans "Registration End Date" %}</label>
+              {{ form.registration_end }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="id_music_end">{% trans "Music Upload End Date (optional)" %}</label>
+              {{ form.music_end }}
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="form-check mt-2">
+            {{ form.is_published }}
+            <label class="form-check-label ms-1" for="id_is_published">{% trans "Publish Event" %}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIPLOMA TEMPLATE -->
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <h6 class="text-muted mb-2">{% trans "Diploma Template (optional)" %}</h6>
+
+          <!-- {% if event.diploma_template %}
+          <div class="mb-2">
+            <span class="small text-muted">{% trans "Currently:" %}</span>
+            <a href="{{ event.diploma_template.url }}" target="_blank">{{ event.diploma_template.name }}</a>
+            <span class="file-clear">
+              <input type="checkbox" name="diploma_template-clear" id="id_diploma_template-clear" class="form-check-input">
+              <label for="id_diploma_template-clear" class="small text-muted">{% trans "Clear" %}</label>
+            </span>
+          </div>
+          {% endif %} -->
+          
+          {{ form.diploma_template.as_widget }}
+          <div class="form-text">{% trans "Used to generate diplomas at awards time." %}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-12 col-lg-4">
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <h6 class="text-muted mb-2">{% trans "Event Poster / Notice (optional)" %}</h6>
+
+          {% if event.notice_image %}
+          <!-- <div class="mb-2">
+            <span class="small text-muted">{% trans "Currently:" %}</span>
+            <a href="{{ event.notice_image.url }}" target="_blank">{{ event.notice_image.name }}</a>
+            <span class="file-clear">
+              <input type="checkbox" name="notice_image-clear" id="id_notice_image-clear" class="form-check-input">
+              <label for="id_notice_image-clear" class="small text-muted">{% trans "Clear" %}</label>
+            </span>
+          </div> -->
+          <img src="{{ event.notice_image.url }}" alt="Poster" class="preview mb-3">
+          {% endif %}
+          
+          {{ form.notice_image.as_widget }}
+          <div class="form-text">{% trans "PNG or JPG recommended. Large images will be resized by the browser." %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- DANGER ZONE -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
+    <h6 class="text-danger mb-2">{% trans "Danger Zone" %}</h6>
+    <p class="small text-muted mb-3">
+      {% blocktrans %}Deleting this event will permanently remove all participations, styles, and scores.{% endblocktrans %}
+    </p>
+    <form method="post" action="{% url 'delete_event' event.id %}"
+          onsubmit="return confirm('{% blocktrans %}Are you sure you want to delete this event?{% endblocktrans %}');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger">{% trans "Delete Event" %}</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js_bottom %}
+<script>
+  (function () {
+    const form = document.getElementById('eventForm');
+    if (!form) return;
+    form.querySelectorAll('input[type="text"], input[type="date"], input[type="time"], select, textarea')
+      .forEach(el => el.classList.add('form-control'));
+    form.querySelectorAll('input[type="file"]').forEach(el => el.classList.add('form-control'));
+    form.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('form-check-input'));
+    form.querySelectorAll('label:not(.form-check-label)').forEach(l => l.classList.add('form-label'));
+  })();
+</script>
+{% endblock %}

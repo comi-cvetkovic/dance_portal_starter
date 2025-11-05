@@ -3,54 +3,112 @@
 {% block title %}{% trans "Club Summary" %} | {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Participants Summary by Club" %} – {{ event.city }} ({{ event.date }})</h2>
 
-<table>
-    <thead>
+<!-- Header + toolbar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">
+    {% trans "Participants Summary by Club" %} – {{ event.city }} ({{ event.date }})
+  </h2>
+
+  <form method="get" action="{% url 'list_event_participants' event.id %}">
+    <button type="submit" class="btn btn-coral-outline">
+      ← {% trans "Back to Participants" %}
+    </button>
+  </form>
+</div>
+
+<!-- Summary table -->
+<div class="table-shell">
+  <div class="table-responsive">
+    <table class="table table-striped table-hover table-sm align-middle summary-table">
+      <thead class="table-light">
         <tr>
-            <th>{% trans "Club" %}</th>
-            <th>Solo</th>
-            <th>Duo</th>
-            <th>Trio</th>
-            <th>Group</th>
-            <th>Formation</th>
-            <th>Production</th>
-            <th>{% trans "Competitors" %}</th>
-            <th>{% trans "Performances" %}</th>
+          <th scope="col" class="col-club">{% trans "Club" %}</th>
+          <th scope="col" class="text-center">Solo</th>
+          <th scope="col" class="text-center">Duo</th>
+          <th scope="col" class="text-center">Trio</th>
+          <th scope="col" class="text-center">Group</th>
+          <th scope="col" class="text-center">Formation</th>
+          <th scope="col" class="text-center">Production</th>
+          <th scope="col" class="text-center">{% trans "Competitors" %}</th>
+          <th scope="col" class="text-center">{% trans "Performances" %}</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
         {% for row in summary_data %}
         <tr>
-            <td>{{ row.club.club_name }}</td>
-            <td>{{ row.group_type_counts.Solo|default:"0" }}</td>
-            <td>{{ row.group_type_counts.Duo|default:"0" }}</td>
-            <td>{{ row.group_type_counts.Trio|default:"0" }}</td>
-            <td>{{ row.group_type_counts.Group|default:"0" }}</td>
-            <td>{{ row.group_type_counts.Formation|default:"0" }}</td>
-            <td>{{ row.group_type_counts.Production|default:"0" }}</td>
-            <td>{{ row.unique_dancer_count }}</td>
-            <td>{{ row.total_dancer_count }}</td>
+          <td class="fw-semibold">{{ row.club.club_name }}</td>
+          <td class="text-center">{{ row.group_type_counts.Solo|default:"0" }}</td>
+          <td class="text-center">{{ row.group_type_counts.Duo|default:"0" }}</td>
+          <td class="text-center">{{ row.group_type_counts.Trio|default:"0" }}</td>
+          <td class="text-center">{{ row.group_type_counts.Group|default:"0" }}</td>
+          <td class="text-center">{{ row.group_type_counts.Formation|default:"0" }}</td>
+          <td class="text-center">{{ row.group_type_counts.Production|default:"0" }}</td>
+          <td class="text-center">{{ row.unique_dancer_count }}</td>
+          <td class="text-center">{{ row.total_dancer_count }}</td>
         </tr>
         {% endfor %}
-        <tr style="font-weight: bold; background-color: #f9f9f9;">
-            <td>Total</td>
-            <td>{{ total_counts.Solo }}</td>
-            <td>{{ total_counts.Duo }}</td>
-            <td>{{ total_counts.Trio }}</td>
-            <td>{{ total_counts.Group }}</td>
-            <td>{{ total_counts.Formation }}</td>
-            <td>{{ total_counts.Production }}</td>
-            <td>{{ total_counts.unique_dancer_count }}</td>
-            <td>{{ total_counts.total_dancer_count }}</td>
+      </tbody>
+      <tfoot>
+        <tr class="table-secondary fw-bold">
+          <td>{% trans "Total" %}</td>
+          <td class="text-center">{{ total_counts.Solo }}</td>
+          <td class="text-center">{{ total_counts.Duo }}</td>
+          <td class="text-center">{{ total_counts.Trio }}</td>
+          <td class="text-center">{{ total_counts.Group }}</td>
+          <td class="text-center">{{ total_counts.Formation }}</td>
+          <td class="text-center">{{ total_counts.Production }}</td>
+          <td class="text-center">{{ total_counts.unique_dancer_count }}</td>
+          <td class="text-center">{{ total_counts.total_dancer_count }}</td>
         </tr>
-    </tbody>
-</table>
+      </tfoot>
+    </table>
+  </div>
+</div>
 
-<p>
-<form method="get" action="{% url 'list_event_participants' event.id %}">
-    <button type="submit" value="summary" class="btn-default">{% trans "Back to Participants" %}</button>
-</form>
-</p>
+{% endblock %}
 
+{% block extra_head %}
+<style>
+  /* Card shell for the table (matches participants list) */
+  .table-shell{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.06);
+    overflow:hidden;
+  }
+
+  /* Comfortable cell padding */
+  .summary-table th,
+  .summary-table td{
+    padding:.65rem 1rem !important;
+  }
+  .summary-table th:first-child,
+  .summary-table td:first-child{ padding-left:1.25rem !important; }
+  .summary-table th:last-child,
+  .summary-table td:last-child{ padding-right:1.25rem !important; }
+
+  /* Sticky header for long lists */
+  .summary-table thead th{
+    position:sticky; top:0; z-index:2;
+    background:#f8f9fa;
+    box-shadow:0 1px 0 rgba(0,0,0,.04);
+  }
+
+  /* Column sizing */
+  .summary-table .col-club{ min-width: 220px; }
+
+  /* Wrapping rules: don’t split words mid-letter */
+  .summary-table td{
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  /* Zebra consistency */
+  .summary-table tbody tr:nth-child(odd){ background:#fafafa; }
+  .summary-table tbody tr:nth-child(even){ background:#fff; }
+  .summary-table tbody tr:hover{ background-color: rgba(0,0,0,.03); }
+</style>
 {% endblock %}

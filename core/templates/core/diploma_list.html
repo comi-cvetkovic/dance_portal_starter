@@ -3,64 +3,108 @@
 {% block title %}{% trans "Diplomas" %} – {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Diplomas for" %} {{ event.name }}</h2>
 
-<div style="margin-bottom: 1em;">
-  <a href="{% url 'event_awards' event.id %}" class="btn btn-default">← {% trans "Back to Awards" %}</a>
-  <button onclick="window.print()" class="btn-green">🖨 {% trans "Print All" %}</button>
+<!-- Header + toolbar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">{% trans "Diplomas for" %} {{ event.name }}</h2>
+  <div class="d-flex gap-2">
+    <a href="{% url 'event_awards' event.id %}" class="btn btn-coral-outline">
+      ← {% trans "Back to Awards" %}
+    </a>
+    <button type="button" onclick="window.print()" class="btn btn-coral">
+      🖨 {% trans "Print All" %}
+    </button>
+  </div>
 </div>
 
 {% if diplomas %}
-<div class="diploma-grid">
-  {% for diploma in diplomas %}
-    <div class="card diploma-card">
-      <img src="{{ diploma.image.url }}" alt="Diploma for {{ diploma.dancer }}" class="diploma-img">
-    </div>
-  {% endfor %}
-</div>
+  <!-- Screen grid -->
+  <div class="diploma-grid">
+    {% for diploma in diplomas %}
+      <div class="dp-card diploma-card">
+        <div class="card-body p-2">
+          <img
+            src="{{ diploma.image.url }}"
+            alt="Diploma for {{ diploma.dancer|default:'-' }}"
+            class="diploma-img"
+          >
+        </div>
+      </div>
+    {% endfor %}
+  </div>
 {% else %}
-<p>{% trans "No diplomas have been generated yet." %}</p>
+  <div class="alert alert-light border mb-0">
+    {% trans "No diplomas have been generated yet." %}
+  </div>
 {% endif %}
+
 {% endblock %}
 
-{% block extra_styles %}
+{% block extra_head %}
 <style>
-/* Screen layout */
-.diploma-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-.diploma-card { padding: 1rem; text-align: center; }
-.diploma-img { max-width: 100%; border: 1px solid #ccc; }
-.diploma-meta { margin-top: 0.5rem; font-weight: 500; }
-
-/* ✅ Print layout */
-@media print {
-  body * { visibility: hidden; }
-  .diploma-grid, .diploma-grid * { visibility: visible; }
-
-  .diploma-grid {
-    display: block !important;
+  /* ---- Card + grid for screen ---- */
+  .dp-card{
+    background:#fff; border:1px solid #eee; border-radius:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05); overflow:hidden;
+  }
+  .diploma-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap:1rem;
+  }
+  .diploma-card .card-body{
+    padding: .75rem;
+  }
+  .diploma-img{
+    display:block;
+    width:100%;
+    height:auto;
+    border:1px solid #ddd;
+    border-radius:8px;
   }
 
-  .diploma-card {
-    page-break-after: always;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-  }
+  /* ---- Print layout: one diploma per page, edge-to-edge ---- */
+  @media print {
+    @page { size: auto; margin: 0; }
 
-  .diploma-img {
-    display: block;
-    margin: 0 auto;
-    width: 100% !important;
-    height: auto !important;
-    border: none !important;
-  }
+    /* Hide everything except the diplomas themselves */
+    body * { visibility: hidden; }
+    .diploma-print-wrap, .diploma-print-wrap * { visibility: visible; }
 
-  /* ❌ hide club name + headings/buttons/links when printing */
-  .diploma-meta, h2, .btn, a { display: none !important; }
-}
+    /* Replace grid with full-page, one-per-page flow */
+    .diploma-grid{
+      display:block !important;
+    }
+    .diploma-card{
+      page-break-after: always !important;
+      border: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .diploma-card .card-body{
+      padding: 0 !important;
+    }
+    .diploma-img{
+      border: none !important;
+      border-radius: 0 !important;
+      width: 100vw !important;
+      height: auto !important;
+      max-width: 100vw !important;
+    }
+
+    /* Hide UI elements on print */
+    h1, h2, h3, .btn, a, .navbar, .footer, .alert { display:none !important; }
+  }
 </style>
+
+<script>
+  // Wrap diplomas for the print visibility rule
+  document.addEventListener('DOMContentLoaded', function(){
+    const grid = document.querySelector('.diploma-grid');
+    if (grid && !grid.classList.contains('diploma-print-wrap')) {
+      grid.classList.add('diploma-print-wrap');
+    }
+  });
+</script>
 {% endblock %}

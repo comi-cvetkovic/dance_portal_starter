@@ -4,62 +4,135 @@
 {% block title %}{% trans "Upcoming Events | Dance Portal" %}{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-    <h2>{% trans "Upcoming Events" %}</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">{% trans "Upcoming Events" %}</h2>
 </div>
 
-<div class="event-grid">
+{% if events %}
+  <div class="event-grid">
     {% for event in events %}
-    <div class="event-card">
-        <!-- Poster only -->
+      <div class="event-card">
         {% if event.notice_image %}
-        <div class="poster" style="background-image: url('{{ event.notice_image.url }}');"></div>
+          <img class="poster" src="{{ event.notice_image.url }}" alt="{{ event.name }}">
         {% else %}
-        <div class="poster" style="background:#ccc; display:flex; align-items:center; justify-content:center; color:#444;">
-            {% trans "No Poster Available" %}
-        </div>
+          <div class="poster poster--placeholder">
+            <span class="placeholder-text">{% trans "Poster coming soon" %}</span>
+          </div>
         {% endif %}
-    </div>
-    {% empty %}
-    <p>{% trans "No upcoming events found." %}</p>
+
+        <!-- Meta overlay -->
+        <div class="event-overlay">
+          <div class="event-title">{{ event.name }}</div>
+          <div class="event-meta">
+            <span class="meta-chip">
+              <i class="bi bi-geo-alt me-1"></i>{{ event.city }}
+            </span>
+            <span class="meta-chip">
+              <i class="bi bi-calendar-event me-1"></i>{{ event.date }}
+            </span>
+            {% if event.starting_time %}
+              <span class="meta-chip">
+                <i class="bi bi-clock me-1"></i>{{ event.starting_time|time:"H:i" }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
     {% endfor %}
-</div>
+  </div>
+{% else %}
+  <div class="alert alert-light border mb-0">
+    {% trans "No upcoming events found." %}
+  </div>
+{% endif %}
+
 {% endblock %}
 
-{% block extra_styles %}
+{% block extra_head %}
 <style>
-  .event-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
-  justify-items: center;
-}
-
-  .event-card {
-    width: min(92vw, 440px);
-    margin: 0 auto;
-    border-radius: 18px;
-    overflow: hidden;
-    position: relative;
-    background: #fafafa;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    transition: transform .15s ease, box-shadow .15s ease;
+  /* --- Grid --- */
+  .event-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    gap:1.1rem;
   }
 
-  .event-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  /* --- Card --- */
+  .event-card{
+    position:relative;
+    border-radius:18px;
+    overflow:hidden;
+    background:#fff;
+    border:1px solid #eee;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .event-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(0,0,0,.10);
   }
 
-  /* Poster keeps 4:5 aspect ratio like a flyer */
-  .poster {
-    position: relative;
-    width: 100%;
-    padding-top: 125%; /* 4:5 ratio */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: 16px;
+  /* --- Poster keeps 4:5 aspect, covers area --- */
+  .poster{
+    display:block;
+    width:100%;
+    aspect-ratio:4/5;            /* modern way; falls back to height for older browsers */
+    object-fit:cover;
+    background:#f3f3f3;
+  }
+  .poster--placeholder{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#f7e3dc 0%, #ffece6 100%);
+    color:#6b4b43;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+  }
+  .placeholder-text{
+    background:#ffffffc2;
+    padding:.35rem .6rem;
+    border-radius:999px;
+    border:1px solid #f0e2de;
+    font-size:.85rem;
+  }
+
+  /* --- Overlay --- */
+  .event-overlay{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    padding:.65rem .8rem .75rem;
+    background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.75) 100%);
+    color:#fff;
+  }
+  .event-title{
+    font-weight:800;
+    font-size:1.05rem;
+    line-height:1.2;
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
+    margin-bottom:.35rem;
+  }
+  .event-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.35rem;
+  }
+  .meta-chip{
+    display:inline-flex;
+    align-items:center;
+    padding:.22rem .5rem;
+    border-radius:999px;
+    font-size:.8rem;
+    background:#ffffffe0;
+    color:#2b2b2b;
+    border:1px solid #ffffffa8;
+  }
+
+  @media (max-width: 576px){
+    .event-title{ font-size:1rem; }
+    .meta-chip{ font-size:.78rem; }
   }
 </style>
 {% endblock %}

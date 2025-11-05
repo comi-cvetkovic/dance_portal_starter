@@ -1,39 +1,104 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
-{% block title %}Add Dancer | Dance Portal{% endblock %}
+{% block title %}{% trans "Add Dancer | Dance Portal" %}{% endblock %}
 
 {% block content %}
-    <h2>
-        {% if is_superuser %}
-            {% trans "Add Dancer for" %} {{ club.club_name }} 
-        {% else %}
-            {% trans "Add Dancer" %}
-        {% endif %}
+<div class="container py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">
+      {% if is_superuser %}
+        {% trans "Add Dancer for" %} {{ club.club_name }}
+      {% else %}
+        {% trans "Add Dancer" %}
+      {% endif %}
     </h2>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type ="submit" class = "btn-green">Add</button>
-    </form>
+    <div class="d-none d-sm-block">
+      {% if is_superuser %}
+        <a href="{% url 'club_dashboard' %}" class="btn btn-outline-secondary">
+          ← {% trans "Back to Dashboard" %}
+        </a>
+      {% else %}
+        <a href="{% url 'list_dancers' %}" class="btn btn-coral-outline">
+          ← {% trans "Dancers" %}
+        </a>
+      {% endif %}
+    </div>
+  </div>
 
-    <!-- <div style="margin-top: 1.5em;">
-        {% if is_superuser %}
-            <form method="get" action="{% url 'admin_list_dancers' club.id %}" style="display:inline;">
-                <button type="submit" class = "btn-default">← Club Dancers</button>
-            </form>
-            <form method="get" action="{% url 'club_dashboard' %}" style="display:inline; margin-left: 1em;">
-                <button type="submit" class = "btn-default">← Back to Dashboard</button>
-            </form>
-        {% else %}
-            <form method="get" action="{% url 'list_dancers' %}" style="display:inline;">
-                <button type="submit" class = "btn-default">← Dancers List</button>
-            </form>
-            <form method="get" action="{% url 'club_dashboard' %}" style="display:inline; margin-left: 1em;">
-                <button type="submit" class = "btn-default">← Back to Dashboard</button>
-            </form>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form method="post" novalidate id="addDancerForm">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            {{ form.non_field_errors }}
+          </div>
         {% endif %}
-    </div> -->
+
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+              <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+              {% for error in field.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-coral">
+            {% trans "Add" %}
+          </button>
+
+          {% if is_superuser %}
+            <a href="{% url 'club_dashboard' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+          {% else %}
+            <a href="{% url 'list_dancers' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
+{% block extra_head %}
+<style>
+  /* optional: match your card radius & subtle shadow */
+  .card { border-radius: 14px; }
+</style>
+<script>
+  // Add Bootstrap form classes without needing widget_tweaks
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('addDancerForm');
 
+    // Text-like controls
+    form.querySelectorAll('input:not([type=checkbox]):not([type=radio]), select, textarea')
+        .forEach(el => el.classList.add('form-control'));
+
+    // Checkboxes & radios
+    form.querySelectorAll('input[type=checkbox], input[type=radio]').forEach(el => {
+      const wrapper = el.closest('.mb-3');
+      if (!wrapper) return;
+      if (el.type === 'checkbox') {
+        wrapper.classList.add('form-check');
+        el.classList.add('form-check-input');
+        const label = wrapper.querySelector('label');
+        if (label) label.classList.add('form-check-label');
+      } else if (el.type === 'radio') {
+        wrapper.classList.add('form-check');
+        el.classList.add('form-check-input');
+        const label = wrapper.querySelector('label');
+        if (label) label.classList.add('form-check-label');
+      }
+    });
+  });
+</script>
+{% endblock %}

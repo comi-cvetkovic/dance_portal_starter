@@ -3,84 +3,158 @@
 {% block title %}{% trans "Music Playback" %} | {{ event.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Music Playback" %} – {{ event.name }} ({{ event.date }})</h2>
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">
+    {% trans "Music Playback" %} — {{ event.name }} ({{ event.date }})
+  </h2>
+  <a href="{% url 'event_list' %}" class="btn btn-coral-outline">
+    {% trans "All Events" %}
+  </a>
+</div>
 
 {% for group_key, entries in grouped_entries.items %}
-    {% with group_key|join:"|" as group_key_str %}
-        {% if group_key_str == current_key %}
-        <h3>
-            {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
-        </h3>
-        <p><em>{% trans "Showing Category" %} {{ current_index|add:1 }} {% trans "of" %} {{ total_categories }}</em></p>
+  {% with group_key|join:"|" as group_key_str %}
+    {% if group_key_str == current_key %}
+      <!-- Active category chips -->
+      <div class="category-head mb-3">
+        <span class="badge rounded-pill text-bg-secondary">{{ group_key.0 }}</span>
+        <span class="badge rounded-pill text-bg-secondary">{{ group_key.1 }}</span>
+        <span class="badge rounded-pill text-bg-secondary">{{ group_key.2 }}</span>
+        <span class="badge rounded-pill text-bg-secondary">{{ group_key.3 }}</span>
+        <span class="ms-2 text-muted small">
+          {% trans "Showing Category" %} {{ current_index|add:1 }} {% trans "of" %} {{ total_categories }}
+        </span>
+      </div>
 
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>{% trans "Dancer(s)" %}</th>
-                        <th>{% trans "Choreography" %}</th>
-                        <th>{% trans "Choreographer" %}</th>
-                        <th>{% trans "Music" %}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entry in entries %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>
-                            {% if entry.group_name and entry.num_dancers >= 4 %}
-                                {{ entry.group_name }}
-                            {% else %}
-                                {% for dancer in entry.dancers %}
-                                    {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
-                                {% endfor %}
-                            {% endif %}
-                        </td>
-                        <td>{{ entry.choreography_name }}</td>
-                        <td>{{ entry.choreographer }}</td>
-                        <td>
-                            <strong>{{ entry.music_file_name }}</strong><br>
-                            {% if entry.music_file_url %}
-                            <audio controls>
-                                <source src="{{ entry.music_file_url }}" type="audio/mpeg">
-                                {% trans "Your browser does not support the audio element." %}
-                            </audio>
-                            {% else %}
-                            <em>{% trans "No file uploaded" %}</em>
-                            {% endif %}
-                        </td>
-                    </tr>
+      <!-- Table card -->
+      <div class="table-shell">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover table-sm align-middle music-table">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="col-num">#</th>
+                <th scope="col">{% trans "Dancer(s)" %}</th>
+                <th scope="col">{% trans "Choreography" %}</th>
+                <th scope="col">{% trans "Choreographer" %}</th>
+                <th scope="col" class="col-music">{% trans "Music" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in entries %}
+              <tr>
+                <td class="text-muted">{{ forloop.counter }}</td>
+                <td>
+                  {% if entry.group_name and entry.num_dancers >= 4 %}
+                    <span class="fw-semibold">{{ entry.group_name }}</span>
+                  {% else %}
+                    {% for dancer in entry.dancers %}
+                      {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
-                </tbody>
-            </table>
+                  {% endif %}
+                </td>
+                <td class="fw-semibold">{{ entry.choreography_name }}</td>
+                <td>{{ entry.choreographer }}</td>
+                <td class="music-cell">
+                  {% if entry.music_file_url %}
+                    <div class="music-name fw-semibold mb-1">{{ entry.music_file_name }}</div>
+                    <audio controls preload="none" class="w-100">
+                      <source src="{{ entry.music_file_url }}" type="audio/mpeg">
+                      {% trans "Your browser does not support the audio element." %}
+                    </audio>
+                  {% else %}
+                    <div class="music-name fw-semibold mb-1 text-muted">{{ entry.music_file_name }}</div>
+                    <span class="badge text-bg-warning">{% trans "No file uploaded" %}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-            <div style="margin-top: 2em; display: flex; gap: 1em;">
-                {% if current_index > 0 %}
-                <form method="get" style="display: inline;">
-                    <input type="hidden" name="group" value="{{ current_index|add:-1 }}">
-                    <button type="submit" class="btn-default">← {% trans "Previous Category" %}</button>
-                </form>
-                {% endif %}
+      <!-- Pager -->
+      <div class="d-flex gap-2 justify-content-between justify-content-md-end mt-3 flex-wrap">
+        <div class="me-auto text-muted small d-none d-md-block">
+          {% trans "Category" %} {{ current_index|add:1 }} / {{ total_categories }}
+        </div>
 
-                {% if has_next %}
-                <form method="get" style="display: inline;">
-                    <input type="hidden" name="group" value="{{ current_index|add:1 }}">
-                    <button type="submit" class="btn-edit">{% trans "Next Category" %} →</button>
-                </form>
-                {% endif %}
-            </div>
+        {% if current_index > 0 %}
+        <form method="get" class="d-inline">
+          <input type="hidden" name="group" value="{{ current_index|add:-1 }}">
+          <button type="submit" class="btn btn-coral-outline">
+            ← {% trans "Previous Category" %}
+          </button>
+        </form>
         {% endif %}
-    {% endwith %}
+
+        {% if has_next %}
+        <form method="get" class="d-inline">
+          <input type="hidden" name="group" value="{{ current_index|add:1 }}">
+          <button type="submit" class="btn btn-coral">
+            {% trans "Next Category" %} →
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endwith %}
 {% endfor %}
+
 {% endblock %}
 
-{% block extra_styles %}
+{% block extra_head %}
 <style>
-    .highlighted-category {
-        background-color: #fff7d6;
-        padding: 12px;
-        border-radius: 6px;
-        font-weight: bold;
-    }
+  /* Card shell */
+  .table-shell{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.06);
+    overflow:hidden;
+  }
+
+  /* Category chips row */
+  .category-head .badge{ font-weight:600; margin-right:.35rem; }
+
+  /* Table spacing + sticky header */
+  .music-table th,
+  .music-table td{ padding:.65rem 1rem !important; }
+  .music-table th:first-child,
+  .music-table td:first-child{ padding-left:1.25rem !important; }
+  .music-table th:last-child,
+  .music-table td:last-child{ padding-right:1.25rem !important; }
+
+  .music-table thead th{
+    position:sticky; top:0; z-index:2;
+    background:#f8f9fa;
+    box-shadow:0 1px 0 rgba(0,0,0,.04);
+  }
+
+  /* Columns */
+  .music-table .col-num{ width:72px; }
+  .music-table .col-music{ min-width: 260px; width: 32%; }
+
+  /* Prevent ugly mid-word breaks */
+  .music-table td{
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  /* Music column layout */
+  .music-cell .music-name{ line-height:1.2; }
+  audio{ outline:none; }
+
+  /* Subtle zebra & hover */
+  .music-table tbody tr:nth-child(odd){ background:#fafafa; }
+  .music-table tbody tr:nth-child(even){ background:#fff; }
+  .music-table tbody tr:hover{ background-color: rgba(0,0,0,.03); }
+
+  @media (max-width: 768px){
+    .music-table .col-music{ width:auto; min-width: 220px; }
+  }
 </style>
 {% endblock %}

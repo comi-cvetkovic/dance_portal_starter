@@ -3,57 +3,128 @@
 {% block title %}{% trans "Manage Styles" %} | {{ event.name }}{% endblock %}
 
 {% block content %}
-    <h2>{% trans "Manage Styles for" %} "{{ event.name }}" ({{ event.city }} – {{ event.date }})</h2>
 
-    <form method="post" onsubmit="prepareForm()" style="margin-bottom: 2em;">
-        {% csrf_token %}
-        <p>
-            <label>{% trans "Select existing style" %}:</label><br>
-            <select id="style_select">
-                <option value="" selected>-- {% trans "Choose existing style" %} --</option>
-                {% for name in all_style_names %}
+<!-- Header + toolbar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">
+    {% trans "Manage Styles for" %} “{{ event.name }}” — {{ event.city }} ({{ event.date }})
+  </h2>
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'event_list' %}" class="btn btn-coral-outline">
+      {% trans "All Events" %}
+    </a>
+  </div>
+</div>
+
+<div class="styles-card">
+  <div class="row g-4">
+    <!-- Add style -->
+    <div class="col-12 col-lg-6">
+      <div class="p-3 p-md-4 border rounded-3 h-100 bg-white shadow-sm">
+        <h5 class="mb-3">{% trans "Add a Style" %}</h5>
+        <form method="post" onsubmit="return prepareForm();" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="style_select" class="form-label">{% trans "Select existing style" %}</label>
+            <select id="style_select" class="form-select">
+              <option value="" selected>-- {% trans "Choose existing style" %} --</option>
+              {% for name in all_style_names %}
                 <option value="{{ name }}">{{ name }}</option>
-                {% endfor %}
+              {% endfor %}
             </select>
-        </p>
+          </div>
 
-        <p>
-            <label>{% trans "Or enter a new style" %}:</label><br>
-            <input type="text" id="style_input" placeholder="New style (optional)">
-        </p>
+          <div class="mb-3">
+            <label for="style_input" class="form-label">{% trans "Or enter a new style" %}</label>
+            <div class="input-group">
+              <span class="input-group-text">🎵</span>
+              <input type="text" id="style_input" class="form-control" placeholder="{% trans 'New style (optional)' %}">
+            </div>
+          </div>
 
-        <input type="hidden" name="style_name" id="style_name_final">
-        <button type="submit" class = "btn-green">{% trans "Add Style" %}</button>
-    </form>
+          <input type="hidden" name="style_name" id="style_name_final">
 
-    <h3>{% trans "Existing Styles for this Event" %}:</h3>
-    {% if styles %}
-    <ul>
-        {% for style in styles %}
-        <li>
-            {{ style.name }}
-            <form method="post" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="delete_style_id" value="{{ style.id }}">
-                <button type="submit" class = "btn-delete" onclick="return confirm('Are you sure you want to remove this style?');">{% trans "Remove" %}</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>{% trans "No styles added for this event yet." %}</p>
-    {% endif %}
+          <div class="d-grid">
+            <button type="submit" class="btn btn-coral">
+              {% trans "Add Style" %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
+    <!-- Existing styles -->
+    <div class="col-12 col-lg-6">
+      <div class="p-3 p-md-4 border rounded-3 h-100 bg-white shadow-sm">
+        <h5 class="mb-3">{% trans "Existing Styles for this Event" %}</h5>
+
+        {% if styles %}
+          <ul class="list-group list-group-flush rounded-3 overflow-hidden">
+            {% for style in styles %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="fw-medium">{{ style.name }}</span>
+                <form method="post" class="ms-3">
+                  {% csrf_token %}
+                  <input type="hidden" name="delete_style_id" value="{{ style.id }}">
+                  <button type="submit"
+                          class="btn btn-outline-danger btn-sm"
+                          onclick="return confirm('Are you sure you want to remove this style?');">
+                    {% trans "Remove" %}
+                  </button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">{% trans "No styles added for this event yet." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .styles-card{
+    max-width: 960px;
+    margin-inline: auto;
+  }
+  /* Make selects/inputs consistent with your theme */
+  .form-select, .form-control{
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #e1d5d1;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+  }
+  .form-select:focus, .form-control:focus{
+    border-color: #d76f54;
+    box-shadow: 0 0 0 3px rgba(215,111,84,.15);
+  }
+  .input-group-text{
+    border: 1px solid #e1d5d1;
+    background: #fff7f4;
+  }
+</style>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-    function prepareForm() {
-        const selected = document.getElementById("style_select").value;
-        const entered = document.getElementById("style_input").value;
-        const final = entered.trim() !== "" ? entered : selected;
-        document.getElementById("style_name_final").value = final;
+  function prepareForm(){
+    const selected = document.getElementById("style_select").value.trim();
+    const entered  = document.getElementById("style_input").value.trim();
+    const finalVal = entered !== "" ? entered : selected;
+
+    if (!finalVal){
+      // Basic guard to avoid empty submissions
+      alert("{% trans 'Please choose an existing style or enter a new one.' %}");
+      return false;
     }
+    document.getElementById("style_name_final").value = finalVal;
+    return true;
+  }
 </script>
 {% endblock %}
-

@@ -1,45 +1,123 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
 
-{% block title %}{{ event.name }} – View by Categories{% endblock %}
+{% block title %}{{ event.name }} – {% trans "View by Categories" %}{% endblock %}
 
 {% block content %}
-<h2>{{ event.name }} – Registered Participants by Categories</h2>
 
-<table class="table-default">
-    <thead>
+<!-- Header + toolbar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">
+    {{ event.name }} — {% trans "Registered Participants by Categories" %}
+  </h2>
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'list_event_participants' event.id %}" class="btn btn-coral-outline">
+      ← {% trans "Back to Participants" %}
+    </a>
+  </div>
+</div>
+
+<!-- Categories table -->
+<div class="table-shell">
+  <div class="table-responsive">
+    <table class="table table-striped table-hover table-sm align-middle categories-table">
+      <thead class="table-light">
         <tr>
-            <th>No.</th>
-            <th>Style</th>
-            <th>Category</th>
-            <th>Age</th>
-            <th>Difficulty</th>
-            <th>Competitors</th>
+          <th scope="col" class="col-num">{% trans "No." %}</th>
+          <th scope="col">{% trans "Style" %}</th>
+          <th scope="col">{% trans "Category" %}</th>
+          <th scope="col">{% trans "Age" %}</th>
+          <th scope="col">{% trans "Difficulty" %}</th>
+          <th scope="col" class="text-end col-count">{% trans "Competitors" %}</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
         {% regroup categories by difficulty as difficulty_list %}
         {% for group in difficulty_list %}
-            <!-- Subheading Row -->
-            <tr style="background-color:#ddd; font-weight:bold;">
-                <td colspan="6" style="text-align:center;">
-                    {{ group.grouper }} LEVEL
-                </td>
-            </tr>
+          <!-- Section header row for each difficulty -->
+          <tr class="section-row">
+            <td colspan="6">
+              <span class="badge rounded-pill text-bg-secondary me-2">{{ group.grouper }}</span>
+              <span class="section-label">{% trans "Level" %}</span>
+            </td>
+          </tr>
 
-            {% for c in group.list %}
-            <tr>
-                <td>{{ forloop.parentloop.counter }}.{{ forloop.counter }}</td>
-                <td>{{ c.style__name }}</td>
-                <td>{{ c.group_type }}</td>
-                <td>{{ c.age_group }}</td>
-                <td>{{ c.difficulty }}</td>
-                <td>{{ c.competitors }}</td>
-            </tr>
-            {% endfor %}
+          {% for c in group.list %}
+          <tr>
+            <td class="text-muted">
+              {{ forloop.parentloop.counter }}.{{ forloop.counter }}
+            </td>
+            <td class="fw-semibold">{{ c.style__name }}</td>
+            <td>{{ c.group_type }}</td>
+            <td>{{ c.age_group }}</td>
+            <td>{{ c.difficulty }}</td>
+            <td class="text-end fw-semibold">{{ c.competitors }}</td>
+          </tr>
+          {% endfor %}
         {% endfor %}
-    </tbody>
-</table>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-<a href="{% url 'event_list' %}" class="btn-default">Back</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Card shell (same as other lists) */
+  .table-shell{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.06);
+    overflow:hidden;
+  }
+
+  /* Comfortable cell padding + edge breathing room */
+  .categories-table th,
+  .categories-table td{
+    padding:.65rem 1rem !important;
+  }
+  .categories-table th:first-child,
+  .categories-table td:first-child{ padding-left:1.25rem !important; }
+  .categories-table th:last-child,
+  .categories-table td:last-child{ padding-right:1.25rem !important; }
+
+  /* Sticky header for long lists */
+  .categories-table thead th{
+    position:sticky; top:0; z-index:2;
+    background:#f8f9fa;
+    box-shadow:0 1px 0 rgba(0,0,0,.04);
+  }
+
+  /* Section header rows (Difficulty blocks) */
+  .categories-table .section-row td{
+    background: #fff7f4;               /* light coral tint */
+    color:#6b4b43;
+    font-weight:700;
+    letter-spacing:.02em;
+    border-top:1px solid #f0e2de;
+    border-bottom:1px solid #f0e2de;
+  }
+  .categories-table .section-row .section-label{
+    opacity:.7; font-weight:600; text-transform:uppercase; font-size:.85rem;
+  }
+
+  /* Column sizing */
+  .categories-table .col-num{ width: 80px; }
+  .categories-table .col-count{ width: 140px; }
+
+  /* Wrapping rules: avoid breaking inside words */
+  .categories-table td{
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  /* Zebra/hover consistency */
+  .categories-table tbody tr:hover{ background-color: rgba(0,0,0,.03); }
+  .categories-table tbody tr:nth-child(odd):not(.section-row){ background:#fafafa; }
+  .categories-table tbody tr:nth-child(even):not(.section-row){ background:#fff; }
+</style>
 {% endblock %}
