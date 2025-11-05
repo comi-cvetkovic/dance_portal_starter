@@ -17,8 +17,6 @@ ALLOWED_HOSTS = [
     "www.5678danceportal.com",
     "127.0.0.1",
     "localhost",
-    "0.0.0.0",
-    "vfvsc.leonpisos.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
