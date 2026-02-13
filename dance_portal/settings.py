@@ -159,13 +159,18 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ── Email (Gmail App Password) ─────────────────────────────────────────────────
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = require_env("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = require_env("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or "noreply@localhost"
+
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.gmail.com"
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+else:
+    # Allow app startup without SMTP credentials in environments where email is not needed.
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 
