@@ -51,6 +51,16 @@ body {
   background-color: var(--brand-peach);
 }
 
+/* Make tables stand out from the background */
+.table {
+  border: 1px solid #111;
+  --bs-table-border-color: #111;
+}
+
+.table > :not(caption) > * > * {
+  border-color: #111;
+}
+
 /* Generic card shell used across pages */
 .dp-card {
   background: #fff;
