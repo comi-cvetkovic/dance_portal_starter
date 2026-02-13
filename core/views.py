@@ -579,17 +579,26 @@ def unpublish_start_list(request, event_id):
 
 
 def home(request):
-    my_events = []
+    event_choices = []
     user = getattr(request, "user", None)
-    if getattr(user, "is_authenticated", False) and not (user.is_superuser or user.is_staff):
-        club = DanceClub.objects.filter(user=user).first()
-        if club:
-            my_events = list(
-                Event.objects.filter(participation__dancer_links__dancer__club=club)
-                .distinct()
-                .order_by("-date")
-            )
-    return render(request, "core/home.html", {"my_events": my_events})
+    if getattr(user, "is_authenticated", False):
+        # Show the full event list in the chooser; the participants view will scope to the club if needed.
+        event_choices = list(Event.objects.all().order_by("-date"))
+
+    today = timezone.now().date()
+    upcoming_qs = Event.objects.filter(date__gte=today).order_by("date")
+    if not (getattr(user, "is_authenticated", False) and (user.is_superuser or user.is_staff)):
+        upcoming_qs = upcoming_qs.filter(is_published=True)
+    upcoming_events = list(upcoming_qs)
+
+    return render(
+        request,
+        "core/home.html",
+        {
+            "event_choices": event_choices,
+            "upcoming_events": upcoming_events,
+        },
+    )
 
 
 @login_required

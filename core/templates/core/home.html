@@ -1,5 +1,5 @@
 {% extends 'core/base.html' %}
-{% load i18n %}
+{% load i18n static %}
 {% block title %}{% trans "Home | Dance Portal" %}{% endblock %}
 
 {% block extra_head %}
@@ -84,6 +84,36 @@
     .hero{ padding:1.6rem 1rem; }
     .section-title::after{ width:90px; }
   }
+
+  /* --- UPCOMING EVENTS --- */
+  .event-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 22px rgba(0,0,0,.08);
+    height: 100%;
+  }
+  .event-poster {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    background: #fff2ee;
+    display: block;
+  }
+  .event-meta {
+    padding: .9rem 1rem 1rem;
+  }
+  .event-title {
+    font-weight: 800;
+    margin: 0 0 .25rem;
+    color: var(--ink);
+  }
+  .event-sub {
+    margin: 0;
+    color: #6b6b6b;
+    font-size: .9rem;
+  }
 </style>
 {% endblock %}
 
@@ -165,17 +195,46 @@
         <p class="small mb-3">
           {% trans "Easily upload and manage music files for each choreography entry." %}
         </p>
-        {% if user.is_authenticated and not user.is_superuser and not user.is_staff %}
+        {% if user.is_authenticated %}
           <a href="#" class="stretched-link" data-bs-toggle="modal" data-bs-target="#chooseEventModal"></a>
         {% else %}
-          <a href="{% url 'event_list' %}" class="stretched-link"></a>
+          <a href="{% url 'login' %}" class="stretched-link"></a>
         {% endif %}
       </div>
     </div>
   </div>
+
+  <!-- UPCOMING EVENTS (read-only) -->
+  <div class="text-center mt-5 mb-4">
+    <h3 class="section-title">{% trans "Upcoming Events" %}</h3>
+  </div>
+
+  {% if upcoming_events %}
+    <div class="row g-4">
+      {% for ev in upcoming_events %}
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="event-card">
+            {% if ev.notice_image %}
+              <img class="event-poster" src="{{ ev.notice_image.url }}" alt="{{ ev.name }}">
+            {% else %}
+              <img class="event-poster" src="{% static 'images/background.jpg' %}" alt="{{ ev.name }}">
+            {% endif %}
+            <div class="event-meta">
+              <p class="event-title">{{ ev.name }}</p>
+              <p class="event-sub">{{ ev.city }} · {{ ev.date }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-light border mb-0">
+      {% trans "No upcoming events yet." %}
+    </div>
+  {% endif %}
 </div>
 
-{% if user.is_authenticated and not user.is_superuser and not user.is_staff %}
+{% if user.is_authenticated %}
 <div class="modal fade" id="chooseEventModal" tabindex="-1" aria-labelledby="chooseEventModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -184,9 +243,9 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
       </div>
       <div class="modal-body">
-        {% if my_events %}
+        {% if event_choices %}
           <div class="list-group">
-            {% for ev in my_events %}
+            {% for ev in event_choices %}
               <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                  href="{% url 'list_event_participants' ev.id %}">
                 <span class="fw-semibold">{{ ev.name }}</span>
@@ -195,7 +254,7 @@
             {% endfor %}
           </div>
         {% else %}
-          <p class="mb-2">{% trans "No registered entries found yet." %}</p>
+          <p class="mb-2">{% trans "No events found." %}</p>
           <a class="btn btn-coral-outline btn-sm" href="{% url 'event_list' %}">{% trans "Go to events" %}</a>
         {% endif %}
       </div>
