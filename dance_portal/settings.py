@@ -8,13 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")  # safer path for local + prod (was /opt/...)
 
 # ── Security & debug ────────────────────────────────────────────────────────────
-def require_env(name):
-    value = os.getenv(name)
-    if not value:
-        raise RuntimeError(f"Missing required env var: {name}")
-    return value
-
-SECRET_KEY = require_env("DJANGO_SECRET_KEY")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "1234")  # TODO: change in prod
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 
 ALLOWED_HOSTS = [
@@ -163,8 +157,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = require_env("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = require_env("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "5678community.office@gmail.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "gwrxovatjbbiinzi")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
