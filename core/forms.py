@@ -73,7 +73,6 @@ class DanceClubRegistrationForm(forms.ModelForm):
                 user.username = email
             if password:
                 user.set_password(password)
-                dance_club.raw_password = password
         else:  # Creating new club
             user = User.objects.create_user(
                 username=email,
@@ -81,7 +80,6 @@ class DanceClubRegistrationForm(forms.ModelForm):
                 password=password
             )
             dance_club.user = user
-            dance_club.raw_password = password
 
         if commit:
             user.save()

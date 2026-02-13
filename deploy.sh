@@ -14,7 +14,11 @@ cd $PROJECT_DIR
 # === Git update ===
 echo "🔹 Resetting code to latest from GitHub..."
 git fetch origin main
-git reset --hard origin/main
+if ! git diff --quiet || ! git diff --cached --quiet; then
+    echo "Uncommitted changes detected; aborting deploy."
+    exit 1
+fi
+git pull --ff-only origin main
 
 # === Virtual environment ===
 echo "🔹 Activating virtual environment..."
@@ -37,6 +41,7 @@ echo "🔹 Updating Gunicorn systemd service..."
 sudo cp $PROJECT_DIR/gunicorn.service /etc/systemd/system/$SERVICE_NAME.service
 sudo systemctl daemon-reload
 sudo systemctl enable $SERVICE_NAME
+echo "INFO: Ensure /opt/dance_portal_starter/.env exists on the server (not in git)."
 
 # === Nginx configuration (safe mode) ===
 echo "🔹 Verifying Nginx configuration..."

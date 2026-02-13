@@ -6,6 +6,7 @@ After=network.target
 User=www-data
 Group=www-data
 WorkingDirectory=/opt/dance_portal_starter
+EnvironmentFile=/opt/dance_portal_starter/.env
 
 # Gunicorn start command
 ExecStart=/opt/dance_portal_starter/venv/bin/gunicorn \
@@ -24,4 +25,3 @@ KillMode=mixed
 
 [Install]
 WantedBy=multi-user.target
-

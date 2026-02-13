@@ -63,6 +63,27 @@ AGE_GROUP_ORDER = ['Baby', 'Mini Kids', 'Kids', 'Teen', 'Youth', 'Adult']
 GROUP_TYPE_ORDER = ['Solo', 'Duo', 'Trio', 'Group', 'Formation', 'Production']
 
 
+def compute_final_score(participation, scores):
+    criterion_fields = ["technique", "composition", "image"]
+    if participation.style.name == "Show Dance":
+        criterion_fields.append("show_value")
+
+    total_points = 0
+    total_counts = 0
+
+    for f in criterion_fields:
+        values = [getattr(s, f) for s in scores if getattr(s, f) is not None]
+        if len(values) >= 3:
+            values = sorted(values)[1:-1]  # drop high + low
+        total_points += sum(values)
+        total_counts += len(values)
+
+    if total_counts == 0:
+        return None
+
+    return round(total_points / total_counts, 2)
+
+
 class NotifyClubsForm(forms.Form):
     clubs = forms.ModelMultipleChoiceField(
         queryset=DanceClub.objects.filter(confirmed=True),
@@ -1453,24 +1474,9 @@ def event_awards_view(request, event_id):
     for p in participations:
         category_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
         scores = judge_scores.filter(participation=p)
+        final_score = compute_final_score(p, scores)
 
-        # Scoring fields
-        criterion_fields = ["technique", "composition", "image"]
-        if p.style.name == "Show Dance":
-            criterion_fields.append("show_value")
-
-        total_points = 0
-        total_counts = 0
-
-        for f in criterion_fields:
-            values = [getattr(s, f) for s in scores if getattr(s, f) is not None]
-            if len(values) >= 3:
-                values = sorted(values)[1:-1]  # drop high + low
-            total_points += sum(values)
-            total_counts += len(values)
-
-        if total_counts > 0:
-            final_score = round(total_points / total_counts, 2)
+        if final_score is not None:
             result = AwardResult(
                 participation=p,
                 dancers=dancer_map.get(p.id, []),
@@ -1689,11 +1695,10 @@ def category_results(request, event_id):
     for group_key, entries in grouped.items():
         ranked_entries = []
         for entry in entries:
-            avg_score = JudgeScore.objects.filter(participation=entry).aggregate(
-                avg=Avg("score")
-            )["avg"]
-            if avg_score is not None:
-                ranked_entries.append((entry, round(avg_score, 2)))
+            scores = JudgeScore.objects.filter(participation=entry)
+            final_score = compute_final_score(entry, scores)
+            if final_score is not None:
+                ranked_entries.append((entry, final_score))
         # Sort high to low
         ranked_entries.sort(key=lambda x: x[1], reverse=True)
         results_by_category[group_key] = ranked_entries
