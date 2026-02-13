@@ -17,6 +17,8 @@ ALLOWED_HOSTS = [
     "www.5678danceportal.com",
     "127.0.0.1",
     "localhost",
+    "0.0.0.0",
+    "vfvsc.leonpisos.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -160,5 +162,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "5678community.office@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "gwrxovatjbbiinzi")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
