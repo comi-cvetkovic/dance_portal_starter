@@ -260,12 +260,28 @@ $(function(){
     const count=vals.filter(v=>v&&v.trim()!=='').length;
     $('#sel-count').text(count?`${count} selected`: '');
   }
-  function updateGroupTypeSettings(){
+  function updateGroupTypeSettings(preserveSelection=false){
     const type=groupTypeSelect.val();
     const [min,max]=dancerLimits[type]||[0,999];
+    let selected=dancerSelect.val()||[];
+    if(!Array.isArray(selected)) selected=[selected];
+    selected=selected.filter(v=>v&&v.trim()!=='');
     dancerSelect.select2('destroy');
-    if(type==='Solo'){ dancerSelect.prop('multiple',false).val(null).trigger('change'); initSelect2Single(); }
-    else{ dancerSelect.prop('multiple',true); initSelect2Multi(max); }
+    if(type==='Solo'){
+      dancerSelect.prop('multiple',false);
+      initSelect2Single();
+      if(selected.length){
+        dancerSelect.val(selected[0]).trigger('change');
+      }else{
+        dancerSelect.val(null).trigger('change');
+      }
+    } else {
+      dancerSelect.prop('multiple',true);
+      initSelect2Multi(max);
+      if(preserveSelection && selected.length){
+        dancerSelect.val(selected).trigger('change');
+      }
+    }
     if(['Group','Formation','Production'].includes(type)){ groupNameWrapper.show(); }
     else{ groupNameWrapper.hide(); $('#id_group_name').val(''); }
     refreshCount();
@@ -295,11 +311,11 @@ $(function(){
   }
   $(document).on('click','#btn-select-all',function(){ dancerSelect.find('option').prop('selected',true); dancerSelect.trigger('change'); updateAgeGroup(); });
   $(document).on('click','#btn-clear',function(){ dancerSelect.val(null).trigger('change'); updateAgeGroup(); });
-  groupTypeSelect.on('change',updateGroupTypeSettings);
+  groupTypeSelect.on('change',function(){ updateGroupTypeSettings(false); });
   dancerSelect.on('change',updateAgeGroup);
   $("form").on("submit",function(e){ if(!validateGroupSize()) e.preventDefault(); });
   dancerSelect.select2({width:'100%',placeholder:"Type to search…",allowClear:true});
-  updateGroupTypeSettings(); updateAgeGroup();
+  updateGroupTypeSettings(true); updateAgeGroup();
 });
 </script>
 {% endblock %}

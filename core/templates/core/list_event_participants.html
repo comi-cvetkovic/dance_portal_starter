@@ -5,7 +5,7 @@
 {% block content %}
 
 <!-- Header + admin toolbar -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3 participants-toolbar">
   <h2 class="mb-0">{% trans "Participants for " %}{{ event.city }} ({{ event.date }})</h2>
 
   {% if user.is_superuser %}
@@ -32,10 +32,10 @@
       <tr>
         <th scope="col">{% trans "# Dancers" %}</th>
         <th scope="col">{% trans "Dancer(s)" %}</th>
-        <th scope="col">{% trans "Club" %}</th>
+        <th scope="col" class="club-col">{% trans "Club" %}</th>
         <th scope="col">{% trans "Style" %}</th>
         <th scope="col">{% trans "Difficulty" %}</th>
-        <th scope="col">{% trans "Group Type" %}</th>
+        <th scope="col" class="group-type-col">{% trans "Group Type" %}</th>
         <th scope="col">{% trans "Age Group" %}</th>
         <th scope="col">{% trans "Choreographer" %}</th>
         <th scope="col">{% trans "Choreography" %}</th>
@@ -46,21 +46,31 @@
     <tbody>
       {% for group in grouped_participations %}
       <tr>
-        <td class="text-center">{{ group.dancers|length }}</td>
-        <td>
-          {% for dancer in group.dancers %}
-            {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}
+        <td class="text-center" data-label="{% trans '# Dancers' %}">{{ group.dancers|length }}</td>
+        <td data-label="{% trans 'Dancer(s)' %}">
+          {% if group.dancers %}
+            {% for dancer in group.dancers %}
+              {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            -
+          {% endif %}
         </td>
-        <td>{{ group.dancers.0.club.club_name }}</td>
-        <td class="style-col">{{ group.style.name }}</td>
-        <td class="text-center">{{ group.difficulty }}</td>
-        <td class="text-center">{{ group.group_type }}</td>
-        <td class="text-center">{{ group.age_group|default:"–" }}</td>
-        <td>{{ group.choreographer_name }}</td>
-        <td>{{ group.choreography_name|default:"Untitled" }}</td>
+        <td class="club-col" data-label="{% trans 'Club' %}">
+          {% if group.dancers %}
+            {{ group.dancers.0.club.club_name }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td class="style-col" data-label="{% trans 'Style' %}">{{ group.style.name }}</td>
+        <td class="text-center" data-label="{% trans 'Difficulty' %}">{{ group.difficulty }}</td>
+        <td class="text-center group-type-col" data-label="{% trans 'Group Type' %}">{{ group.group_type }}</td>
+        <td class="text-center" data-label="{% trans 'Age Group' %}">{{ group.age_group|default:"-" }}</td>
+        <td data-label="{% trans 'Choreographer' %}">{{ group.choreographer_name }}</td>
+        <td data-label="{% trans 'Choreography' %}">{{ group.choreography_name|default:"Untitled" }}</td>
 
-        <td class="text-center">
+        <td class="text-center" data-label="{% trans 'Music' %}">
           {% if group.music_file %}
             <i class="bi bi-check-circle-fill text-success"></i>
           {% else %}
@@ -69,7 +79,7 @@
         </td>
 
         <!-- Coral Actions Dropdown -->
-        <td class="text-end">
+        <td class="text-end" data-label="{% trans 'Actions' %}">
           <div class="dropdown">
             <button class="btn btn-coral btn-sm dropdown-toggle"
                     type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -111,73 +121,6 @@
 <p><em>{% trans "No participants yet." %}</em></p>
 {% endif %}
 
-{% endblock %}
-
-{% block extra_head %}
-<style>
-  :root { --coral:#d76f54; }
-
-  /* === Coral outline and filled buttons === */
-  .btn-coral-outline{
-    --bs-btn-color: var(--coral);
-    --bs-btn-border-color: var(--coral);
-    --bs-btn-hover-bg: var(--coral);
-    --bs-btn-hover-border-color: var(--coral);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-active-bg: var(--coral);
-    --bs-btn-active-border-color: var(--coral);
-    --bs-btn-focus-shadow-rgb: 215,111,84;
-  }
-
-  .btn-coral {
-    background-color: var(--coral);
-    border-color: var(--coral);
-    color: #fff;
-  }
-  .btn-coral:hover,
-  .btn-coral:focus {
-    background-color: #c45f45;
-    border-color: #c45f45;
-    color: #fff;
-  }
-  .btn-coral:focus-visible {
-    box-shadow: 0 0 0 0.2rem rgba(215,111,84,.35);
-  }
-
-  /* === Table styling === */
-  .participants-table td { white-space: normal; word-break: break-word; }
-  .participants-table td.style-col { word-break: keep-all; }
-  .participants-table tbody tr:hover { background-color: rgba(0,0,0,.03); }
-
-  /* Custom alternating grey rows (soft tone) */
-  .participants-table tbody tr:nth-child(odd) {
-    background-color: #f9f9f9;
-  }
-  .participants-table tbody tr:nth-child(even) {
-    background-color: #fdfdfd;
-  }
-
-  /* Icons slightly larger */
-  .participants-table td .bi {
-    font-size: 1.15rem;
-    vertical-align: -2px;
-  }
-
-  /* === Dropdown tweaks === */
-  .dropdown-toggle::after { margin-left: .4rem; vertical-align: .15em; }
-  .dropdown-menu { font-size: 0.875rem; min-width: 8rem; }
-  .dropdown-item i { vertical-align: -1px; }
-
-  /* === Equal width for top toolbar buttons === */
-  .btn-fixed {
-    display: inline-flex !important;
-    justify-content: center;
-    align-items: center;
-    width: 220px !important;
-    white-space: nowrap;
-    text-align: center;
-  }
-</style>
 {% endblock %}
 
 

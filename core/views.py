@@ -880,7 +880,7 @@ def register_dancer(request, event_id):
             for dancer in dancers:
                 DancerParticipation.objects.create(participation=participation, dancer=dancer)
 
-            if form.cleaned_data.get('music_file') and not event.music_open():
+            if form.cleaned_data.get('music_file') and not event.music_open:
                 messages.warning(request, _("Music file was not saved because the upload period is closed."))
 
             messages.success(request, _("Participation registered successfully."))
@@ -989,38 +989,21 @@ def list_event_participants(request, event_id):
             "total_counts": total_counts
         })
 
-    # 🧑‍🎤 Regular participant view (grouped by club first)
-    clubs = DanceClub.objects.filter(
-        id__in=participations.values_list("dancer_links__dancer__club_id", flat=True)
-    ).order_by("club_name")
-
+    # Regular participant view: one table row per Participation (no category merge).
     grouped_participations = []
-    for club in clubs:
-        club_entries = participations.filter(dancer_links__dancer__club=club).distinct()
-        club_grouped = defaultdict(list)
-        for p in club_entries:
-            key = (
-                p.style_id,
-                p.group_type,
-                p.age_group,
-                p.difficulty,
-                p.choreographer_name,
-            )
-            club_grouped[key].append(p)
-
-        for key, plist in club_grouped.items():
-            grouped_participations.append({
-                "club": club,
-                "style": StyleCategory.objects.get(id=key[0]),
-                "group_type": key[1],
-                "age_group": key[2],
-                "difficulty": key[3],
-                "choreographer_name": key[4],
-                "choreography_name": plist[0].choreography_name if plist and plist[0].choreography_name else "Untitled",
-                "dancers": list({dp.dancer for p in plist for dp in p.dancer_links.all()}),
-                "participation_id": plist[0].id,
-                "music_file": plist[0].music_file,
-            })
+    for p in participations:
+        dancers = [dp.dancer for dp in p.dancer_links.all()]
+        grouped_participations.append({
+            "style": p.style,
+            "group_type": p.group_type,
+            "age_group": p.age_group,
+            "difficulty": p.difficulty,
+            "choreographer_name": p.choreographer_name,
+            "choreography_name": p.choreography_name or "Untitled",
+            "dancers": dancers,
+            "participation_id": p.id,
+            "music_file": p.music_file,
+        })
 
     return render(request, "core/list_event_participants.html", {
         "event": event,
@@ -1110,6 +1093,21 @@ def edit_participation(request, participation_id):
     dancer_list = [dp.dancer for dp in dancers]
     club = dancer_list[0].club if dancer_list else None
 
+    limits = {
+        "Solo": (1, 1),
+        "Duo": (2, 2),
+        "Trio": (3, 3),
+        "Group": (4, 9),
+        "Formation": (10, 29),
+        "Production": (30, 200),
+    }
+    min_required, max_required = limits.get(participation.group_type, (0, 999))
+    if not (min_required <= len(dancer_list) <= max_required):
+        messages.warning(
+            request,
+            _("This entry has an invalid dancer count for its group type. Please review and save corrections."),
+        )
+
     if not request.user.is_superuser and (not club or club.user != request.user):
         return redirect('club_dashboard')
 
@@ -1165,7 +1163,9 @@ def edit_participation(request, participation_id):
         else:
             messages.error(request, _("Please correct the errors below."))
     else:
-        initial_dancers = DancerParticipation.objects.filter(participation=participation).values_list("dancer_id", flat=True)
+        initial_dancers = list(
+            DancerParticipation.objects.filter(participation=participation).values_list("dancer_id", flat=True)
+        )
         form = GroupParticipationForm(
             club=club,
             event=event,

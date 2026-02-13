@@ -299,17 +299,28 @@ $(function () {
     $('#sel-count').text(count ? `${count} selected` : '');
   }
 
-  function updateGroupTypeSettings() {
+  function updateGroupTypeSettings(preserveSelection = false) {
     const groupType = groupTypeSelect.val();
     const [min,max] = dancerLimits[groupType] || [0,999];
+    let selected = dancerSelect.val() || [];
+    if (!Array.isArray(selected)) selected = [selected];
+    selected = selected.filter(v => v && v.trim() !== '');
     dancerSelect.select2('destroy');
 
     if (groupType === 'Solo') {
-      dancerSelect.prop('multiple', false).val(null).trigger('change');
+      dancerSelect.prop('multiple', false);
       initSelect2Single();
+      if (selected.length) {
+        dancerSelect.val(selected[0]).trigger('change');
+      } else {
+        dancerSelect.val(null).trigger('change');
+      }
     } else {
       dancerSelect.prop('multiple', true);
       initSelect2Multi(max);
+      if (preserveSelection && selected.length) {
+        dancerSelect.val(selected).trigger('change');
+      }
     }
 
     if (['Group','Formation','Production'].includes(groupType)) {
@@ -374,12 +385,12 @@ $(function () {
     updateAgeGroup();
   });
 
-  groupTypeSelect.on('change', updateGroupTypeSettings);
+  groupTypeSelect.on('change', function () { updateGroupTypeSettings(false); });
   dancerSelect.on('change', updateAgeGroup);
   $("form").on("submit", function (e) { if (!validateGroupSize()) e.preventDefault(); });
 
   dancerSelect.select2({ width:'100%', placeholder:"Type to search…", allowClear:true });
-  updateGroupTypeSettings();
+  updateGroupTypeSettings(true);
   updateAgeGroup();
 });
 </script>

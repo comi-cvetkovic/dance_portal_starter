@@ -51,5 +51,130 @@ body {
   background-color: var(--brand-peach);
 }
 
+/* Participants table page */
+.participants-toolbar .btn-fixed {
+  display: inline-flex !important;
+  justify-content: center;
+  align-items: center;
+  width: 220px !important;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.participants-table th,
+.participants-table td {
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.participants-table .club-col,
+.participants-table .group-type-col,
+.participants-table .style-col {
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.participants-table .club-col {
+  min-width: 12rem;
+}
+
+.participants-table .group-type-col {
+  min-width: 8rem;
+}
+
+.participants-table .style-col {
+  min-width: 10rem;
+}
+
+.participants-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, .03);
+}
+
+.participants-table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.participants-table tbody tr:nth-child(even) {
+  background-color: #fdfdfd;
+}
+
+.participants-table td .bi {
+  font-size: 1.15rem;
+  vertical-align: -2px;
+}
+
+.participants-table .dropdown-toggle::after {
+  margin-left: .4rem;
+  vertical-align: .15em;
+}
+
+.participants-table .dropdown-menu {
+  font-size: .875rem;
+  min-width: 8rem;
+}
+
+.participants-table .dropdown-item i {
+  vertical-align: -1px;
+}
+
+/* Mobile-only readability for participants table */
+@media (max-width: 767.98px) {
+  .participants-table thead {
+    display: none;
+  }
+
+  .participants-table,
+  .participants-table tbody,
+  .participants-table tr,
+  .participants-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .participants-table tr {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    margin-bottom: .75rem;
+    padding: .4rem .6rem;
+  }
+
+  .participants-table td {
+    border: 0;
+    padding: .3rem 0 .3rem 7.8rem;
+    position: relative;
+    text-align: left !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-height: 1.75rem;
+  }
+
+  .participants-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    top: .3rem;
+    width: 7.2rem;
+    font-weight: 600;
+    color: #6b6b6b;
+    white-space: nowrap;
+  }
+
+  .participants-table .club-col,
+  .participants-table .group-type-col,
+  .participants-table .style-col {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+
+  .participants-table .dropdown {
+    display: inline-block;
+  }
+}
+
 
 
