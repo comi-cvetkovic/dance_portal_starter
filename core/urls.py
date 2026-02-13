@@ -40,6 +40,7 @@ urlpatterns = [
 
     # View participants for an event
     path('events/<int:event_id>/participants/', views.list_event_participants, name='list_event_participants'),
+    path('my/participants/', views.my_participants_redirect, name='my_participants_redirect'),
 
     path('events/<int:event_id>/styles/manage/', views.manage_styles, name='manage_styles'),
 

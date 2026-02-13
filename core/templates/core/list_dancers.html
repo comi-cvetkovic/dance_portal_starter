@@ -16,11 +16,6 @@
     </h2>
 
     <div class="d-flex align-items-center gap-2 flex-wrap">
-      <div class="dp-metric" aria-label="{% trans 'Total Dancers' %}">
-        <span class="dp-metric__label">{% trans "Total Dancers" %}</span>
-        <span class="dp-metric__value">{{ dancers|length }}</span>
-      </div>
-
       {% if is_superuser %}
         <form method="get" action="{% url 'admin_add_dancer' club.id %}">
           <button type="submit" class="btn btn-coral">
@@ -39,6 +34,13 @@
 
 <!-- List -->
 {% if dancers %}
+  <div class="mb-3">
+    <div class="dp-metric" aria-label="{% trans 'Total Dancers' %}">
+      <span class="dp-metric__label">{% trans "Total Dancers" %}</span>
+      <span class="dp-metric__value">{{ dancers|length }}</span>
+    </div>
+  </div>
+
   <div class="dp-card">
     <div class="list-group list-group-flush list-group-striped">
       {% for dancer in dancers %}

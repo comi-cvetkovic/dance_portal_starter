@@ -165,11 +165,44 @@
         <p class="small mb-3">
           {% trans "Easily upload and manage music files for each choreography entry." %}
         </p>
-        <a href="{% url 'event_list' %}" class="stretched-link"></a>
+        {% if user.is_authenticated and not user.is_superuser and not user.is_staff %}
+          <a href="#" class="stretched-link" data-bs-toggle="modal" data-bs-target="#chooseEventModal"></a>
+        {% else %}
+          <a href="{% url 'event_list' %}" class="stretched-link"></a>
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
+
+{% if user.is_authenticated and not user.is_superuser and not user.is_staff %}
+<div class="modal fade" id="chooseEventModal" tabindex="-1" aria-labelledby="chooseEventModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="chooseEventModalLabel">{% trans "Choose an event" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+      </div>
+      <div class="modal-body">
+        {% if my_events %}
+          <div class="list-group">
+            {% for ev in my_events %}
+              <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                 href="{% url 'list_event_participants' ev.id %}">
+                <span class="fw-semibold">{{ ev.name }}</span>
+                <span class="text-muted small">{{ ev.city }} · {{ ev.date }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="mb-2">{% trans "No registered entries found yet." %}</p>
+          <a class="btn btn-coral-outline btn-sm" href="{% url 'event_list' %}">{% trans "Go to events" %}</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 

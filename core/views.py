@@ -45,6 +45,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django import forms
 from django.utils.translation import gettext as _
+from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 from decimal import Decimal
 import builtins
@@ -578,7 +579,49 @@ def unpublish_start_list(request, event_id):
 
 
 def home(request):
-    return render(request, 'core/home.html')
+    my_events = []
+    user = getattr(request, "user", None)
+    if getattr(user, "is_authenticated", False) and not (user.is_superuser or user.is_staff):
+        club = DanceClub.objects.filter(user=user).first()
+        if club:
+            my_events = list(
+                Event.objects.filter(participation__dancer_links__dancer__club=club)
+                .distinct()
+                .order_by("-date")
+            )
+    return render(request, "core/home.html", {"my_events": my_events})
+
+
+@login_required
+def my_participants_redirect(request):
+    """
+    Home-page helper: send club users directly to their most relevant "View Registered" page.
+    Falls back to the event list if nothing is found.
+    """
+    user = request.user
+    if user.is_superuser or user.is_staff:
+        return redirect("event_list")
+
+    club = DanceClub.objects.filter(user=user).first()
+    if not club:
+        return redirect("event_list")
+
+    # Prefer the nearest upcoming event where this club already has participations.
+    today = timezone.now().date()
+    events = list(
+        Event.objects.filter(participation__dancer_links__dancer__club=club)
+        .distinct()
+        .order_by("date")
+    )
+
+    upcoming = [e for e in events if e.date and e.date >= today]
+    chosen = (upcoming[0] if upcoming else (events[-1] if events else None))
+
+    if not chosen:
+        messages.info(request, _("No registered entries found yet. Please choose an event first."))
+        return redirect("event_list")
+
+    return redirect("list_event_participants", event_id=chosen.id)
 
 
 def register_club(request):
