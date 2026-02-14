@@ -2,120 +2,7 @@
 {% load i18n static %}
 {% block title %}{% trans "Home | Dance Portal" %}{% endblock %}
 
-{% block extra_head %}
-<style>
-  :root { --coral:#d76f54; --ink:#2b2b2b; }
-
-  /* --- HERO --- */
-  .hero h1 {
-    color: var(--ink);
-    font-weight: 800;
-    letter-spacing: .2px;
-    margin-bottom: .35rem;
-  }
-  .hero .subtitle {
-    color: #6b6b6b;
-    font-size: 1.05rem;
-  }
-
-  /* coral underline accent under “What you can do” */
-  .section-title {
-    position: relative;
-    display: inline-block;
-    color: var(--ink);
-    font-weight: 700;
-  }
-  .section-title::after{
-    content:"";
-    position:absolute; left:50%; transform:translateX(-50%);
-    bottom:-10px; width:120px; height:4px;
-    background: var(--coral);
-    border-radius: 999px;
-    box-shadow: 0 1px 0 rgba(0,0,0,.05);
-  }
-
-  /* --- FEATURE CARDS --- */
-  .feature-card {
-    position: relative;
-    background:#fff2ee;
-    border:1px solid #eee;
-    border-radius:16px;
-    padding:1.35rem 1.2rem;
-    box-shadow: 0 8px 18px rgba(0,0,0,.06);
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-    height: 100%;
-  }
-  .feature-card:hover{
-    transform: translateY(-6px);
-    box-shadow: 0 16px 28px rgba(0,0,0,.1);
-    border-color:#f0c2b7;
-  }
-
-  /* Icon bubble */
-  .icon-bubble{
-    width:48px; height:48px;
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    background: rgba(215,111,84,.12);
-    color: var(--coral);
-    font-size:1.35rem;
-    margin: 0 auto .75rem;
-  }
-
-  .feature-card h5{
-    color: var(--ink);
-    font-weight: 700;
-    margin-bottom: .35rem;
-  }
-  .feature-card p{ color:#6f6f6f; }
-
-  /* Make the whole card clickable nicely */
-  .feature-card .stretched-link{ position: static; } /* allow normal padding click */
-
-  /* --- BUTTONS --- */
-  .btn-coral{ background-color:var(--coral); border-color:var(--coral); color:#fff; }
-  .btn-coral:hover{ background-color:#c45f45; border-color:#c45f45; color:#fff; }
-  .btn-pill{ border-radius: 999px; padding:.6rem 1.15rem; font-weight:600; }
-
-  /* spacing fix for the heavy background */
-  .home-wrap{ margin-top: 2rem; margin-bottom: 2.5rem; }
-
-  @media (max-width: 768px){
-    .hero{ padding:1.6rem 1rem; }
-    .section-title::after{ width:90px; }
-  }
-
-  /* --- UPCOMING EVENTS --- */
-  .event-card {
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 10px 22px rgba(0,0,0,.08);
-    height: 100%;
-  }
-  .event-poster {
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    object-fit: cover;
-    background: #fff2ee;
-    display: block;
-  }
-  .event-meta {
-    padding: .9rem 1rem 1rem;
-  }
-  .event-title {
-    font-weight: 800;
-    margin: 0 0 .25rem;
-    color: var(--ink);
-  }
-  .event-sub {
-    margin: 0;
-    color: #6b6b6b;
-    font-size: .9rem;
-  }
-</style>
-{% endblock %}
+{% block extra_head %}{% endblock %}
 
 {% block content %}
 <div class="container-lg home-wrap">
@@ -138,12 +25,14 @@
         </a>
       {% endif %}
     {% else %}
-      <a href="{% url 'login' %}" class="btn btn-coral btn-pill me-2">
-        <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Login" %}
-      </a>
-      <a href="{% url 'register_club' %}" class="btn btn-coral btn-pill">
-        <i class="bi bi-plus-circle me-2"></i>{% trans "Register Your Club" %}
-      </a>
+      <div class="home-cta-group d-flex justify-content-center flex-wrap gap-2">
+        <a href="{% url 'login' %}" class="btn btn-coral btn-pill home-cta">
+          <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Login" %}
+        </a>
+        <a href="{% url 'register_club' %}" class="btn btn-coral btn-pill home-cta">
+          <i class="bi bi-plus-circle me-2"></i>{% trans "Register Your Club" %}
+        </a>
+      </div>
     {% endif %}
   </div>
 
@@ -221,7 +110,7 @@
             {% endif %}
             <div class="event-meta">
               <p class="event-title">{{ ev.name }}</p>
-              <p class="event-sub">{{ ev.city }} · {{ ev.date }}</p>
+              <p class="event-sub">{{ ev.city }} &middot; {{ ev.date }}</p>
             </div>
           </div>
         </div>
@@ -249,7 +138,7 @@
               <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                  href="{% url 'list_event_participants' ev.id %}">
                 <span class="fw-semibold">{{ ev.name }}</span>
-                <span class="text-muted small">{{ ev.city }} · {{ ev.date }}</span>
+                <span class="text-muted small">{{ ev.city }} &middot; {{ ev.date }}</span>
               </a>
             {% endfor %}
           </div>

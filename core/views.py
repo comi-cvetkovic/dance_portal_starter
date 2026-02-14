@@ -862,7 +862,9 @@ def edit_event(request, event_id):
 
 @login_required
 def event_list(request):
-    events = Event.objects.all()
+    user = getattr(request, "user", None)
+    is_admin = bool(getattr(user, "is_authenticated", False) and (user.is_superuser or user.is_staff))
+    events = Event.objects.all() if is_admin else Event.objects.filter(is_published=True)
 
     # Attach a flag to each event indicating if its judge accounts exist
     for event in events:
