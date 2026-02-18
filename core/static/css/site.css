@@ -208,6 +208,12 @@ body {
     transform-origin: top left;
   }
 
+  .table-responsive > table.scale-to-fit {
+    --table-scale: 0.65;
+    transform: scale(var(--table-scale));
+    width: calc(100% / var(--table-scale));
+  }
+
   /* Force standard table layout on mobile (disable card-style layout) */
   .table-responsive table {
     display: table !important;
