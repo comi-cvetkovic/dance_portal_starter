@@ -198,17 +198,14 @@ body {
   vertical-align: -1px;
 }
 
-/* Mobile-only: show whole table by scaling down; users can zoom in */
+/* Mobile-only: allow table scaling to fit viewport (handled by JS) */
 @media (max-width: 767.98px) {
   .table-responsive {
     overflow: visible;
   }
 
   .table-responsive > table {
-    --table-scale: 0.7;
-    transform: scale(var(--table-scale));
     transform-origin: top left;
-    width: calc(100% / var(--table-scale));
   }
 
   table th,

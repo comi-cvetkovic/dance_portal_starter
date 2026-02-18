@@ -394,6 +394,45 @@
     })();
   </script>
 
+  <!-- Mobile: scale tables to fit viewport so full table is visible -->
+  <script>
+    (function() {
+      function scaleTablesToFit() {
+        const isMobile = window.innerWidth <= 768;
+        const tables = document.querySelectorAll('.table-responsive > table');
+
+        tables.forEach(function(table) {
+          const wrapper = table.parentElement;
+          if (!wrapper) return;
+
+          table.style.transform = '';
+          table.style.width = '';
+          table.style.transformOrigin = 'top left';
+          wrapper.style.height = '';
+
+          if (!isMobile) return;
+
+          const wrapperWidth = wrapper.clientWidth;
+          const tableWidth = table.scrollWidth;
+          if (!wrapperWidth || !tableWidth) return;
+
+          const scale = Math.min(1, wrapperWidth / tableWidth);
+          if (scale < 1) {
+            table.style.transform = `scale(${scale})`;
+            table.style.width = `${tableWidth}px`;
+            wrapper.style.height = `${table.scrollHeight * scale}px`;
+          }
+        });
+      }
+
+      window.addEventListener('load', scaleTablesToFit);
+      window.addEventListener('resize', function() {
+        clearTimeout(window.__dpScaleTablesTimer);
+        window.__dpScaleTablesTimer = setTimeout(scaleTablesToFit, 150);
+      });
+    })();
+  </script>
+
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>
