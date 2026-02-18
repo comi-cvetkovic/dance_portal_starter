@@ -39,7 +39,6 @@
   }
 
   /* --- Table styling --- */
-  .table-wrapper { overflow-x: auto; }
   table th, table td { vertical-align: middle; padding: .6rem .75rem; }
   table thead th { background:#f8f9fa; font-weight:600; }
   .group-header { cursor: grab; background:#f6f6f6; font-weight:600; }
@@ -68,6 +67,14 @@
     .toolbar .btn {
       width: 100%;
       max-width: 420px;
+    }
+
+    /* Mobile: view-only table */
+    .group-header,
+    .drag-handle { cursor: default; }
+    .drag-handle,
+    th.drag-col {
+      display: none;
     }
   }
 </style>
@@ -119,30 +126,31 @@
     <label class="form-check-label" for="autoscroll-toggle">{% trans "Auto-scroll to highlighted category" %}</label>
   </div>
 
-  <div class="table-wrapper">
-    <table id="group-container" class="table table-hover align-middle">
+  <div class="table-responsive">
+    <table id="group-container" class="table table-hover align-middle scale-to-fit">
       <thead>
         <tr>
-          <th></th>
+          <th class="drag-col"></th>
           <th>#</th>
           <th>{% trans "Dancer(s) / Ceremony" %}</th>
           <th>{% trans "Choreographer" %}</th>
           <th>{% trans "Choreography" %}</th>
           <th>{% trans "Club" %}</th>
+          <th class="text-center">{% trans "Dancers" %}</th>
         </tr>
       </thead>
 
       {% for group_key, group_entries in grouped_entries.items %}
       <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
         <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
-          <td colspan="6">{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</td>
+          <td colspan="7">{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</td>
         </tr>
 
         {% for entry in group_entries %}
         <tr data-id="{{ entry.id }}" class="draggable-row {% if entry.is_ceremony %}ceremony-row{% endif %}">
           <td class="drag-handle">☰</td>
           {% if entry.is_ceremony %}
-            <td colspan="5"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
+            <td colspan="6"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
           {% else %}
             <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="text-muted small">{{ entry.start_time }}</span>{% endif %}</td>
             <td>
@@ -157,6 +165,7 @@
             <td>{{ entry.choreographer }}</td>
             <td>{{ entry.choreography_name }}</td>
             <td>{{ entry.club_name }}</td>
+            <td class="text-center">{{ entry.num_dancers }}</td>
           {% endif %}
         </tr>
         {% endfor %}
@@ -171,6 +180,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  if (window.innerWidth <= 768) {
+    return;
+  }
   // ---- Move entire categories ----
   new Sortable(document.getElementById("group-container"), {
     animation: 200,
