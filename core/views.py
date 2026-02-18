@@ -273,6 +273,7 @@ def start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     is_admin = request.user.is_superuser
     show_entries = event.start_list_published or is_admin
+    enable_auto_refresh = is_admin
 
     participations = list(
         Participation.objects.filter(event=event).select_related("style")
@@ -363,6 +364,7 @@ def start_list(request, event_id):
         "is_published": event.start_list_published,
         "show_entries": show_entries,
         "highlight_key": highlight_key,
+        "enable_auto_refresh": enable_auto_refresh,
     })
 
 

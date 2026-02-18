@@ -11,7 +11,7 @@
 
 {% if show_entries %}
 <div class="table-responsive shadow-sm rounded bg-white p-2">
-  <table class="table table-bordered align-middle mb-0">
+  <table class="table table-bordered align-middle mb-0 start-list-table">
     <thead class="table-light">
       <tr>
         <th scope="col">#</th>
@@ -90,10 +90,15 @@
     border-bottom: 3px solid #2196f3;
   }
 
+  .start-list-table {
+    min-width: 980px;
+  }
+
   @media (max-width: 1024px) {
-    table th, table td {
-      font-size: 0.8rem;
-      padding: 0.35rem;
+    .start-list-table th,
+    .start-list-table td {
+      font-size: 0.95rem;
+      padding: 0.5rem;
     }
   }
 </style>
@@ -101,8 +106,10 @@
 
 {% block extra_scripts %}
 <script>
-  // 🔄 Auto-refresh every 10s
+  {% if enable_auto_refresh %}
+  // Auto-refresh every 10s (admin only)
   setInterval(() => location.reload(), 10000);
+  {% endif %}
 </script>
 {% endblock %}
 
