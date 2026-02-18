@@ -198,14 +198,17 @@ body {
   vertical-align: -1px;
 }
 
-/* Mobile-only readability for all tables (full table, zoomable) */
+/* Mobile-only: show whole table by scaling down; users can zoom in */
 @media (max-width: 767.98px) {
-  table {
-    min-width: 1000px;
+  .table-responsive {
+    overflow: visible;
   }
 
-  .table-responsive > .table {
-    width: max-content;
+  .table-responsive > table {
+    --table-scale: 0.7;
+    transform: scale(var(--table-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--table-scale));
   }
 
   table th,
