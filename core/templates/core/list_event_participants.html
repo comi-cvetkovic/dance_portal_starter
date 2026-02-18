@@ -5,7 +5,7 @@
 {% block content %}
 
 <!-- Header + admin toolbar -->
-<div class="d-flex justify-content-between align-items-center mb-3 participants-toolbar">
+<div class="d-flex justify-content-between align-items-center mb-2 participants-toolbar">
   <h2 class="mb-0">{% trans "Participants for " %}{{ event.city }} ({{ event.date }})</h2>
 
   {% if user.is_superuser %}
@@ -23,6 +23,15 @@
     </form>
   </div>
   {% endif %}
+</div>
+
+<!-- Filter -->
+<div class="mb-3">
+  <input type="search"
+         id="participants-search"
+         class="form-control"
+         placeholder="{% trans 'Search (any column: dancer, club, style, group...)' %}"
+         aria-label="{% trans 'Search participants' %}">
 </div>
 
 {% if grouped_participations %}
@@ -121,6 +130,32 @@
 <p><em>{% trans "No participants yet." %}</em></p>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function() {
+    const input = document.getElementById('participants-search');
+    const table = document.querySelector('.participants-table');
+    if (!input || !table) return;
+
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+    function normalize(value) {
+      return (value || '').toString().toLowerCase().trim();
+    }
+
+    function applyFilter() {
+      const query = normalize(input.value);
+      rows.forEach(function(row) {
+        const text = normalize(row.innerText);
+        row.style.display = text.includes(query) ? '' : 'none';
+      });
+    }
+
+    input.addEventListener('input', applyFilter);
+  })();
+</script>
 {% endblock %}
 
 
