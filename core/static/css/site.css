@@ -71,6 +71,15 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Ensure outer shells don't clip horizontal scrolling */
+.table-shell {
+  overflow: visible !important;
+}
+
+.table-shell .table-responsive {
+  overflow-x: auto !important;
+}
+
 .table-responsive > .table {
   margin-bottom: 0;
   border: 0;
