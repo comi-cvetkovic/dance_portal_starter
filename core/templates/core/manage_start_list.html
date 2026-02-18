@@ -14,8 +14,14 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.5rem;
+  }
+  .toolbar form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
   }
   .toolbar .btn {
     background: #fff;
@@ -42,7 +48,18 @@
 
   @media (max-width:1024px) {
     table th, table td { font-size:.85rem; padding:4px; }
-    .toolbar { justify-content:center; }
+  }
+
+  @media (max-width: 768px) {
+    .toolbar {
+      flex-direction: column;
+      align-items: center;
+    }
+    .toolbar form,
+    .toolbar .btn {
+      width: 100%;
+      max-width: 420px;
+    }
   }
 </style>
 {% endblock %}
