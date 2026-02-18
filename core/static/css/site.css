@@ -208,6 +208,27 @@ body {
     transform-origin: top left;
   }
 
+  /* Force standard table layout on mobile (disable card-style layout) */
+  .table-responsive table {
+    display: table !important;
+  }
+  .table-responsive thead {
+    display: table-header-group !important;
+  }
+  .table-responsive tbody {
+    display: table-row-group !important;
+  }
+  .table-responsive tr {
+    display: table-row !important;
+  }
+  .table-responsive th,
+  .table-responsive td {
+    display: table-cell !important;
+  }
+  .table-responsive td::before {
+    content: none !important;
+  }
+
   table th,
   table td {
     font-size: 0.75rem;
