@@ -195,6 +195,10 @@ body {
     min-width: 1000px;
   }
 
+  .table-responsive > .table {
+    width: max-content;
+  }
+
   table th,
   table td {
     font-size: 0.75rem;
