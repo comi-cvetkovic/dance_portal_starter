@@ -4,6 +4,9 @@ from django.contrib.auth.models import AnonymousUser
 def navbar_context(request):
     from .models import DanceClub  # adjust if needed
     user = getattr(request, "user", None) or AnonymousUser()
+    resolver_match = getattr(request, "resolver_match", None)
+    url_name = getattr(resolver_match, "url_name", None) if resolver_match else None
+    breadcrumb_label = (url_name or "Page").replace("-", " ").replace("_", " ").title()
 
     clubs_pending_count = 0
     user_club = None
@@ -49,4 +52,5 @@ def navbar_context(request):
         "user_club_confirmed": user_club_confirmed,
         "navbar_display_name": navbar_display_name,
         "is_judge_user": is_judge_user,       # <-- use this in base.html
+        "breadcrumb_label": breadcrumb_label,
     }
