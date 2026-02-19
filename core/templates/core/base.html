@@ -448,6 +448,17 @@
     })();
   </script>
 
+  <!-- Enable tooltips -->
+  <script>
+    (function() {
+      if (!window.bootstrap) return;
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.forEach(function(el) {
+        new bootstrap.Tooltip(el);
+      });
+    })();
+  </script>
+
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

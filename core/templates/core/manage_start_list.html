@@ -155,7 +155,7 @@
             <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="text-muted small">{{ entry.start_time }}</span>{% endif %}</td>
             <td>
               {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
-                <span title="{{ entry.dancer_names_text }}">{{ entry.group_name }}</span>
+                <span data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{{ entry.dancer_names_text }}">{{ entry.group_name }}</span>
               {% else %}
                 {% for dancer in entry.dancers %}
                   {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}

@@ -51,6 +51,28 @@ body {
   background-color: var(--brand-peach);
 }
 
+/* Tooltip styling */
+.dp-tooltip .tooltip-inner {
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.7rem;
+  max-width: 320px;
+}
+.dp-tooltip.bs-tooltip-top .tooltip-arrow::before,
+.dp-tooltip.bs-tooltip-auto[data-popper-placement^="top"] .tooltip-arrow::before,
+.dp-tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+.dp-tooltip.bs-tooltip-auto[data-popper-placement^="bottom"] .tooltip-arrow::before,
+.dp-tooltip.bs-tooltip-start .tooltip-arrow::before,
+.dp-tooltip.bs-tooltip-auto[data-popper-placement^="left"] .tooltip-arrow::before,
+.dp-tooltip.bs-tooltip-end .tooltip-arrow::before,
+.dp-tooltip.bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
+  border-top-color: #1f2937;
+  border-bottom-color: #1f2937;
+  border-left-color: #1f2937;
+  border-right-color: #1f2937;
+}
+
 /* Make tables stand out from the background */
 .table {
   border: 1px solid #111;
