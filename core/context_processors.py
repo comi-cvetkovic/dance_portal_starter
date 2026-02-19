@@ -31,7 +31,12 @@ def navbar_context(request):
         elif is_judge_user:
             navbar_display_name = (user.first_name or "").strip() or user.username
         else:
-            rep = getattr(user, "representative_name", "") or ""
+            rep = ""
+            try:
+                user_club = DanceClub.objects.filter(user=user).first()
+                rep = (user_club.representative_name if user_club else "") or ""
+            except Exception:
+                rep = ""
             navbar_display_name = rep.strip() or user.username
 
         # pending + club state
