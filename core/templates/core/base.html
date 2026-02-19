@@ -318,7 +318,7 @@
         {% if user.is_authenticated %}
           <li class="nav-item">
             <span class="navbar-text me-2">
-              {% trans "Hello," %} {{ user.representative_name|default:user.username }}
+              {% trans "Hello," %} {{ navbar_display_name|default:user.username }}
             </span>
           </li>
           {% if logout_url %}
