@@ -13,17 +13,7 @@
       {% endif %}
     </h2>
 
-    <div class="d-none d-sm-block">
-      {% if is_superuser %}
-        <a href="{% url 'club_dashboard' %}" class="btn btn-outline-secondary">
-          ← {% trans "Back to Dashboard" %}
-        </a>
-      {% else %}
-        <a href="{% url 'list_dancers' %}" class="btn btn-coral-outline">
-          ← {% trans "Dancers" %}
-        </a>
-      {% endif %}
-    </div>
+    <div class="d-none d-sm-block"></div>
   </div>
 
   <div class="card shadow-sm">

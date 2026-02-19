@@ -21,11 +21,6 @@
     {% trans "Participants Summary by Club" %} – {{ event.city }} ({{ event.date }})
   </h2>
 
-  <form method="get" action="{% url 'list_event_participants' event.id %}">
-    <button type="submit" class="btn btn-coral-outline">
-      ← {% trans "Back to Participants" %}
-    </button>
-  </form>
 </div>
 
 <!-- Summary table -->

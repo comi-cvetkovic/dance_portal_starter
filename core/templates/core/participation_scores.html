@@ -5,11 +5,9 @@
 {% block content %}
 
 <!-- Header -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">{% trans "Detailed Scores" %} — {{ event.name }}</h2>
-  <a href="{% url 'event_awards' event.id %}?group={{ group_index }}" class="btn btn-coral-outline">
-    ← {% trans "Back to Awards" %}
-  </a>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">{% trans "Detailed Scores" %} — {{ event.name }}</h2>
+  <!-- Breadcrumbs handle navigation -->
 </div>
 
 <!-- Category chips -->

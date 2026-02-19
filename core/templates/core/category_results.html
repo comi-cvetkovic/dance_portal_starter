@@ -16,15 +16,7 @@
     </div>
   </div>
 
-  {% if request.user.is_superuser %}
-    <a href="{% url 'manage_start_list' event.id %}" class="btn btn-coral-outline">
-      ← {% trans "Back to Start List" %}
-    </a>
-  {% else %}
-    <a href="{% url 'start_list' event.id %}" class="btn btn-coral-outline">
-      ← {% trans "Back to Start List" %}
-    </a>
-  {% endif %}
+  <!-- Breadcrumbs handle navigation -->
 </div>
 
 <div class="dp-card">

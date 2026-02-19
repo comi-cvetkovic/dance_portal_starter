@@ -8,9 +8,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">{% trans "Diplomas for" %} {{ event.name }}</h2>
   <div class="d-flex gap-2">
-    <a href="{% url 'event_awards' event.id %}" class="btn btn-coral-outline">
-      ← {% trans "Back to Awards" %}
-    </a>
+  <!-- Breadcrumbs handle navigation -->
     <button type="button" onclick="window.print()" class="btn btn-coral">
       🖨 {% trans "Print All" %}
     </button>
