@@ -45,8 +45,9 @@
 </div>
 
 {% if grouped_participations %}
-<div class="table-responsive">
-  <table class="table table-striped table-hover table-sm align-middle participants-table scale-to-fit">
+<div class="table-shell">
+  <div class="table-responsive">
+    <table class="table table-striped table-hover table-sm align-middle participants-table scale-to-fit">
     <thead class="table-light">
       <tr>
         <th scope="col">{% trans "# Dancers" %}</th>
@@ -136,7 +137,8 @@
       </tr>
       {% endfor %}
     </tbody>
-  </table>
+    </table>
+  </div>
 </div>
 
 {% else %}

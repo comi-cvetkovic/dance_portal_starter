@@ -2,6 +2,16 @@
 {% load i18n %}
 {% block title %}{% trans "Awards" %} – {{ event.name }}{% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'event_list' %}">{% trans "Event List" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Awards" %}</li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 
 <!-- Header + toolbar -->

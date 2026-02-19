@@ -107,6 +107,15 @@ body {
   border: 0;
 }
 
+/* Shared table shell (used on multiple pages) */
+.table-shell {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
 /* Generic card shell used across pages */
 .dp-card {
   background: #fff;

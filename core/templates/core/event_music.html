@@ -2,6 +2,16 @@
 {% load i18n %}
 {% block title %}{% trans "Music Playback" %} | {{ event.name }}{% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'event_list' %}">{% trans "Event List" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Event Music" %}</li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 
 <!-- Header -->
@@ -9,9 +19,7 @@
   <h2 class="mb-0">
     {% trans "Music Playback" %} — {{ event.name }} ({{ event.date }})
   </h2>
-  <a href="{% url 'event_list' %}" class="btn btn-coral-outline">
-    {% trans "All Events" %}
-  </a>
+  <!-- Breadcrumbs handle navigation -->
 </div>
 
 {% for group_key, entries in grouped_entries.items %}
