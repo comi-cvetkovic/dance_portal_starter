@@ -433,6 +433,21 @@
     })();
   </script>
 
+  <!-- Auto-dismiss flash messages -->
+  <script>
+    (function() {
+      const alerts = document.querySelectorAll('.alert-dismissible');
+      if (!alerts.length || !window.bootstrap) return;
+      const AUTO_DISMISS_MS = 5000;
+      alerts.forEach(function(el) {
+        const alert = new bootstrap.Alert(el);
+        setTimeout(function() {
+          alert.close();
+        }, AUTO_DISMISS_MS);
+      });
+    })();
+  </script>
+
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

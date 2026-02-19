@@ -313,6 +313,7 @@ def start_list(request, event_id):
                 grouped_entries[group_key] = []
 
             start_time_str = current_time.strftime("%H:%M") if current_time else None
+            dancer_names = [f"{d.first_name} {d.last_name}" for d in dancers]
             grouped_entries[group_key].append({
                 "id": obj.id,
                 "style": obj.style.name,
@@ -322,6 +323,8 @@ def start_list(request, event_id):
                 "dancers": obj.group_name if not is_admin and len(dancers) > 3 and obj.group_name else dancers,
                 "num_dancers": len(dancers),
                 "group_name": obj.group_name,
+                "dancer_names": dancer_names,
+                "dancer_names_text": ", ".join(dancer_names),
                 "choreographer": obj.choreographer_name,
                 "choreography_name": obj.choreography_name,
                 "club_name": club.club_name if club else "–",
@@ -409,6 +412,7 @@ def manage_start_list(request, event_id):
                 grouped_entries[group_key] = []
 
             start_time_str = current_time.strftime("%H:%M") if current_time else None
+            dancer_names = [f"{d.first_name} {d.last_name}" for d in dancers]
             grouped_entries[group_key].append({
                 "id": obj.id,
                 "style": obj.style.name,
@@ -418,6 +422,8 @@ def manage_start_list(request, event_id):
                 "dancers": dancers,
                 "num_dancers": len(dancers),
                 "group_name": obj.group_name,
+                "dancer_names": dancer_names,
+                "dancer_names_text": ", ".join(dancer_names),
                 "choreographer": obj.choreographer_name,
                 "choreography_name": obj.choreography_name,
                 "club_name": club.club_name if club else "–",
