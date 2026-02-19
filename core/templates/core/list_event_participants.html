@@ -2,6 +2,16 @@
 {% load i18n %}
 {% block title %}{% trans "Participants | Dance Portal" %}{% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'event_list' %}">{% trans "Events" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Participants" %}</li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 
 <!-- Header + admin toolbar -->
