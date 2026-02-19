@@ -12,6 +12,24 @@
 </nav>
 {% endblock %}
 
+{% block extra_scripts %}
+<script>
+  function jumpToCategory(e) {
+    e.preventDefault();
+    const input = document.getElementById('jump-category');
+    if (!input) return false;
+    const total = {{ total_categories|default:0 }};
+    let value = parseInt(input.value || "0", 10);
+    if (!value || value < 1) value = 1;
+    if (total && value > total) value = total;
+    const targetIndex = value - 1;
+    const url = new URL(window.location.href);
+    url.searchParams.set('group', targetIndex);
+    window.location.href = url.toString();
+    return false;
+  }
+</script>
+{% endblock %}
 {% block content %}
 
 <!-- Header -->
@@ -55,7 +73,9 @@
                 <td class="text-muted">{{ forloop.counter }}</td>
                 <td>
                   {% if entry.group_name and entry.num_dancers >= 4 %}
-                    <span class="fw-semibold">{{ entry.group_name }}</span>
+                    <span class="fw-semibold" data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% for dancer in entry.dancers %}{{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                      {{ entry.group_name }}
+                    </span>
                   {% else %}
                     {% for dancer in entry.dancers %}
                       {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
@@ -84,10 +104,15 @@
       </div>
 
       <!-- Pager -->
-      <div class="d-flex gap-2 justify-content-between justify-content-md-end mt-3 flex-wrap">
+      <div class="d-flex gap-2 justify-content-between justify-content-md-end mt-3 flex-wrap align-items-center">
         <div class="me-auto text-muted small d-none d-md-block">
           {% trans "Category" %} {{ current_index|add:1 }} / {{ total_categories }}
         </div>
+        <form class="d-flex align-items-center gap-2" onsubmit="return jumpToCategory(event);">
+          <label for="jump-category" class="form-label small mb-0">{% trans "Go to" %}</label>
+          <input type="number" id="jump-category" class="form-control form-control-sm" min="1" max="{{ total_categories }}" style="width: 90px;" placeholder="1-{{ total_categories }}">
+          <button type="submit" class="btn btn-coral btn-sm">{% trans "Go" %}</button>
+        </form>
 
         {% if current_index > 0 %}
         <form method="get" class="d-inline">
