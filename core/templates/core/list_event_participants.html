@@ -155,20 +155,36 @@
     if (!input || !table) return;
 
     const rows = Array.from(table.querySelectorAll('tbody tr'));
+    const searchableTextByRow = new Map();
 
     function normalize(value) {
       return (value || '').toString().toLowerCase().trim();
     }
 
+    function rowSearchText(row) {
+      if (searchableTextByRow.has(row)) {
+        return searchableTextByRow.get(row);
+      }
+      const text = normalize(
+        Array.from(row.querySelectorAll('td'))
+          .map(function(cell) { return cell.textContent || ''; })
+          .join(' ')
+      );
+      searchableTextByRow.set(row, text);
+      return text;
+    }
+
     function applyFilter() {
       const query = normalize(input.value);
       rows.forEach(function(row) {
-        const text = normalize(row.innerText);
-        row.style.display = text.includes(query) ? '' : 'none';
+        const shouldShow = !query || rowSearchText(row).includes(query);
+        row.classList.toggle('is-filtered-out', !shouldShow);
       });
     }
 
     input.addEventListener('input', applyFilter);
+    input.addEventListener('search', applyFilter);
+    input.addEventListener('change', applyFilter);
   })();
 </script>
 {% endblock %}

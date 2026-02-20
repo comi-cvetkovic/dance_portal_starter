@@ -78,6 +78,18 @@
   .btn-coral{ background-color:var(--coral); border-color:var(--coral); color:#fff; }
   .btn-coral:hover{ background-color:#c45f45; border-color:#c45f45; color:#fff; }
   .btn-pill{ border-radius: 999px; padding:.6rem 1.15rem; font-weight:600; }
+  .hero-cta {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    justify-content: center;
+  }
+  .hero-cta .btn {
+    width: 220px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   /* spacing fix for the heavy background */
   .home-wrap{ margin-top: 2rem; margin-bottom: 2.5rem; }
@@ -85,6 +97,13 @@
   @media (max-width: 768px){
     .hero{ padding:1.6rem 1rem; }
     .section-title::after{ width:90px; }
+    .hero-cta {
+      display: flex;
+      width: 100%;
+    }
+    .hero-cta .btn {
+      width: 100%;
+    }
   }
 
   /* --- UPCOMING EVENTS --- */
@@ -131,21 +150,27 @@
 
     {% if user.is_authenticated %}
       {% if user.is_superuser %}
-        <a href="{% url 'event_list' %}" class="btn btn-coral btn-pill me-2">
-          <i class="bi bi-calendar-event me-2"></i>{% trans "Manage Events" %}
-        </a>
+        <div class="hero-cta">
+          <a href="{% url 'event_list' %}" class="btn btn-coral btn-pill">
+            <i class="bi bi-calendar-event me-2"></i>{% trans "Manage Events" %}
+          </a>
+        </div>
       {% else %}
-        <a href="{% url 'list_dancers' %}" class="btn btn-coral btn-pill me-2">
-          <i class="bi bi-people me-2"></i>{% trans "View My Dancers" %}
-        </a>
+        <div class="hero-cta">
+          <a href="{% url 'list_dancers' %}" class="btn btn-coral btn-pill">
+            <i class="bi bi-people me-2"></i>{% trans "View My Dancers" %}
+          </a>
+        </div>
       {% endif %}
     {% else %}
-      <a href="{% url 'login' %}" class="btn btn-coral btn-pill me-2">
-        <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Login" %}
-      </a>
-      <a href="{% url 'register_club' %}" class="btn btn-coral btn-pill">
-        <i class="bi bi-plus-circle me-2"></i>{% trans "Register Your Club" %}
-      </a>
+      <div class="hero-cta">
+        <a href="{% url 'login' %}" class="btn btn-coral btn-pill">
+          <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Login" %}
+        </a>
+        <a href="{% url 'register_club' %}" class="btn btn-coral btn-pill">
+          <i class="bi bi-plus-circle me-2"></i>{% trans "Register Your Club" %}
+        </a>
+      </div>
     {% endif %}
   </div>
 

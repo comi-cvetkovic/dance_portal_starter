@@ -33,6 +33,13 @@
     gap: 0.75rem;
     justify-content: center;
   }
+  .toolbar .toolbar-form {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin: 0;
+  }
   .toolbar .btn {
     background: #fff;
     color: #d76f54;
@@ -58,6 +65,19 @@
   .drag-handle:active { cursor: grabbing; }
   tr.dragging-group, tr.dragging { opacity:0.7; }
 
+  /* Keep a clean, single border around the start-list table. */
+  #start-list-table-wrap {
+    background: #fff;
+    border: 1px solid #111;
+    border-radius: 12px;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+  #start-list-table-wrap > table {
+    border: 0 !important;
+    margin-bottom: 0;
+  }
+
   @media (max-width:1024px) {
     table th, table td { font-size:.85rem; padding:4px; }
   }
@@ -72,7 +92,7 @@
       max-width: 420px;
       flex-direction: column;
       align-items: center;
-      row-gap: 0.75rem;
+      gap: 0.75rem;
     }
     .toolbar .btn {
       width: 100%;
@@ -93,7 +113,7 @@
 {% block content %}
 <div class="container-fluid">
   <div class="toolbar">
-    <form id="publish-form" method="post" action="{% url 'publish_start_list' event.id %}" class="d-inline">
+    <form id="publish-form" method="post" action="{% url 'publish_start_list' event.id %}" class="toolbar-form">
       {% csrf_token %}
       <input type="hidden" name="mode" id="publish-mode">
       <input type="hidden" name="ordered_ids_json" id="ordered-ids-json">
@@ -107,12 +127,12 @@
       </button>
     </form>
 
-    <form method="get" action="{% url 'add_ceremony' event.id %}" class="d-inline">
+    <form method="get" action="{% url 'add_ceremony' event.id %}" class="toolbar-form">
       <button type="submit" class="btn btn-light">{% trans "Ceremonies" %}</button>
     </form>
 
     {% if event.start_list_published %}
-  <form method="post" action="{% url 'unpublish_start_list' event.id %}" class="d-inline"
+  <form method="post" action="{% url 'unpublish_start_list' event.id %}" class="toolbar-form"
         onsubmit="return confirm('Unpublish the start list?')">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">
@@ -136,7 +156,7 @@
     <label class="form-check-label" for="autoscroll-toggle">{% trans "Auto-scroll to highlighted category" %}</label>
   </div>
 
-  <div class="table-responsive">
+  <div id="start-list-table-wrap" class="table-responsive">
     <table id="group-container" class="table table-hover align-middle scale-to-fit">
       <thead>
         <tr>
@@ -190,9 +210,22 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  // ---- Save / Publish / Reset ----
+  window.submitPublish = function(mode, source=null) {
+    const ids = [];
+    document.querySelectorAll("tbody.group-wrapper").forEach(wrapper => {
+      wrapper.querySelectorAll("tr.draggable-row").forEach(row => ids.push(row.dataset.id));
+    });
+    document.getElementById("publish-mode").value = mode;
+    document.getElementById("ordered-ids-json").value = JSON.stringify(ids);
+    if (source) document.getElementById("publish-form").elements["source"].value = source;
+    document.getElementById("publish-form").submit();
+  };
+
   if (window.innerWidth <= 768) {
     return;
   }
+
   // ---- Move entire categories ----
   new Sortable(document.getElementById("group-container"), {
     animation: 200,
@@ -218,18 +251,6 @@ document.addEventListener('DOMContentLoaded', function () {
       scrollFn(offsetX, offsetY){ window.scrollBy(offsetX, offsetY); }
     });
   });
-
-  // ---- Save / Publish / Reset ----
-  window.submitPublish = function(mode, source=null) {
-    const ids = [];
-    document.querySelectorAll("tbody.group-wrapper").forEach(wrapper => {
-      wrapper.querySelectorAll("tr.draggable-row").forEach(row => ids.push(row.dataset.id));
-    });
-    document.getElementById("publish-mode").value = mode;
-    document.getElementById("ordered-ids-json").value = JSON.stringify(ids);
-    if (source) document.getElementById("publish-form").elements["source"].value = source;
-    document.getElementById("publish-form").submit();
-  };
 
   // ---- Auto-scroll toggle + refresh ----
   const toggle = document.getElementById('autoscroll-toggle');
