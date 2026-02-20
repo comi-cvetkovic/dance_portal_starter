@@ -70,8 +70,9 @@
     background: #fff;
     border: 1px solid #111;
     border-radius: 12px;
-    overflow-x: auto !important;
+    overflow-x: hidden !important;
     overflow-y: hidden !important;
+    max-width: 100%;
   }
   #start-list-table-wrap > table {
     border: 0 !important;
@@ -97,6 +98,13 @@
     .toolbar .btn {
       width: 100%;
       max-width: 420px;
+    }
+
+    #start-list-table-wrap {
+      overflow-x: hidden !important;
+    }
+    #start-list-table-wrap > table {
+      max-width: 100%;
     }
 
     /* Mobile: view-only table */
