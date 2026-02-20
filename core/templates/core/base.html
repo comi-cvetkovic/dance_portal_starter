@@ -417,6 +417,7 @@
           table.style.width = '';
           table.style.transformOrigin = 'top left';
           wrapper.style.height = '';
+          wrapper.style.overflowX = '';
 
           if (!isMobile) return;
 
@@ -429,6 +430,7 @@
             table.style.transform = `scale(${scale})`;
             table.style.width = `${tableWidth}px`;
             wrapper.style.height = `${table.scrollHeight * scale}px`;
+            wrapper.style.overflowX = 'hidden';
           }
         });
       }

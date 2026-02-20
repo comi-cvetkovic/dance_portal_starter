@@ -237,7 +237,8 @@ body {
 /* Mobile-only: allow table scaling to fit viewport (handled by JS) */
 @media (max-width: 767.98px) {
   .table-responsive {
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: hidden;
   }
 
   .table-responsive > table {
