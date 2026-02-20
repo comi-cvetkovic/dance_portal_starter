@@ -229,6 +229,10 @@ body {
   vertical-align: -1px;
 }
 
+.participants-table-wrap {
+  max-width: 100%;
+}
+
 /* Used by participants search filter (must beat mobile table display overrides). */
 .participants-table tbody tr.is-filtered-out {
   display: none !important;
@@ -270,6 +274,15 @@ body {
   }
   .table-responsive td::before {
     content: none !important;
+  }
+
+  /* Prevent horizontal panning into blank space on View Registered. */
+  .table-shell .participants-table-wrap {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+  .table-shell .participants-table-wrap > table {
+    max-width: 100%;
   }
 
   table th,
