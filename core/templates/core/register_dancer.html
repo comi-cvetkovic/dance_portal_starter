@@ -87,7 +87,7 @@
 
       <div class="form-section">
         <hr>
-        <label for="id_dancers" class="form-label fw-semibold" data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Choose the dancer(s) for this entry. Multiple selection allowed.' %}">{% trans "Select Dancer(s): " %}</label>
+        <label for="id_dancers" class="form-label fw-semibold" data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Choose the dancer(s) for this entry. Multiple selection allowed. You must add dancers to your club first.' %}">{% trans "Select Dancer(s): " %}</label>
         {{ form.dancers }}
         <div id="dancer-tools" class="mt-2">
           <button type="button" class="btn-mini" id="btn-select-all">{% trans "Select all" %}</button>
@@ -139,7 +139,7 @@
 
       <div class="form-section">
         <hr>
-        <label for="id_music_file" class="form-label fw-semibold" data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Upload the music file if the upload window is open.' %}">{% trans "Upload Music File: " %}</label>
+        <label for="id_music_file" class="form-label fw-semibold" data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Upload only an MP3 file if the upload window is open.' %}">{% trans "Upload Music File: " %}</label>
         {% if event.music_open or is_superuser %}
           {{ form.music_file }}
           {% if form.music_file.errors %}
