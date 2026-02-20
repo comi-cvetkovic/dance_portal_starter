@@ -1278,7 +1278,7 @@ def delete_participation(request):
         # Permission check: allow if user owns the club(s) or is superuser
         if not request.user.is_superuser:
             club = get_object_or_404(DanceClub, user=request.user)
-            participations = participations.filter(dancer__club=club)
+            participations = participations.filter(dancer_links__dancer__club=club).distinct()
 
         participations.delete()
         messages.success(request, _("Participation deleted successfully."))
@@ -1316,7 +1316,7 @@ def delete_participation_group(request):
 
         if not request.user.is_superuser:
             club = get_object_or_404(DanceClub, user=request.user)
-            participations = participations.filter(dancer__club=club)
+            participations = participations.filter(dancer_links__dancer__club=club).distinct()
 
         participations.delete()
         messages.success(request, _("Participation deleted successfully."))
