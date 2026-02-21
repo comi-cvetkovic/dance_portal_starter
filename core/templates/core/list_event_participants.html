@@ -177,13 +177,11 @@
     const searchableTextByRow = new Map();
 
     function normalize(value) {
-      return (value || '')
-        .toString()
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+      let text = (value || '').toString().toLowerCase();
+      if (typeof text.normalize === 'function') {
+        text = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      }
+      return text.replace(/\s+/g, ' ').trim();
     }
 
     function rowSearchText(row) {
@@ -204,6 +202,12 @@
       rows.forEach(function(row) {
         const shouldShow = !query || rowSearchText(row).includes(query);
         row.classList.toggle('is-filtered-out', !shouldShow);
+        row.hidden = !shouldShow;
+        if (shouldShow) {
+          row.style.setProperty('display', 'table-row', 'important');
+        } else {
+          row.style.setProperty('display', 'none', 'important');
+        }
       });
     }
 
