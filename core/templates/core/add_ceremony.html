@@ -65,6 +65,11 @@
             <button type="submit" class="btn btn-coral">
               {% if edit_mode %}{% trans "Save Ceremony" %}{% else %}{% trans "Add Ceremony" %}{% endif %}
             </button>
+            {% if edit_mode %}
+            <a href="{% url 'add_ceremony' event.id %}" class="btn btn-coral-outline">
+              {% trans "Back to Add Ceremony" %}
+            </a>
+            {% endif %}
             <a href="{% url 'manage_start_list' event.id %}" class="btn btn-outline-secondary">
               {% trans "Cancel" %}
             </a>
