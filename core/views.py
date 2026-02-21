@@ -290,7 +290,7 @@ def start_list(request, event_id):
         dancer_map[dp.participation_id].append(dp.dancer)
 
     grouped_entries = OrderedDict()
-    global_counter = 1
+    global_counter = 101
     current_time = datetime.combine(datetime.today(), event.start_time) if event.start_time else None
 
     # Unified timeline
@@ -389,7 +389,7 @@ def manage_start_list(request, event_id):
         dancer_map[dp.participation_id].append(dp.dancer)
 
     grouped_entries = OrderedDict()
-    global_counter = 1
+    global_counter = 101
     current_time = datetime.combine(datetime.today(), event.start_time) if event.start_time else None
 
     # Unified timeline
