@@ -29,7 +29,9 @@
         <th scope="col">{% trans "Choreographer" %}</th>
         <th scope="col">{% trans "Choreography" %}</th>
         <th scope="col">{% trans "Club" %}</th>
-        <th scope="col" class="text-center">{% trans "Dancers" %}</th>
+        {% if is_admin %}
+          <th scope="col" class="text-center">{% trans "Dancers" %}</th>
+        {% endif %}
       </tr>
     </thead>
 
@@ -37,13 +39,13 @@
     <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
       {% if group_key.0 == "Ceremony" %}
       <tr class="table-info fw-bold text-center">
-        <td colspan="6">
-          {% trans "Ceremony" %}{% if group_key.2 %} – {{ group_key.2 }}{% endif %}
+        <td colspan="{% if is_admin %}6{% else %}5{% endif %}">
+          &nbsp;
         </td>
       </tr>
       {% else %}
       <tr class="table-secondary fw-semibold {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
-        <td colspan="6">
+        <td colspan="{% if is_admin %}6{% else %}5{% endif %}">
           {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
         </td>
       </tr>
@@ -52,7 +54,7 @@
       {% for entry in group_entries %}
       <tr class="{% if entry.is_ceremony %}ceremony-row{% endif %}">
         {% if entry.is_ceremony %}
-          <td colspan="6"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
+          <td colspan="{% if is_admin %}6{% else %}5{% endif %}"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
         {% else %}
           <td>
             {{ entry.global_row_number }}
@@ -72,7 +74,9 @@
           <td>{{ entry.choreographer }}</td>
           <td>{{ entry.choreography_name }}</td>
           <td>{{ entry.club_name }}</td>
-          <td class="text-center">{{ entry.num_dancers }}</td>
+          {% if is_admin %}
+            <td class="text-center">{{ entry.num_dancers }}</td>
+          {% endif %}
         {% endif %}
       </tr>
       {% endfor %}
@@ -120,6 +124,8 @@
   {% endif %}
 </script>
 {% endblock %}
+
+
 
 
 

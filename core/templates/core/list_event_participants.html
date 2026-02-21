@@ -177,7 +177,13 @@
     const searchableTextByRow = new Map();
 
     function normalize(value) {
-      return (value || '').toString().toLowerCase().trim();
+      return (value || '')
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
     }
 
     function rowSearchText(row) {
@@ -202,6 +208,7 @@
     }
 
     input.addEventListener('input', applyFilter);
+    input.addEventListener('keyup', applyFilter);
     input.addEventListener('search', applyFilter);
     input.addEventListener('change', applyFilter);
   })();

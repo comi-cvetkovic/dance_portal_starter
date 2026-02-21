@@ -96,13 +96,10 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                  <!-- Edit (keeps your existing POST action) -->
-                  <form method="post" action="{% url 'edit_ceremony' ceremony.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-coral-outline btn-sm">
-                      {% trans "Edit" %}
-                    </button>
-                  </form>
+                  <!-- Edit -->
+                  <a href="{% url 'edit_ceremony' ceremony.id %}" class="btn btn-coral-outline btn-sm">
+                    {% trans "Edit" %}
+                  </a>
                   <!-- Delete -->
                   <form method="post" action="{% url 'delete_ceremony' ceremony.id %}">
                     {% csrf_token %}

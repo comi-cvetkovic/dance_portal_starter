@@ -181,7 +181,11 @@
       {% for group_key, group_entries in grouped_entries.items %}
       <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
         <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
-          <td colspan="7">{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</td>
+          {% if group_key.0 == "Ceremony" %}
+            <td colspan="7">&nbsp;</td>
+          {% else %}
+            <td colspan="7">{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</td>
+          {% endif %}
         </tr>
 
         {% for entry in group_entries %}
