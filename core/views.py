@@ -1707,58 +1707,58 @@ def generate_diploma(request, event_id):
         try:
             # generate diplomas
             for placement, (p, score) in enumerate(results, start=1):
-            dancers = DancerParticipation.objects.filter(
-                participation=p
-            ).select_related("dancer", "dancer__club")
+                dancers = DancerParticipation.objects.filter(
+                    participation=p
+                ).select_related("dancer", "dancer__club")
 
-            for dp in dancers:
-                dancer = dp.dancer
-                club_name = dancer.club.club_name if dancer.club else "–"
-                choreo = p.choreography_name or ""
+                for dp in dancers:
+                    dancer = dp.dancer
+                    club_name = dancer.club.club_name if dancer.club else "–"
+                    choreo = p.choreography_name or ""
 
-                # ✅ different display logic
-                if p.group_name and len(dancers) >= 4:
-                    lines = [
-                        f"{ordinal(placement)} Place",
-                        category_text,
-                        p.group_name,
-                        f"{dancer.first_name} {dancer.last_name}",
-                        club_name,
-                        choreo,
-                    ]
-                else:
-                    lines = [
-                        f"{ordinal(placement)} Place",
-                        category_text,
-                        f"{dancer.first_name} {dancer.last_name}",
-                        club_name,
-                        choreo,
-                    ]
+                    # ✅ different display logic
+                    if p.group_name and len(dancers) >= 4:
+                        lines = [
+                            f"{ordinal(placement)} Place",
+                            category_text,
+                            p.group_name,
+                            f"{dancer.first_name} {dancer.last_name}",
+                            club_name,
+                            choreo,
+                        ]
+                    else:
+                        lines = [
+                            f"{ordinal(placement)} Place",
+                            category_text,
+                            f"{dancer.first_name} {dancer.last_name}",
+                            club_name,
+                            choreo,
+                        ]
 
-                img = Image.open(base_path).convert("RGBA")
-                draw = ImageDraw.Draw(img)
-                W, H = img.size
+                    img = Image.open(base_path).convert("RGBA")
+                    draw = ImageDraw.Draw(img)
+                    W, H = img.size
 
-                # ✅ Bebas Neue font (place BebasNeue-Regular.ttf in core/static/fonts/)
-                font_path = os.path.join(settings.BASE_DIR, "core/static/fonts/BebasNeue-Regular.ttf")
-                font_bold = ImageFont.truetype(font_path, int(H * 0.045))
-                font_regular = ImageFont.truetype(font_path, int(H * 0.03))
+                    # ✅ Bebas Neue font (place BebasNeue-Regular.ttf in core/static/fonts/)
+                    font_path = os.path.join(settings.BASE_DIR, "core/static/fonts/BebasNeue-Regular.ttf")
+                    font_bold = ImageFont.truetype(font_path, int(H * 0.045))
+                    font_regular = ImageFont.truetype(font_path, int(H * 0.03))
 
-                # dynamic line spacing
-                start_y = int(H * 0.65)  # top of the block
-                line_height = int(H * 0.055)  # spacing between lines
+                    # dynamic line spacing
+                    start_y = int(H * 0.65)  # top of the block
+                    line_height = int(H * 0.055)  # spacing between lines
 
-                for i, text in enumerate(lines):
-                    font = font_bold if i == 0 else font_regular
-                    spacing = 3 if i == 0 else 2
-                    y = start_y + i * line_height
-                    draw_centered_with_spacing(draw, text, y, font, spacing=spacing)
+                    for i, text in enumerate(lines):
+                        font = font_bold if i == 0 else font_regular
+                        spacing = 3 if i == 0 else 2
+                        y = start_y + i * line_height
+                        draw_centered_with_spacing(draw, text, y, font, spacing=spacing)
 
-                # ✅ ensure unique filename
-                filename = f"diplomas/{event.id}_{p.id}_{dancer.id}_{placement}.png"
-                full_path = os.path.join(settings.MEDIA_ROOT, filename)
-                os.makedirs(os.path.dirname(full_path), exist_ok=True)
-                img.save(full_path)
+                    # ✅ ensure unique filename
+                    filename = f"diplomas/{event.id}_{p.id}_{dancer.id}_{placement}.png"
+                    full_path = os.path.join(settings.MEDIA_ROOT, filename)
+                    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                    img.save(full_path)
 
                     Diploma.objects.create(
                         event=event,
