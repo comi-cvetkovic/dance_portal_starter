@@ -1422,9 +1422,6 @@ def create_judges_for_event(request, event_id):
 
 @login_required
 def judge_view(request, event_id):
-    if request.GET.get("test500") == "1":
-        raise Exception("Intentional test exception for custom 500 page")
-
     event = get_object_or_404(Event, id=event_id)
 
     # Prefetch dancers & clubs for efficiency
