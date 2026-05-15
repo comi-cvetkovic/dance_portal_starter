@@ -29,6 +29,7 @@ from django.contrib import messages
 from django.utils.timezone import localtime
 from collections import defaultdict, OrderedDict
 from django.http import JsonResponse
+from django.http import HttpResponseServerError
 from django.views.decorators.http import require_http_methods
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -52,6 +53,7 @@ import builtins
 from django.db.models import Min
 from django.db.models import Count
 from mutagen.mp3 import MP3
+import logging
 
 # Order definitions
 DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Jazz Performance', 'Open',
@@ -63,6 +65,47 @@ DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Ja
 STYLE_ORDER = DEFAULT_STYLES
 AGE_GROUP_ORDER = ['Baby', 'Mini Kids', 'Kids', 'Teen', 'Youth', 'Adult']
 GROUP_TYPE_ORDER = ['Solo', 'Duo', 'Trio', 'Group', 'Formation', 'Production']
+logger = logging.getLogger(__name__)
+
+
+def custom_server_error(request):
+    path = request.get_full_path() if request else "unknown"
+    user_id = getattr(getattr(request, "user", None), "id", None)
+    username = getattr(getattr(request, "user", None), "username", "anonymous")
+    remote_addr = request.META.get("REMOTE_ADDR", "unknown") if request else "unknown"
+    user_agent = request.META.get("HTTP_USER_AGENT", "") if request else ""
+
+    logger.exception(
+        "Unhandled server error page reached",
+        extra={
+            "path": path,
+            "user_id": user_id,
+            "username": username,
+            "remote_addr": remote_addr,
+        },
+    )
+
+    recipient = getattr(settings, "DEVELOPER_ALERT_EMAIL", None) or getattr(settings, "EMAIL_HOST_USER", None)
+    if recipient:
+        try:
+            send_mail(
+                subject="[5678Community] Server 500 error",
+                message=(
+                    f"A user hit a server error.\n\n"
+                    f"Path: {path}\n"
+                    f"User ID: {user_id}\n"
+                    f"Username: {username}\n"
+                    f"IP: {remote_addr}\n"
+                    f"User-Agent: {user_agent}\n"
+                ),
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=[recipient],
+                fail_silently=True,
+            )
+        except Exception:
+            logger.exception("Failed to send developer 500 alert email")
+
+    return render(request, "500.html", status=500)
 
 
 def compute_final_score(participation, scores):
@@ -1593,7 +1636,16 @@ def generate_diploma(request, event_id):
             x += font.getbbox(ch)[2] + spacing
 
     if request.method == "POST":
-        style, group_type, age_group, difficulty = request.POST.get("category").split("|")
+        category_raw = request.POST.get("category", "")
+        try:
+            style, group_type, age_group, difficulty = [x.strip() for x in category_raw.split("|", 3)]
+        except Exception:
+            messages.error(request, _("Invalid category payload for diploma preview."))
+            logger.warning(
+                "Invalid diploma category payload",
+                extra={"event_id": event_id, "category_raw": category_raw, "user_id": getattr(request.user, "id", None)},
+            )
+            return redirect("event_awards", event_id=event_id)
 
         participations = Participation.objects.filter(
             event=event,
@@ -1608,6 +1660,14 @@ def generate_diploma(request, event_id):
             base_path = event.diploma_template.path
         else:
             base_path = os.path.join(settings.MEDIA_ROOT, "diploma_template.jpg")
+
+        if not os.path.isfile(base_path):
+            messages.error(request, _("Diploma template image is missing. Please upload an event template first."))
+            logger.error(
+                "Diploma template missing",
+                extra={"event_id": event_id, "base_path": base_path, "user_id": getattr(request.user, "id", None)},
+            )
+            return redirect("event_awards", event_id=event_id)
 
         # calculate average scores for placements
         results = []
@@ -1644,8 +1704,9 @@ def generate_diploma(request, event_id):
                     pass
         old_diplomas.delete()
 
-        # generate diplomas
-        for placement, (p, score) in enumerate(results, start=1):
+        try:
+            # generate diplomas
+            for placement, (p, score) in enumerate(results, start=1):
             dancers = DancerParticipation.objects.filter(
                 participation=p
             ).select_related("dancer", "dancer__club")
@@ -1699,13 +1760,20 @@ def generate_diploma(request, event_id):
                 os.makedirs(os.path.dirname(full_path), exist_ok=True)
                 img.save(full_path)
 
-                Diploma.objects.create(
-                    event=event,
-                    dancer=dancer,
-                    category=category_text,
-                    placement=placement,
-                    image=filename,
-                )
+                    Diploma.objects.create(
+                        event=event,
+                        dancer=dancer,
+                        category=category_text,
+                        placement=placement,
+                        image=filename,
+                    )
+        except Exception:
+            logger.exception(
+                "Failed generating diplomas",
+                extra={"event_id": event_id, "category": category_raw, "user_id": getattr(request.user, "id", None)},
+            )
+            messages.error(request, _("Failed to generate diploma preview. Please try again or contact support."))
+            return redirect("event_awards", event_id=event_id)
 
         messages.success(request, _("Diplomas generated successfully."))
 

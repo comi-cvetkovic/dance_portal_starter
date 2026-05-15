@@ -1,0 +1,51 @@
+{% load i18n %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% trans "Server Error" %}</title>
+  <style>
+    :root {
+      --bg: #f1c7b8;
+      --card: #f7dfd4;
+      --text: #1f2933;
+      --accent: #cf6f53;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+    .card {
+      width: min(680px, 100%);
+      background: var(--card);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      padding: 28px 24px;
+      box-sizing: border-box;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.8rem;
+      line-height: 1.2;
+    }
+    p {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>{% trans "Sorry, an error has occurred." %}</h1>
+    <p>{% trans "Please be patient while we work on a fix." %}</p>
+  </main>
+</body>
+</html>
