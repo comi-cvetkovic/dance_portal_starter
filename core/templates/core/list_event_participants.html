@@ -78,24 +78,24 @@
     <table class="table table-striped table-hover table-sm align-middle participants-table">
     <thead class="table-light">
       <tr>
-        <th scope="col">{% trans "# Dancers" %}</th>
-        <th scope="col">{% trans "Dancer(s)" %}</th>
+        <th scope="col" class="col-count">{% trans "# Dancers" %}</th>
+        <th scope="col" class="col-dancers">{% trans "Dancer(s)" %}</th>
         <th scope="col" class="club-col">{% trans "Club" %}</th>
-        <th scope="col">{% trans "Style" %}</th>
-        <th scope="col">{% trans "Difficulty" %}</th>
+        <th scope="col" class="style-col">{% trans "Style" %}</th>
+        <th scope="col" class="col-difficulty">{% trans "Difficulty" %}</th>
         <th scope="col" class="group-type-col">{% trans "Group Type" %}</th>
-        <th scope="col">{% trans "Age Group" %}</th>
-        <th scope="col">{% trans "Choreographer" %}</th>
-        <th scope="col">{% trans "Choreography" %}</th>
-        <th scope="col" class="text-center">{% trans "Music" %}</th>
-        <th scope="col" class="text-end">{% trans "Actions" %}</th>
+        <th scope="col" class="col-age-group">{% trans "Age Group" %}</th>
+        <th scope="col" class="col-choreographer">{% trans "Choreographer" %}</th>
+        <th scope="col" class="col-choreography">{% trans "Choreography" %}</th>
+        <th scope="col" class="text-center col-music">{% trans "Music" %}</th>
+        <th scope="col" class="text-end col-actions">{% trans "Actions" %}</th>
       </tr>
     </thead>
     <tbody>
       {% for group in grouped_participations %}
       <tr>
-        <td class="text-center" data-label="{% trans '# Dancers' %}">{{ group.dancers|length }}</td>
-        <td data-label="{% trans 'Dancer(s)' %}">
+        <td class="text-center col-count" data-label="{% trans '# Dancers' %}">{{ group.dancers|length }}</td>
+        <td class="col-dancers" data-label="{% trans 'Dancer(s)' %}">
           {% if group.dancers %}
             {% for dancer in group.dancers %}
               {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
@@ -115,13 +115,13 @@
           {% endif %}
         </td>
         <td class="style-col" data-label="{% trans 'Style' %}">{{ group.style.name }}</td>
-        <td class="text-center" data-label="{% trans 'Difficulty' %}">{{ group.difficulty }}</td>
+        <td class="text-center col-difficulty" data-label="{% trans 'Difficulty' %}">{{ group.difficulty }}</td>
         <td class="text-center group-type-col" data-label="{% trans 'Group Type' %}">{{ group.group_type }}</td>
-        <td class="text-center" data-label="{% trans 'Age Group' %}">{{ group.age_group|default:"-" }}</td>
-        <td data-label="{% trans 'Choreographer' %}">{{ group.choreographer_name }}</td>
-        <td data-label="{% trans 'Choreography' %}">{{ group.choreography_name|default:"Untitled" }}</td>
+        <td class="text-center col-age-group" data-label="{% trans 'Age Group' %}">{{ group.age_group|default:"-" }}</td>
+        <td class="col-choreographer" data-label="{% trans 'Choreographer' %}">{{ group.choreographer_name }}</td>
+        <td class="col-choreography" data-label="{% trans 'Choreography' %}">{{ group.choreography_name|default:"Untitled" }}</td>
 
-        <td class="text-center" data-label="{% trans 'Music' %}">
+        <td class="text-center col-music" data-label="{% trans 'Music' %}">
           {% if group.music_file %}
             <i class="bi bi-check-circle-fill text-success"></i>
           {% else %}
@@ -130,7 +130,7 @@
         </td>
 
         <!-- Coral Actions Dropdown -->
-        <td class="text-end" data-label="{% trans 'Actions' %}">
+        <td class="text-end col-actions" data-label="{% trans 'Actions' %}">
           <div class="dropdown">
             <button class="btn btn-coral btn-sm dropdown-toggle"
                     type="button" data-bs-toggle="dropdown" aria-expanded="false">

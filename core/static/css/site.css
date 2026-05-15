@@ -202,29 +202,33 @@ body {
 }
 
 @media (min-width: 768px) {
-  /* Desktop balancing for View Registered columns. */
-  .participants-table th:nth-child(1),
-  .participants-table td:nth-child(1) { width: 5%; }
-
-  .participants-table th:nth-child(4),
-  .participants-table td:nth-child(4) {
-    width: 7%;
-    white-space: normal !important;
+  /* Desktop balancing for View Registered columns (stable across events). */
+  .participants-table {
+    table-layout: fixed;
+    width: 100%;
   }
 
-  .participants-table th:nth-child(8),
-  .participants-table td:nth-child(8) { width: 11%; }
+  .participants-table .col-count { width: 5%; }
+  .participants-table .col-dancers { width: 22%; }
+  .participants-table .club-col { width: 12%; }
+  .participants-table .style-col { width: 8%; }
+  .participants-table .col-difficulty { width: 6%; }
+  .participants-table .group-type-col { width: 9%; }
+  .participants-table .col-age-group { width: 7%; }
+  .participants-table .col-choreographer { width: 11%; }
+  .participants-table .col-choreography { width: 13%; }
+  .participants-table .col-music { width: 3%; }
+  .participants-table .col-actions { width: 7%; min-width: 7rem; }
 
-  .participants-table th:nth-child(9),
-  .participants-table td:nth-child(9) {
-    width: 14%;
+  .participants-table .col-dancers,
+  .participants-table .col-choreographer,
+  .participants-table .col-choreography {
     white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
-  .participants-table th:nth-child(11),
-  .participants-table td:nth-child(11) {
-    width: 9%;
-    min-width: 8.5rem;
+  .participants-table .col-actions {
     white-space: nowrap !important;
   }
 }
