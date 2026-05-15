@@ -10,13 +10,22 @@
     overflow-x: hidden;
   }
   .participants-shell {
-    overflow: hidden !important;
+    overflow: visible !important;
     max-width: 100%;
   }
   .participants-shell .participants-table-wrap {
-    overflow-x: hidden !important;
+    overflow-x: auto !important;
     overflow-y: hidden !important;
     overscroll-behavior-x: none;
+  }
+
+  @media (max-width: 767.98px) {
+    .participants-shell {
+      overflow: hidden !important;
+    }
+    .participants-shell .participants-table-wrap {
+      overflow-x: hidden !important;
+    }
   }
 </style>
 {% endblock %}
@@ -67,6 +76,19 @@
 <div class="table-shell participants-shell">
   <div class="table-responsive participants-table-wrap">
     <table class="table table-striped table-hover table-sm align-middle participants-table">
+    <colgroup>
+      <col style="width: 6%;">
+      <col style="width: 22%;">
+      <col style="width: 13%;">
+      <col style="width: 8%;">
+      <col style="width: 7%;">
+      <col style="width: 8%;">
+      <col style="width: 7%;">
+      <col style="width: 11%;">
+      <col style="width: 10%;">
+      <col style="width: 4%;">
+      <col style="width: 4%;">
+    </colgroup>
     <thead class="table-light">
       <tr>
         <th scope="col">{% trans "# Dancers" %}</th>

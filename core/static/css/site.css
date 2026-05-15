@@ -177,13 +177,16 @@ body {
   word-break: normal;
   overflow-wrap: break-word;
 }
+.participants-table {
+  table-layout: fixed;
+}
 
 .participants-table .club-col,
 .participants-table .group-type-col,
 .participants-table .style-col {
-  white-space: nowrap;
+  white-space: normal;
   word-break: keep-all;
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
 }
 
 .participants-table .club-col {
@@ -195,7 +198,7 @@ body {
 }
 
 .participants-table .style-col {
-  min-width: 10rem;
+  min-width: 0;
 }
 
 .participants-table tbody tr:hover {
