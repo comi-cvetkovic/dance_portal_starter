@@ -51,6 +51,7 @@ from decimal import Decimal
 import builtins
 from django.db.models import Min
 from django.db.models import Count
+from mutagen.mp3 import MP3
 
 # Order definitions
 DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Jazz Performance', 'Open',
@@ -559,20 +560,25 @@ def publish_start_list(request, event_id):
 
 
 def get_music_duration(p):
-    if p.music_file and hasattr(p.music_file, "duration") and p.music_file.duration:
-        duration = int(p.music_file.duration)
-    else:
-        if p.group_type in ["Solo", "Duo", "Trio"]:
-            duration = 135
-        elif p.group_type in ["Group", "Formation"]:
-            duration = 180
-        else:
-            duration = 240
-    if p.group_type in ["Baby", "Mini"]:
-        duration += 60
-    else:
-        duration += 30
-    return duration
+    # Use uploaded music length + 30s transition buffer.
+    # If no music is uploaded (or unreadable), fall back to 3 minutes.
+    default_seconds = 180
+
+    if not p.music_file:
+        return default_seconds
+
+    try:
+        p.music_file.open("rb")
+        audio = MP3(p.music_file)
+        base_duration = int(audio.info.length)
+        return base_duration + 30
+    except Exception:
+        return default_seconds
+    finally:
+        try:
+            p.music_file.close()
+        except Exception:
+            pass
 
 
 
