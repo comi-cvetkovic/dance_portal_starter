@@ -178,7 +178,7 @@ body {
   overflow-wrap: break-word;
 }
 .participants-table {
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .participants-table .club-col,
@@ -199,6 +199,34 @@ body {
 
 .participants-table .style-col {
   min-width: 0;
+}
+
+@media (min-width: 768px) {
+  /* Desktop balancing for View Registered columns. */
+  .participants-table th:nth-child(1),
+  .participants-table td:nth-child(1) { width: 5%; }
+
+  .participants-table th:nth-child(4),
+  .participants-table td:nth-child(4) {
+    width: 7%;
+    white-space: normal !important;
+  }
+
+  .participants-table th:nth-child(8),
+  .participants-table td:nth-child(8) { width: 11%; }
+
+  .participants-table th:nth-child(9),
+  .participants-table td:nth-child(9) {
+    width: 14%;
+    white-space: normal !important;
+  }
+
+  .participants-table th:nth-child(11),
+  .participants-table td:nth-child(11) {
+    width: 9%;
+    min-width: 8.5rem;
+    white-space: nowrap !important;
+  }
 }
 
 .participants-table tbody tr:hover {
