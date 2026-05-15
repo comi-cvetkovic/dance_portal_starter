@@ -173,8 +173,7 @@
           <th>{% trans "Dancer(s) / Ceremony" %}</th>
           <th>{% trans "Choreographer" %}</th>
           <th>{% trans "Choreography" %}</th>
-          <th>{% trans "Club" %}</th>
-          <th class="text-center">{% trans "Dancers" %}</th>
+                    <th class="text-center">{% trans "Dancers" %}</th>
         </tr>
       </thead>
 
@@ -182,9 +181,9 @@
       <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
         <tr class="group-header {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
           {% if group_key.0 == "Ceremony" %}
-            <td colspan="7">&nbsp;</td>
+            <td colspan="6">&nbsp;</td>
           {% else %}
-            <td colspan="7">{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</td>
+            <td colspan="6">{{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}</td>
           {% endif %}
         </tr>
 
@@ -192,7 +191,7 @@
         <tr data-id="{{ entry.id }}" class="draggable-row {% if entry.is_ceremony %}ceremony-row{% endif %}">
           <td class="drag-handle">☰</td>
           {% if entry.is_ceremony %}
-            <td colspan="6"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
+            <td colspan="5"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
           {% else %}
             <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="text-muted small">{{ entry.start_time }}</span>{% endif %}</td>
             <td>
@@ -206,7 +205,6 @@
             </td>
             <td>{{ entry.choreographer }}</td>
             <td>{{ entry.choreography_name }}</td>
-            <td>{{ entry.club_name }}</td>
             <td class="text-center">{{ entry.num_dancers }}</td>
           {% endif %}
         </tr>
@@ -289,5 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 {% endblock %}
+
+
 
 
