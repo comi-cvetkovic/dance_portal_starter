@@ -19,23 +19,31 @@
     overscroll-behavior-x: none;
   }
 
-  /* Force deterministic desktop column layout directly in template (cache-proof). */
+  /* Desktop: keep headers readable and prevent column overlap. */
   @media (min-width: 768px) {
     .participants-table {
-      table-layout: fixed !important;
-      width: 100% !important;
+      table-layout: auto !important;
+      width: max-content !important;
+      min-width: 1450px !important;
     }
-    .participants-table .col-count { width: 5% !important; }
-    .participants-table .col-dancers { width: 22% !important; }
-    .participants-table .club-col { width: 12% !important; }
-    .participants-table .style-col { width: 8% !important; }
-    .participants-table .col-difficulty { width: 6% !important; }
-    .participants-table .group-type-col { width: 9% !important; }
-    .participants-table .col-age-group { width: 7% !important; }
-    .participants-table .col-choreographer { width: 11% !important; }
-    .participants-table .col-choreography { width: 13% !important; }
-    .participants-table .col-music { width: 3% !important; }
-    .participants-table .col-actions { width: 7% !important; min-width: 7rem !important; }
+
+    .participants-table th {
+      white-space: nowrap !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+    }
+
+    .participants-table .col-count { min-width: 4.5rem !important; }
+    .participants-table .col-dancers { min-width: 20rem !important; }
+    .participants-table .club-col { min-width: 10rem !important; }
+    .participants-table .style-col { min-width: 9rem !important; }
+    .participants-table .col-difficulty { min-width: 6rem !important; }
+    .participants-table .group-type-col { min-width: 9rem !important; }
+    .participants-table .col-age-group { min-width: 8rem !important; }
+    .participants-table .col-choreographer { min-width: 11rem !important; }
+    .participants-table .col-choreography { min-width: 12rem !important; }
+    .participants-table .col-music { min-width: 4.5rem !important; }
+    .participants-table .col-actions { min-width: 8.5rem !important; }
 
     .participants-table .col-dancers,
     .participants-table .col-choreographer,
@@ -46,6 +54,11 @@
     }
     .participants-table .col-actions {
       white-space: nowrap !important;
+    }
+
+    .participants-shell .participants-table-wrap {
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
     }
   }
 
