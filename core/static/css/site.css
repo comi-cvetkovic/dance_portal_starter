@@ -285,11 +285,29 @@ body {
     max-width: 100%;
   }
 
+  /* View Registered: allow tighter wrapping so right-most columns are not clipped. */
+  .participants-table {
+    width: 100% !important;
+    table-layout: fixed;
+  }
+  .participants-table th,
+  .participants-table td {
+    white-space: normal !important;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .participants-table .club-col,
+  .participants-table .group-type-col,
+  .participants-table .style-col {
+    min-width: 0 !important;
+    white-space: normal !important;
+  }
+
   table th,
   table td {
     font-size: 0.75rem;
     padding: 0.35rem 0.5rem;
-    white-space: nowrap;
+    white-space: normal;
   }
 }
 
