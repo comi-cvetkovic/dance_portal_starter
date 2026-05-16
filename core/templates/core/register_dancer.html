@@ -103,12 +103,17 @@
         <label for="id_dancer_quick_search" class="form-label fw-semibold mt-2">
           {% trans "Search and add dancer:" %}
         </label>
-        <select id="id_dancer_quick_search" class="form-select">
-          <option value="">{% trans "Type to find a dancer..." %}</option>
+        <input id="id_dancer_quick_search"
+               class="form-control"
+               type="text"
+               list="id_dancer_quick_search_list"
+               placeholder="{% trans 'Type to find a dancer...' %}">
+        <datalist id="id_dancer_quick_search_list">
           {% for dancer in form.fields.dancers.queryset %}
-            <option value="{{ dancer.id }}">{{ dancer.first_name }} {{ dancer.last_name }}</option>
+            <option data-id="{{ dancer.id }}"
+                    value="{{ dancer.first_name }} {{ dancer.last_name }} (#{{ dancer.id }})"></option>
           {% endfor %}
-        </select>
+        </datalist>
         {{ form.dancers }}
         <div id="dancer-tools" class="mt-2">
           <button type="button" class="btn-mini" id="btn-select-all">{% trans "Select all" %}</button>
@@ -257,11 +262,16 @@ select:focus, input:focus, textarea:focus {
 
 /* Select2 appearance */
 .select2-container--default .select2-selection--multiple {
-  min-height: 44px;
+  min-height: 64px;
   border-radius: .375rem;
   border: 1px solid #ced4da;
-  padding: 4px 8px;
+  padding: 8px 10px;
   background: #fff;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
   background: #f8f9fa;
@@ -508,6 +518,32 @@ $(function () {
   });
   lockSelectedDancersBox();
   initQuickSearch();
+  // Force first box to be a single native input (no secondary Select2 search bar).
+  if (dancerQuickSearch.data('select2')) {
+    dancerQuickSearch.select2('destroy');
+  }
+  dancerQuickSearch.off('select2:select');
+  dancerQuickSearch.on('change', function () {
+    const raw = (dancerQuickSearch.val() || '').trim();
+    const idMatch = raw.match(/#(\d+)\)\s*$/);
+    if (!idMatch) return;
+    const selectedId = idMatch[1];
+
+    const groupType = groupTypeSelect.val();
+    let current = dancerSelect.val() || [];
+    if (!Array.isArray(current)) current = current ? [current] : [];
+    current = current.filter(v => v && v.trim() !== '');
+
+    if (groupType === 'Solo') {
+      dancerSelect.val(selectedId).trigger('change');
+    } else if (!current.includes(selectedId)) {
+      current.push(selectedId);
+      dancerSelect.val(current).trigger('change');
+    }
+
+    dancerQuickSearch.val('');
+    updateAgeGroup();
+  });
   updateGroupTypeSettings(true);
   updateAgeGroup();
 });
