@@ -305,7 +305,7 @@
 
         {% elif user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ club_dashboard_url }}">{% trans "Dashboard" %}</a>
+            <a class="nav-link {% if request.path == club_dashboard_url %}active{% endif %}" href="{{ club_dashboard_url }}">{% trans "Dashboard" %}</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if request.path == event_list_url %}active{% endif %}" href="{{ event_list_url }}">{% trans "Events" %}</a>
