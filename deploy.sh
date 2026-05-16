@@ -40,7 +40,7 @@ echo "🔹 Running migrations..."
 python manage.py migrate --noinput
 
 echo "🔹 Compiling translation messages..."
-python manage.py compilemessages
+python manage.py compilemessages --ignore venv --ignore staticfiles --ignore media
 
 echo "🔹 Collecting static files..."
 python manage.py collectstatic --noinput
