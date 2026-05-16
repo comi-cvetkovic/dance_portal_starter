@@ -266,13 +266,25 @@ select:focus, input:focus, textarea:focus {
   min-height: 64px;
   border-radius: .375rem;
   border: 1px solid #ced4da;
-  padding: 8px 10px;
+  padding: 24px 10px 8px 10px;
   background: #fff;
+  position: relative;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__rendered {
   display: flex !important;
   flex-wrap: wrap;
   gap: 6px;
+}
+/* Keep "Selected dancers" visible even after many selections. */
+#id_dancers + .select2-container .select2-selection--multiple::before {
+  content: "Selected dancers";
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  font-size: 0.75rem;
+  color: #6c757d;
+  line-height: 1;
+  pointer-events: none;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
   background: #f8f9fa;
