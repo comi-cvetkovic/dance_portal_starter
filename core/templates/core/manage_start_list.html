@@ -170,8 +170,8 @@
         <tr>
           <th class="drag-col"></th>
           <th>{% trans "Starting Number" %}</th>
-          <th>{% trans "Choreographer" %}</th>
           <th>{% trans "Choreography" %}</th>
+          <th>{% trans "Choreographer" %}</th>
           <th>{% trans "Dancer(s) / Ceremony" %}</th>
           <th class="text-center">{% trans "# Dancers" %}</th>
         </tr>
@@ -194,8 +194,8 @@
             <td colspan="5"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
           {% else %}
             <td>{{ entry.global_row_number }}{% if entry.start_time %}<br><span class="text-muted small">{{ entry.start_time }}</span>{% endif %}</td>
-            <td>{{ entry.choreographer }}</td>
             <td>{{ entry.choreography_name }}</td>
+            <td>{{ entry.choreographer }}</td>
             <td>
               {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
                 

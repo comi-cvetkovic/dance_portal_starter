@@ -25,8 +25,8 @@
     <thead class="table-light">
       <tr>
         <th scope="col">{% trans "Starting Number" %}</th>
-        <th scope="col">{% trans "Choreographer" %}</th>
         <th scope="col">{% trans "Choreography" %}</th>
+        <th scope="col">{% trans "Choreographer" %}</th>
         <th scope="col">{% trans "Dancer(s) / Ceremony" %}</th>
         <th scope="col" class="text-center">{% trans "# Dancers" %}</th>
       </tr>
@@ -59,8 +59,8 @@
               <br><span class="text-muted small">{{ entry.start_time }}</span>
             {% endif %}
           </td>
-          <td>{{ entry.choreographer }}</td>
           <td>{{ entry.choreography_name }}</td>
+          <td>{{ entry.choreographer }}</td>
           <td>
             {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
               
