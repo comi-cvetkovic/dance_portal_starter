@@ -84,7 +84,13 @@
           {% endif %}
 
           <div class="mb-3">
-            <label for="id_music_file" class="form-label fw-semibold">{% trans "Replace Music File (optional)" %}</label>
+            <label for="id_music_file" class="form-label fw-semibold">
+              {% trans "Replace Music File (optional)" %}
+              <i class="bi bi-info-circle ms-1 text-muted"
+                 data-bs-toggle="tooltip"
+                 data-bs-custom-class="dp-tooltip"
+                 title="{% trans 'Upload only an MP3 file if the upload window is open.' %}"></i>
+            </label>
             {{ form.music_file }}
             {% if form.music_file.errors %}
               <div class="text-danger small">{{ form.music_file.errors.0 }}</div>
@@ -238,7 +244,13 @@
         {% endif %}
 
         <div class="mb-3">
-          <label for="id_music_file" class="form-label fw-semibold">{% trans "Replace Music File (optional)" %}</label>
+          <label for="id_music_file" class="form-label fw-semibold">
+            {% trans "Replace Music File (optional)" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Upload only an MP3 file if the upload window is open.' %}"></i>
+          </label>
           {{ form.music_file }}
           {% if form.music_file.errors %}
             <div class="text-danger small">{{ form.music_file.errors.0 }}</div>
