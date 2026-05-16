@@ -24,13 +24,11 @@
   <table class="table table-bordered align-middle mb-0 start-list-table scale-to-fit">
     <thead class="table-light">
       <tr>
-        <th scope="col">#</th>
-        <th scope="col">{% trans "Dancer(s) / Ceremony" %}</th>
+        <th scope="col">{% trans "Starting Number" %}</th>
         <th scope="col">{% trans "Choreographer" %}</th>
         <th scope="col">{% trans "Choreography" %}</th>
-                {% if is_admin %}
-          <th scope="col" class="text-center">{% trans "Dancers" %}</th>
-        {% endif %}
+        <th scope="col">{% trans "Dancer(s) / Ceremony" %}</th>
+        <th scope="col" class="text-center">{% trans "# Dancers" %}</th>
       </tr>
     </thead>
 
@@ -38,13 +36,13 @@
     <tbody class="group-wrapper" data-group="{{ group_key|join:'|' }}">
       {% if group_key.0 == "Ceremony" %}
       <tr class="table-info fw-bold text-center">
-        <td colspan="{% if is_admin %}5{% else %}4{% endif %}">
+        <td colspan="5">
           &nbsp;
         </td>
       </tr>
       {% else %}
       <tr class="table-secondary fw-semibold {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
-        <td colspan="{% if is_admin %}5{% else %}4{% endif %}">
+        <td colspan="5">
           {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
         </td>
       </tr>
@@ -53,7 +51,7 @@
       {% for entry in group_entries %}
       <tr class="{% if entry.is_ceremony %}ceremony-row{% endif %}">
         {% if entry.is_ceremony %}
-          <td colspan="{% if is_admin %}5{% else %}4{% endif %}"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
+          <td colspan="5"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
         {% else %}
           <td>
             {{ entry.global_row_number }}
@@ -61,20 +59,18 @@
               <br><span class="text-muted small">{{ entry.start_time }}</span>
             {% endif %}
           </td>
+          <td>{{ entry.choreographer }}</td>
+          <td>{{ entry.choreography_name }}</td>
           <td>
             {% if entry.group_name and entry.num_dancers|add:0 >= 4 %}
-              <span data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{{ entry.dancer_names_text }}">{{ entry.group_name }}</span>
+              
             {% else %}
               {% for dancer in entry.dancers %}
                 {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
               {% endfor %}
             {% endif %}
           </td>
-          <td>{{ entry.choreographer }}</td>
-          <td>{{ entry.choreography_name }}</td>
-          {% if is_admin %}
-            <td class="text-center">{{ entry.num_dancers }}</td>
-          {% endif %}
+          <td class="text-center">{{ entry.num_dancers }}</td>
         {% endif %}
       </tr>
       {% endfor %}
