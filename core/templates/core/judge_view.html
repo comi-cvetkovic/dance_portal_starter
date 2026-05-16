@@ -1,11 +1,11 @@
 ﻿{% extends 'core/base.html' %}
 {% load i18n %}
 {% load custom_tags %}
-{% block title %}{% trans "Judge" %} â€“ {{ event.name }}{% endblock %}
+{% block title %}{% trans "Judge" %} - {{ event.name }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">{% trans "Judging" %} â€” {{ event.name }}</h2>
+  <h2 class="mb-0">{% trans "Judging" %} &mdash; {{ event.name }}</h2>
 </div>
 
 {% if all_scored %}
@@ -167,11 +167,11 @@
       </form>
 
       {% if has_prev %}
-        <button type="submit" name="prev" class="btn btn-coral-outline">â† {% trans "Previous" %}</button>
+        <button type="submit" name="prev" class="btn btn-coral-outline">&larr; {% trans "Previous" %}</button>
       {% endif %}
 
       {% if has_next %}
-        <button type="submit" name="next" class="btn btn-coral">{% trans "Save & Next" %} â†’</button>
+        <button type="submit" name="next" class="btn btn-coral">{% trans "Save & Next" %} &rarr;</button>
       {% else %}
         <button type="submit" name="save_last" class="btn btn-coral">{% trans "Save" %}</button>
       {% endif %}
