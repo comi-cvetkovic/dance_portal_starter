@@ -16,7 +16,7 @@ echo "🔹 Resetting code to latest from GitHub..."
 git fetch origin main
 
 # Allow server-local .env to differ, but block deploy if any code/config files are dirty.
-DIRTY_NON_ENV=$(git status --porcelain --untracked-files=normal | grep -vE '^(.. )?\.env$|^\?\? \.env$' || true)
+DIRTY_NON_ENV=$(git status --porcelain --untracked-files=normal | grep -vE '^(.. )?\.env$|^\?\? \.env$|^.. .*\.mo$' || true)
 if [ -n "$DIRTY_NON_ENV" ]; then
     echo "Uncommitted non-.env changes detected; aborting deploy."
     echo "$DIRTY_NON_ENV"
