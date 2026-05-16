@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Run-Extract {
-    python manage.py makemessages -l sr-latn --ignore venv --ignore staticfiles --ignore media
+    python manage.py makemessages -l sr_Latn --ignore venv --ignore staticfiles --ignore media
 }
 
 function Run-Compile {
