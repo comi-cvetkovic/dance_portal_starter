@@ -1067,4 +1067,4 @@ msgstr "Startna lista još nije objavljena"
 
 
 msgid "Create New Event"
-msgstr "Napravi Novi Doga?aj"
+msgstr "Napravi Novi Događaj"
