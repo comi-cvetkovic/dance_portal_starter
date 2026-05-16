@@ -234,7 +234,7 @@
         <li class="nav-item dropdown me-3">
           {% get_current_language as LANGUAGE_CODE %}
           <button class="btn btn-sm dropdown-toggle lang-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {% if LANGUAGE_CODE == "sr-Latn" %}Srpski{% else %}English{% endif %}
+            {% if LANGUAGE_CODE|lower|slice:":2" == "sr" %}Srpski{% else %}English{% endif %}
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li>
@@ -242,7 +242,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <input type="hidden" name="language" value="en">
-                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE == 'en' %}active{% endif %}">English</button>
+                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE|lower|slice:":2" == 'en' %}active{% endif %}">English</button>
               </form>
             </li>
             <li>
@@ -250,7 +250,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <input type="hidden" name="language" value="sr-Latn">
-                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE == 'sr-Latn' %}active{% endif %}">Srpski</button>
+                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE|lower|slice:":2" == 'sr' %}active{% endif %}">Srpski</button>
               </form>
             </li>
           </ul>
@@ -360,7 +360,7 @@
         <li class="nav-item dropdown me-3">
           {% get_current_language as LANGUAGE_CODE %}
           <button class="btn btn-sm dropdown-toggle lang-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {% if LANGUAGE_CODE == "sr-Latn" %}Srpski{% else %}English{% endif %}
+            {% if LANGUAGE_CODE|lower|slice:":2" == "sr" %}Srpski{% else %}English{% endif %}
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li>
@@ -368,7 +368,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <input type="hidden" name="language" value="en">
-                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE == 'en' %}active{% endif %}">English</button>
+                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE|lower|slice:":2" == 'en' %}active{% endif %}">English</button>
               </form>
             </li>
             <li>
@@ -376,7 +376,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <input type="hidden" name="language" value="sr-Latn">
-                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE == 'sr-Latn' %}active{% endif %}">Srpski</button>
+                <button type="submit" class="dropdown-item {% if LANGUAGE_CODE|lower|slice:":2" == 'sr' %}active{% endif %}">Srpski</button>
               </form>
             </li>
           </ul>
