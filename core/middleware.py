@@ -21,6 +21,17 @@ class JudgeAccessMiddleware:
         if not is_judge_account(user):
             return self.get_response(request)
 
+        # Path-level allowlist for reliability even if resolver_name changes.
+        try:
+            logout_path = reverse("logout")
+        except Exception:
+            logout_path = "/accounts/logout/"
+        if request.path == logout_path:
+            return self.get_response(request)
+
+        if request.path.startswith("/i18n/"):
+            return self.get_response(request)
+
         resolver_match = getattr(request, "resolver_match", None)
         current_url_name = getattr(resolver_match, "url_name", None)
         if current_url_name in self.allowed_url_names:
