@@ -77,6 +77,24 @@
   /* ===== TABLE ===== */
   .table thead th { background:#f8f9fa; }
   .email-nowrap { white-space: nowrap; }
+  .clubs-table th,
+  .clubs-table td {
+    vertical-align: middle;
+  }
+  .clubs-table .col-total-dancers {
+    width: 7rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .clubs-table .col-status {
+    width: 8rem;
+    white-space: nowrap;
+  }
+  .clubs-table .col-actions {
+    width: 9rem;
+    white-space: nowrap;
+    text-align: right;
+  }
 
   /* Responsive tweaks */
   @media (max-width: 992px) {
@@ -125,7 +143,7 @@
         <div class="card-body">
           {% if clubs %}
             <div class="table-responsive">
-              <table class="table table-sm table-hover table-striped align-middle mb-0">
+              <table class="table table-sm table-hover table-striped align-middle mb-0 clubs-table">
                 <thead>
                   <tr>
                     <th scope="col">{% trans "Club" %}</th>
@@ -134,9 +152,9 @@
                     <th scope="col" class="hide-lg">{% trans "City" %}</th>
                     <th scope="col" class="hide-lg">{% trans "Email" %}</th>
                     <th scope="col" class="hide-lg">{% trans "Phone" %}</th>
-                    <th scope="col">{% trans "Total Dancers" %}</th>
-                    <th scope="col">{% trans "Status" %}</th>
-                    <th scope="col" class="text-end">{% trans "Actions" %}</th>
+                    <th scope="col" class="col-total-dancers">{% trans "Total Dancers" %}</th>
+                    <th scope="col" class="col-status">{% trans "Status" %}</th>
+                    <th scope="col" class="text-end col-actions">{% trans "Actions" %}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -148,15 +166,15 @@
                     <td class="hide-lg">{{ c.city }}</td>
                     <td class="hide-lg email-nowrap">{{ c.user.email }}</td>
                     <td class="hide-lg">{{ c.phone_number }}</td>
-                    <td>{{ c.dancers.count }}</td>
-                    <td>
+                    <td class="col-total-dancers">{{ c.dancers.count }}</td>
+                    <td class="col-status">
                       {% if c.confirmed %}
                         <span class="chip"><span class="dot dot-ok"></span>{% trans "Confirmed" %}</span>
                       {% else %}
                         <span class="chip"><span class="dot dot-warn"></span>{% trans "Pending" %}</span>
                       {% endif %}
                     </td>
-                    <td class="text-end">
+                    <td class="text-end col-actions">
                       <div class="dropdown d-inline-block">
                         <button class="btn btn-coral btn-sm dropdown-toggle"
                                 type="button"
