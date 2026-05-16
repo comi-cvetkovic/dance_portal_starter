@@ -48,7 +48,7 @@ LANGUAGE_COOKIE_ALLOW_GET = True
 
 TIME_ZONE = "UTC"
 USE_TZ = True
-# LOCALE_PATHS = [ BASE_DIR / "locale" ]
+LOCALE_PATHS = [BASE_DIR / "core" / "locale"]
 
 # ── Apps & middleware ───────────────────────────────────────────────────────────
 INSTALLED_APPS = [
