@@ -171,7 +171,7 @@
     }
 
     /* Login/Register buttons */
-    .navbar .btn-outline-light {
+  .navbar .btn-outline-light {
       border-color: #fff;
       color: #fff;
     }
@@ -186,6 +186,21 @@
     .navbar .btn-light:hover {
       background-color: #f0f0f0;
       color: #d76f54;
+    }
+
+    /* Language dropdown contrast on coral navbar */
+    .lang-dropdown-btn {
+      background-color: #fff !important;
+      color: #d76f54 !important;
+      border: 1px solid #fff !important;
+      font-weight: 600;
+    }
+    .lang-dropdown-btn:hover,
+    .lang-dropdown-btn:focus,
+    .lang-dropdown-btn:active {
+      background-color: #f6f6f6 !important;
+      color: #c45f45 !important;
+      border-color: #fff !important;
     }
   </style>
 
@@ -218,7 +233,7 @@
       <ul class="navbar-nav ms-auto align-items-lg-center">
         <li class="nav-item dropdown me-3">
           {% get_current_language as LANGUAGE_CODE %}
-          <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <button class="btn btn-sm dropdown-toggle lang-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             {% if LANGUAGE_CODE == "sr-Latn" %}Srpski{% else %}English{% endif %}
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
@@ -344,7 +359,7 @@
 
         <li class="nav-item dropdown me-3">
           {% get_current_language as LANGUAGE_CODE %}
-          <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <button class="btn btn-sm dropdown-toggle lang-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             {% if LANGUAGE_CODE == "sr-Latn" %}Srpski{% else %}English{% endif %}
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
