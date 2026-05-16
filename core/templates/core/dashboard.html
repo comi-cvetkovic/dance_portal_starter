@@ -155,18 +155,35 @@
                       {% endif %}
                     </td>
                     <td class="text-end">
-                      <div class="d-inline-flex flex-wrap gap-1">
-                        <a class="btn btn-coral-outline btn-sm" href="{% url 'admin_list_dancers' c.id %}">
-                          {% trans "Dancers" %}
-                        </a>
-                        <a href="{% url 'edit_club' c.id %}" class="btn btn-coral-outline btn-sm">
-                          {% trans "Edit" %}
-                        </a>
-                        <a class="btn btn-outline-danger btn-sm"
-                           href="{% url 'delete_club' c.id %}"
-                           onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
-                           {% trans "Delete" %}
-                        </a>
+                      <div class="dropdown d-inline-block">
+                        <button class="btn btn-coral btn-sm dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                          {% trans "Actions" %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                          <li>
+                            <a class="dropdown-item"
+                               href="{% url 'admin_list_dancers' c.id %}">
+                              <i class="bi bi-people me-1"></i>{% trans "Dancers" %}
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item text-primary"
+                               href="{% url 'edit_club' c.id %}">
+                              <i class="bi bi-pencil-square me-1"></i>{% trans "Edit" %}
+                            </a>
+                          </li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li>
+                            <a class="dropdown-item text-danger"
+                               href="{% url 'delete_club' c.id %}"
+                               onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
+                              <i class="bi bi-trash me-1"></i>{% trans "Delete" %}
+                            </a>
+                          </li>
+                        </ul>
                       </div>
                     </td>
                   </tr>
