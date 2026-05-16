@@ -344,19 +344,21 @@ $(function () {
   function initSelect2Multi(max) {
     dancerSelect.select2({
       width: '100%',
-      placeholder: "Type to search…",
+      placeholder: "Selected dancers",
       allowClear: true,
       closeOnSelect: false,
-      maximumSelectionLength: max
+      maximumSelectionLength: max,
+      minimumResultsForSearch: Infinity
     });
   }
 
   function initSelect2Single() {
     dancerSelect.select2({
       width: '100%',
-      placeholder: "Select a dancer",
+      placeholder: "Selected dancer",
       allowClear: true,
-      closeOnSelect: true
+      closeOnSelect: true,
+      minimumResultsForSearch: Infinity
     });
   }
 
@@ -485,7 +487,12 @@ $(function () {
   dancerSelect.on('change', updateAgeGroup);
   $("form").on("submit", function (e) { if (!validateGroupSize()) e.preventDefault(); });
 
-  dancerSelect.select2({ width:'100%', placeholder:"Type to search…", allowClear:true });
+  dancerSelect.select2({
+    width: '100%',
+    placeholder: "Selected dancers",
+    allowClear: true,
+    minimumResultsForSearch: Infinity
+  });
   initQuickSearch();
   updateGroupTypeSettings(true);
   updateAgeGroup();
