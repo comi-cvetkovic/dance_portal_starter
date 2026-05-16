@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load i18n static %}
 
-{% block title %}{% trans "Create New Event" %} | Dance Portal{% endblock %}
+{% block title %}{% trans "Create Event" %} | Dance Portal{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -27,7 +27,7 @@
 {% block content %}
 
 <div class="sticky-save mb-3">
-  <button type="submit" form="eventForm" class="btn btn-coral">{% trans "Create New Event" %}</button>
+  <button type="submit" form="eventForm" class="btn btn-coral">{% trans "Create Event" %}</button>
   <a href="{% url 'event_list' %}" class="btn btn-coral-outline">{% trans "Back to Events" %}</a>
 </div>
 
