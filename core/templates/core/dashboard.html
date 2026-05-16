@@ -93,10 +93,11 @@
     white-space: nowrap;
   }
   .clubs-table td {
-    padding: 0.45rem 0.4rem;
-    line-height: 1.2;
+    padding: 0.6rem 0.5rem;
+    line-height: 1.35;
     overflow-wrap: anywhere;
     word-break: break-word;
+    white-space: normal;
   }
   .clubs-table .col-club { width: 15%; }
   .clubs-table .col-rep { width: 15%; }
@@ -117,6 +118,9 @@
     width: 11%;
     white-space: nowrap;
     text-align: right;
+  }
+  .clubs-table .col-email {
+    white-space: normal;
   }
 
   /* Responsive tweaks */
@@ -196,7 +200,7 @@
                     <td class="col-rep">{{ c.representative_name }}</td>
                     <td class="hide-lg col-country">{{ c.country.name }}</td>
                     <td class="hide-lg col-city">{{ c.city }}</td>
-                    <td class="hide-lg col-email email-nowrap">{{ c.user.email }}</td>
+                    <td class="hide-lg col-email">{{ c.user.email }}</td>
                     <td class="hide-lg col-phone">{{ c.phone_number }}</td>
                     <td class="col-total-dancers">{{ c.dancers.count }}</td>
                     <td class="col-status">
