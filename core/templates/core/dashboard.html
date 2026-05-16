@@ -134,6 +134,7 @@
                     <th scope="col" class="hide-lg">{% trans "City" %}</th>
                     <th scope="col" class="hide-lg">{% trans "Email" %}</th>
                     <th scope="col" class="hide-lg">{% trans "Phone" %}</th>
+                    <th scope="col">{% trans "Total Dancers" %}</th>
                     <th scope="col">{% trans "Status" %}</th>
                     <th scope="col" class="text-end">{% trans "Actions" %}</th>
                   </tr>
@@ -147,6 +148,7 @@
                     <td class="hide-lg">{{ c.city }}</td>
                     <td class="hide-lg email-nowrap">{{ c.user.email }}</td>
                     <td class="hide-lg">{{ c.phone_number }}</td>
+                    <td>{{ c.dancers.count }}</td>
                     <td>
                       {% if c.confirmed %}
                         <span class="chip"><span class="dot dot-ok"></span>{% trans "Confirmed" %}</span>
