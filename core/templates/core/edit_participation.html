@@ -104,13 +104,40 @@
         {% csrf_token %}
 
         <div class="mb-3">
-          <label for="id_group_type" class="form-label fw-semibold">{% trans "Group Type" %}</label>
+          <label for="id_group_type" class="form-label fw-semibold">
+            {% trans "Group Type" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Select Solo, Duo, Trio, Group, Formation, or Production.' %}"></i>
+          </label>
           {{ form.group_type }}
         </div>
 
         <hr>
         <div class="mb-3">
-          <label for="id_dancers" class="form-label fw-semibold">{% trans "Select Dancer(s)" %}</label>
+          <label for="id_dancers" class="form-label fw-semibold">
+            {% trans "Select Dancer(s)" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Choose the dancer(s) for this entry. Multiple selection allowed. You must add dancers to your club first.' %}"></i>
+          </label>
+          <label for="id_dancer_quick_search" class="form-label fw-semibold mt-2">
+            {% trans "Search and add dancer:" %}
+          </label>
+          <input id="id_dancer_quick_search"
+                 class="form-control"
+                 type="text"
+                 list="id_dancer_quick_search_list"
+                 placeholder="{% trans 'Type to find a dancer...' %}">
+          <datalist id="id_dancer_quick_search_list">
+            {% for dancer in form.fields.dancers.queryset %}
+              <option data-id="{{ dancer.id }}"
+                      data-label="{{ dancer.first_name }} {{ dancer.last_name }}"
+                      value="{{ dancer.first_name }} {{ dancer.last_name }}"></option>
+            {% endfor %}
+          </datalist>
           {{ form.dancers }}
           <div class="dancer-tools mt-2" id="dancer-tools" style="display:none;">
             <button type="button" class="btn-mini" id="btn-select-all">{% trans "Select all" %}</button>
@@ -121,38 +148,77 @@
 
         <hr>
         <div class="mb-3" id="group-name-wrapper" style="display:none;">
-          <label for="id_group_name" class="form-label fw-semibold">{% trans "Group Name" %}</label>
+          <label for="id_group_name" class="form-label fw-semibold">
+            {% trans "Group Name" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Name shown in the start list for larger groups.' %}"></i>
+          </label>
           {{ form.group_name }}
+          <div class="form-text">
+            {% trans "Hint: This is the performance/group title, not your club name." %}
+          </div>
         </div>
 
         
         <div class="mb-3">
-          <label for="id_style" class="form-label fw-semibold">{% trans "Style" %}</label>
+          <label for="id_style" class="form-label fw-semibold">
+            {% trans "Style" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Select the dance style category.' %}"></i>
+          </label>
           {{ form.style }}
         </div>
 
         <hr>
         <div class="mb-3">
-          <label for="id_difficulty" class="form-label fw-semibold">{% trans "Difficulty" %}</label>
+          <label for="id_difficulty" class="form-label fw-semibold">
+            {% trans "Difficulty" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Choose A or B difficulty level.' %}"></i>
+          </label>
           {{ form.difficulty }}
         </div>
 
         <hr>
         <div class="mb-3">
-          <label for="id_age_group" class="form-label fw-semibold">{% trans "Age Group (auto-calculated)" %}</label>
+          <label for="id_age_group" class="form-label fw-semibold">
+            {% trans "Age Group (auto-calculated)" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Auto-calculated from selected dancers. You cannot edit this field.' %}"></i>
+          </label>
           {{ form.age_group }}
           <span id="avg-age-display" class="ms-2 text-secondary small"></span>
         </div>
 
         <hr>
         <div class="mb-3">
-          <label for="id_choreographer_name" class="form-label fw-semibold">{% trans "Choreographer Name" %}</label>
+          <label for="id_choreographer_name" class="form-label fw-semibold">
+            {% trans "Choreographer Name" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Enter choreographer name(s). Separate multiple names with a comma.' %}"></i>
+          </label>
           {{ form.choreographer_name }}
         </div>
 
         <hr>
         <div class="mb-3">
-          <label for="id_choreography_name" class="form-label fw-semibold">{% trans "Choreography Name" %}</label>
+          <label for="id_choreography_name" class="form-label fw-semibold">
+            {% trans "Choreography Name" %}
+            <i class="bi bi-info-circle ms-1 text-muted"
+               data-bs-toggle="tooltip"
+               data-bs-custom-class="dp-tooltip"
+               title="{% trans 'Enter the routine name to show in the start list.' %}"></i>
+          </label>
           {{ form.choreography_name }}
         </div>
 
@@ -218,8 +284,13 @@
 
   /* Select2 styling */
   .select2-container--default .select2-selection--multiple {
-    min-height:44px; border-radius:10px; border:1px solid #cbd5e1;
-    padding:6px 8px; background:#fff;
+    min-height:64px; border-radius:10px; border:1px solid #cbd5e1;
+    padding:8px 10px; background:#fff;
+  }
+  .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 6px;
   }
   .select2-container--default .select2-selection--multiple .select2-selection__choice {
     background:#f3f4f6; border:1px solid #d1d5db; color:#111827;
@@ -235,6 +306,13 @@
   }
   .select2-results__option--highlighted {
     background:#1f2937!important; color:#fff!important;
+  }
+  /* Selected box is display/remove only */
+  #id_dancers + .select2-container .select2-search--inline {
+    display: none !important;
+  }
+  #id_dancers + .select2-container .select2-selection__placeholder {
+    display: none !important;
   }
 </style>
 {% endblock %}
@@ -252,24 +330,69 @@ const dancerLimits = {
 
 $(function(){
   const dancerSelect = $('#id_dancers');
+  const dancerQuickSearch = $('#id_dancer_quick_search');
   const groupTypeSelect = $('#id_group_type');
   const groupNameWrapper = $('#group-name-wrapper');
   const ageGroupField = $('#id_age_group');
   const avgAgeSpan = $('#avg-age-display');
+  const dancerQuickSearchList = document.getElementById('id_dancer_quick_search_list');
 
   function initSelect2Multi(max){
-    dancerSelect.select2({width:'100%',placeholder:"Type to search…",allowClear:true,closeOnSelect:false,maximumSelectionLength:max});
+    dancerSelect.select2({width:'100%',allowClear:true,closeOnSelect:false,maximumSelectionLength:max,minimumResultsForSearch:Infinity});
+    lockSelectedDancersBox();
     $('#dancer-tools').show();
   }
   function initSelect2Single(){
-    dancerSelect.select2({width:'100%',placeholder:"Select a dancer",allowClear:true,closeOnSelect:true});
+    dancerSelect.select2({width:'100%',allowClear:true,closeOnSelect:true,minimumResultsForSearch:Infinity});
+    lockSelectedDancersBox();
     $('#dancer-tools').hide();
+  }
+  function lockSelectedDancersBox(){
+    dancerSelect.off('select2:opening.dp_lock');
+    dancerSelect.on('select2:opening.dp_lock', function(e){ e.preventDefault(); });
   }
   function refreshCount(){
     let vals=dancerSelect.val()||[];
     if(!Array.isArray(vals)) vals=[vals];
     const count=vals.filter(v=>v&&v.trim()!=='').length;
     $('#sel-count').text(count?`${count} selected`: '');
+    updateQuickSearchHighlights();
+  }
+  function updateQuickSearchHighlights(){
+    const selected = dancerSelect.val() || [];
+    const selectedSet = new Set(Array.isArray(selected) ? selected : [selected]);
+    const options = document.querySelectorAll('#id_dancer_quick_search_list option[data-id]');
+    options.forEach(function(opt) {
+      const baseLabel = opt.getAttribute('data-label') || opt.value;
+      if (selectedSet.has(String(opt.getAttribute('data-id')))) {
+        opt.value = `✓ ${baseLabel}`;
+      } else {
+        opt.value = baseLabel;
+      }
+    });
+  }
+  function addQuickSearchDancer() {
+    const raw = (dancerQuickSearch.val() || '').trim();
+    if (!raw) return;
+    const options = Array.from(document.querySelectorAll('#id_dancer_quick_search_list option[data-id]'));
+    const matchedOption = options.find(function(opt) {
+      return (opt.value || '').trim() === raw;
+    });
+    if (!matchedOption) return;
+    const selectedId = matchedOption.getAttribute('data-id');
+    if (!selectedId) return;
+    const type = groupTypeSelect.val();
+    let selected = dancerSelect.val() || [];
+    if(!Array.isArray(selected)) selected=[selected];
+    selected=selected.filter(v=>v&&v.trim()!=='');
+    if(type==='Solo'){
+      dancerSelect.val(selectedId).trigger('change');
+    } else if(!selected.includes(selectedId)){
+      selected.push(selectedId);
+      dancerSelect.val(selected).trigger('change');
+    }
+    dancerQuickSearch.val('');
+    updateAgeGroup();
   }
   function updateGroupTypeSettings(preserveSelection=false){
     const type=groupTypeSelect.val();
@@ -325,7 +448,17 @@ $(function(){
   groupTypeSelect.on('change',function(){ updateGroupTypeSettings(false); });
   dancerSelect.on('change',updateAgeGroup);
   $("form").on("submit",function(e){ if(!validateGroupSize()) e.preventDefault(); });
-  dancerSelect.select2({width:'100%',placeholder:"Type to search…",allowClear:true});
+  dancerSelect.select2({width:'100%',allowClear:true,minimumResultsForSearch:Infinity});
+  lockSelectedDancersBox();
+  if (dancerQuickSearchList) {
+    dancerQuickSearch.on('change', addQuickSearchDancer);
+    dancerQuickSearch.on('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addQuickSearchDancer();
+      }
+    });
+  }
   updateGroupTypeSettings(true); updateAgeGroup();
 });
 </script>
