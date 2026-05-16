@@ -279,6 +279,10 @@ select:focus, input:focus, textarea:focus {
   text-align: center;
   margin-right: 4px;
 }
+/* Selected box is display/remove only: hide typing field. */
+#id_dancers + .select2-container .select2-search--inline {
+  display: none !important;
+}
 
 
 button.btn-coral,
@@ -350,6 +354,7 @@ $(function () {
       maximumSelectionLength: max,
       minimumResultsForSearch: Infinity
     });
+    lockSelectedDancersBox();
   }
 
   function initSelect2Single() {
@@ -359,6 +364,14 @@ $(function () {
       allowClear: true,
       closeOnSelect: true,
       minimumResultsForSearch: Infinity
+    });
+    lockSelectedDancersBox();
+  }
+
+  function lockSelectedDancersBox() {
+    dancerSelect.off('select2:opening.dp_lock');
+    dancerSelect.on('select2:opening.dp_lock', function (e) {
+      e.preventDefault();
     });
   }
 
@@ -493,6 +506,7 @@ $(function () {
     allowClear: true,
     minimumResultsForSearch: Infinity
   });
+  lockSelectedDancersBox();
   initQuickSearch();
   updateGroupTypeSettings(true);
   updateAgeGroup();
