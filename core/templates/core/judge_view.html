@@ -64,7 +64,12 @@
           <div class="mb-3">
             <div class="text-muted small mb-1">{% trans "Dancer(s)" %}</div>
             {% if p.group_name %}
-              <div class="fw-semibold">{{ p.group_name }}</div>
+              <div class="fw-semibold"
+                   data-bs-toggle="tooltip"
+                   data-bs-custom-class="dp-tooltip"
+                   title="{% for dp in p.dancer_links.all %}{{ dp.dancer.first_name }} {{ dp.dancer.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                {{ p.group_name }}
+              </div>
             {% else %}
               {% if p.dancer_links.all %}
                 <div>{{ p.dancer_links.all|join:", " }}</div>
