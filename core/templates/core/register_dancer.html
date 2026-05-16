@@ -111,7 +111,8 @@
         <datalist id="id_dancer_quick_search_list">
           {% for dancer in form.fields.dancers.queryset %}
             <option data-id="{{ dancer.id }}"
-                    value="{{ dancer.first_name }} {{ dancer.last_name }} (#{{ dancer.id }})"></option>
+                    data-label="{{ dancer.first_name }} {{ dancer.last_name }}"
+                    value="{{ dancer.first_name }} {{ dancer.last_name }}"></option>
           {% endfor %}
         </datalist>
         {{ form.dancers }}
@@ -418,6 +419,21 @@ $(function () {
     if (!Array.isArray(vals)) vals = [vals];
     const count = vals.filter(v => v && v.trim() !== '').length;
     $('#sel-count').text(count ? `${count} selected` : '');
+    updateQuickSearchHighlights();
+  }
+
+  function updateQuickSearchHighlights() {
+    const selected = dancerSelect.val() || [];
+    const selectedSet = new Set(Array.isArray(selected) ? selected : [selected]);
+    const options = document.querySelectorAll('#id_dancer_quick_search_list option[data-id]');
+    options.forEach(function(opt) {
+      const baseLabel = opt.getAttribute('data-label') || opt.value;
+      if (selectedSet.has(String(opt.getAttribute('data-id')))) {
+        opt.value = `✓ ${baseLabel}`;
+      } else {
+        opt.value = baseLabel;
+      }
+    });
   }
 
   function updateGroupTypeSettings(preserveSelection = false) {
@@ -525,9 +541,15 @@ $(function () {
   dancerQuickSearch.off('select2:select');
   dancerQuickSearch.on('change', function () {
     const raw = (dancerQuickSearch.val() || '').trim();
-    const idMatch = raw.match(/#(\d+)\)\s*$/);
-    if (!idMatch) return;
-    const selectedId = idMatch[1];
+    if (!raw) return;
+
+    const options = Array.from(document.querySelectorAll('#id_dancer_quick_search_list option[data-id]'));
+    const matchedOption = options.find(function(opt) {
+      return (opt.value || '').trim() === raw;
+    });
+    if (!matchedOption) return;
+    const selectedId = matchedOption.getAttribute('data-id');
+    if (!selectedId) return;
 
     const groupType = groupTypeSelect.val();
     let current = dancerSelect.val() || [];
@@ -546,6 +568,7 @@ $(function () {
   });
   updateGroupTypeSettings(true);
   updateAgeGroup();
+  updateQuickSearchHighlights();
 });
 </script>
 {% endblock %}
