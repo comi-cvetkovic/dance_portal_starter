@@ -42,7 +42,7 @@
       white-space: normal !important;
       overflow-wrap: anywhere !important;
       word-break: break-word !important;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .participants-table .col-count { width: 4% !important; }
@@ -66,6 +66,11 @@
     }
     .participants-table .col-actions {
       white-space: nowrap !important;
+      overflow: visible !important;
+      position: relative;
+    }
+    .participants-table .col-actions .dropdown-menu {
+      z-index: 1200;
     }
 
     .participants-shell .participants-table-wrap {
