@@ -231,9 +231,9 @@
             <form action="{% url 'set_language' %}" method="post" class="m-0">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <input type="hidden" name="language" value="sr">
+              <input type="hidden" name="language" value="sr-Latn">
               <button type="submit"
-                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'sr' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
+                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'sr-Latn' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
                 Srpski
               </button>
             </form>
@@ -360,9 +360,9 @@
             <form action="{% url 'set_language' %}" method="post" class="m-0">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <input type="hidden" name="language" value="sr">
+              <input type="hidden" name="language" value="sr-Latn">
               <button type="submit"
-                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'sr' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
+                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'sr-Latn' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
                 Srpski
               </button>
             </form>
