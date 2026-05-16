@@ -88,7 +88,12 @@
                     </td>
                     <td>
                       {% if item.participation.group_name %}
-                        <span class="fw-semibold">{{ item.participation.group_name }}</span>
+                        <span class="fw-semibold"
+                              data-bs-toggle="tooltip"
+                              data-bs-custom-class="dp-tooltip"
+                              title="{% for d in item.dancers %}{{ d.first_name }} {{ d.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                          {{ item.participation.group_name }}
+                        </span>
                       {% else %}
                         {% for d in item.dancers %}
                           {{ d.first_name }} {{ d.last_name }}{% if not forloop.last %}, {% endif %}
