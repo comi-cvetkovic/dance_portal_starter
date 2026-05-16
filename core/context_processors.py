@@ -1,5 +1,7 @@
 # core/context_processors.py
 from django.contrib.auth.models import AnonymousUser
+from django.urls import reverse
+from .auth_utils import is_judge_account, judge_event_id_from_username
 
 def navbar_context(request):
     from .models import DanceClub  # adjust if needed
@@ -13,23 +15,21 @@ def navbar_context(request):
     user_club_confirmed = True
     navbar_display_name = ""
     is_judge_user = False
+    judge_home_url = ""
 
     if getattr(user, "is_authenticated", False):
         # role flags
         is_admin = bool(user.is_staff or user.is_superuser)
-        try:
-            is_judge_user = (
-                getattr(user, "is_judge", False)
-                or user.groups.filter(name__iexact="judges").exists()
-            )
-        except Exception:
-            pass
+        is_judge_user = is_judge_account(user)
 
         # display name
         if is_admin:
             navbar_display_name = user.username or user.get_username()
         elif is_judge_user:
             navbar_display_name = (user.first_name or "").strip() or user.username
+            event_id = judge_event_id_from_username(getattr(user, "username", ""))
+            if event_id:
+                judge_home_url = f"{reverse('judge_view', args=[event_id])}?group=0"
         else:
             rep = ""
             try:
@@ -57,5 +57,6 @@ def navbar_context(request):
         "user_club_confirmed": user_club_confirmed,
         "navbar_display_name": navbar_display_name,
         "is_judge_user": is_judge_user,       # <-- use this in base.html
+        "judge_home_url": judge_home_url,
         "breadcrumb_label": breadcrumb_label,
     }

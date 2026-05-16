@@ -201,7 +201,61 @@
   {% url 'pending_club_requests' as pending_clubs_url %}
   {% url 'club_dashboard' as club_dashboard_url %}
 
-{% if not is_judge_user %}
+{% if is_judge_user %}
+<nav class="navbar navbar-expand-lg border-bottom">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ judge_home_url|default:'#' }}">
+      5678 Dance Portal
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item d-flex align-items-center">
+          {% get_current_language as LANGUAGE_CODE %}
+          <div class="lang-switch d-flex align-items-center gap-2 me-3">
+            <form action="{% url 'set_language' %}" method="post" class="m-0">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="language" value="en">
+              <button type="submit"
+                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'en' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
+                English
+              </button>
+            </form>
+            <form action="{% url 'set_language' %}" method="post" class="m-0">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="language" value="sr">
+              <button type="submit"
+                      class="btn btn-sm rounded-pill {% if LANGUAGE_CODE == 'sr' %}btn-light fw-semibold{% else %}btn-outline-light{% endif %}">
+                Srpski
+              </button>
+            </form>
+          </div>
+        </li>
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <span class="navbar-text me-2">
+              {% trans "Hello," %} {{ navbar_display_name|default:user.username }}
+            </span>
+          </li>
+          {% if logout_url %}
+            <li class="nav-item">
+              <a class="btn btn-outline-light btn-sm" href="{{ logout_url }}">{% trans "Logout" %}</a>
+            </li>
+          {% endif %}
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+{% else %}
 <nav class="navbar navbar-expand-lg border-bottom">
   <div class="container">
     <a class="navbar-brand fw-bold" href="{{ home_url|default:'#' }}">
@@ -360,14 +414,16 @@
 
   <!-- Main content -->
   <main class="container py-3">
-    {% block breadcrumbs %}
-    <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb_label }}</li>
-      </ol>
-    </nav>
-    {% endblock %}
+    {% if not is_judge_user %}
+      {% block breadcrumbs %}
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb_label }}</li>
+        </ol>
+      </nav>
+      {% endblock %}
+    {% endif %}
     {% block page_header %}{% endblock %}
     {% block content %}{% endblock %}
   </main>
