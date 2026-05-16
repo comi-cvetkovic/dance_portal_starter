@@ -72,7 +72,11 @@
               </div>
             {% else %}
               {% if p.dancer_links.all %}
-                <div>{{ p.dancer_links.all|join:", " }}</div>
+                <div>
+                  {% for dp in p.dancer_links.all %}
+                    {{ dp.dancer.first_name }} {{ dp.dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </div>
               {% else %}
                 <em class="text-muted">{% trans "No dancers registered" %}</em>
               {% endif %}
