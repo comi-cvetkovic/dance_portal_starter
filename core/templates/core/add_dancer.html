@@ -6,7 +6,12 @@
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb mb-0">
     <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'list_dancers' %}">{% trans "Dancers" %}</a></li>
+    {% if is_superuser and club %}
+      <li class="breadcrumb-item"><a href="{% url 'club_dashboard' %}">{% trans "Clubs" %}</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'admin_list_dancers' club.id %}">{% trans "Dancers" %}</a></li>
+    {% else %}
+      <li class="breadcrumb-item"><a href="{% url 'list_dancers' %}">{% trans "Dancers" %}</a></li>
+    {% endif %}
     <li class="breadcrumb-item active" aria-current="page">{% trans "Add Dancer" %}</li>
   </ol>
 </nav>
