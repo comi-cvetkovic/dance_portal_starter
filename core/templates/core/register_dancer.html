@@ -100,6 +100,15 @@
              data-bs-custom-class="dp-tooltip"
              title="{% trans 'Choose the dancer(s) for this entry. Multiple selection allowed. You must add dancers to your club first.' %}"></i>
         </label>
+        <label for="id_dancer_quick_search" class="form-label fw-semibold mt-2">
+          {% trans "Search and add dancer:" %}
+        </label>
+        <select id="id_dancer_quick_search" class="form-select">
+          <option value="">{% trans "Type to find a dancer..." %}</option>
+          {% for dancer in form.fields.dancers.queryset %}
+            <option value="{{ dancer.id }}">{{ dancer.first_name }} {{ dancer.last_name }}</option>
+          {% endfor %}
+        </select>
         {{ form.dancers }}
         <div id="dancer-tools" class="mt-2">
           <button type="button" class="btn-mini" id="btn-select-all">{% trans "Select all" %}</button>
@@ -325,6 +334,7 @@ const dancerLimits = {
 
 $(function () {
   const dancerSelect = $('#id_dancers');
+  const dancerQuickSearch = $('#id_dancer_quick_search');
   const groupTypeSelect = $('#id_group_type');
   const groupNameWrapper = $('#group-name-wrapper');
   const ageGroupField = $('#id_age_group');
@@ -347,6 +357,34 @@ $(function () {
       placeholder: "Select a dancer",
       allowClear: true,
       closeOnSelect: true
+    });
+  }
+
+  function initQuickSearch() {
+    dancerQuickSearch.select2({
+      width: '100%',
+      placeholder: "Type to search and add…",
+      allowClear: true
+    });
+
+    dancerQuickSearch.on('select2:select', function () {
+      const selectedId = dancerQuickSearch.val();
+      if (!selectedId) return;
+
+      const groupType = groupTypeSelect.val();
+      let current = dancerSelect.val() || [];
+      if (!Array.isArray(current)) current = current ? [current] : [];
+      current = current.filter(v => v && v.trim() !== '');
+
+      if (groupType === 'Solo') {
+        dancerSelect.val(selectedId).trigger('change');
+      } else if (!current.includes(selectedId)) {
+        current.push(selectedId);
+        dancerSelect.val(current).trigger('change');
+      }
+
+      dancerQuickSearch.val(null).trigger('change');
+      updateAgeGroup();
     });
   }
 
@@ -448,6 +486,7 @@ $(function () {
   $("form").on("submit", function (e) { if (!validateGroupSize()) e.preventDefault(); });
 
   dancerSelect.select2({ width:'100%', placeholder:"Type to search…", allowClear:true });
+  initQuickSearch();
   updateGroupTypeSettings(true);
   updateAgeGroup();
 });
