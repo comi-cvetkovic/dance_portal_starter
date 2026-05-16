@@ -1,4 +1,4 @@
-# SOME DESCRIPTIVE TITLE.
+﻿# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
@@ -20,7 +20,7 @@ msgstr ""
 
 #: core/forms.py:13 core/models.py:33
 msgid "Date of Birth"
-msgstr "Datum Rođenja"
+msgstr "Datum RoÄ‘enja"
 
 #: core/forms.py:20 core/forms.py:219 core/models.py:31
 msgid "First Name"
@@ -42,7 +42,7 @@ msgstr "Lozinka"
 #: core/forms.py:28 core/models.py:13 core/templates/core/dashboard.html:12
 #: core/templates/core/pending_club_requests.html:12
 msgid "Country"
-msgstr "Država"
+msgstr "DrÅ¾ava"
 
 #: core/forms.py:34 core/models.py:12 core/templates/core/dashboard.html:11
 #: core/templates/core/pending_club_requests.html:11
@@ -71,11 +71,11 @@ msgstr "Klub sa ovim mejlom vec postoji"
 
 #: core/forms.py:77 core/models.py:54
 msgid "Start Time"
-msgstr "Početak"
+msgstr "PoÄetak"
 
 #: core/forms.py:84 core/models.py:48
 msgid "Event Name"
-msgstr "Ime događaja"
+msgstr "Ime dogaÄ‘aja"
 
 #: core/forms.py:85 core/models.py:49
 msgid "Location"
@@ -115,7 +115,7 @@ msgstr "Koreograf/kinja"
 #: core/forms.py:120 core/models.py:44 core/templates/core/base.html:355
 #: core/templates/core/participation_scores.html:11
 msgid "Dancers"
-msgstr "Plesači"
+msgstr "PlesaÄi"
 
 #: core/forms.py:132 core/models.py:95
 msgid "Choreography Name"
@@ -127,7 +127,7 @@ msgstr "Ime grupe"
 
 #: core/forms.py:137
 msgid "Enter group name (for groups of 4+)"
-msgstr "Unesite ime grupe (za grupe od 4+ plesača)"
+msgstr "Unesite ime grupe (za grupe od 4+ plesaÄa)"
 
 #: core/forms.py:139 core/models.py:98
 msgid "Music File"
@@ -136,15 +136,15 @@ msgstr "Muzika"
 #: core/forms.py:174
 #, python-brace-format
 msgid "{group_type} requires between {min_allowed} and {max_allowed} dancers "
-msgstr "{group_type} dozvoljava između {min_allowed} i {max_allowed} plesača"
+msgstr "{group_type} dozvoljava izmeÄ‘u {min_allowed} i {max_allowed} plesaÄa"
 
 #: core/forms.py:179
 msgid "Group name is required for groups of 4 or more dancers."
-msgstr "Ime grupe je potrebno za grupe od 4 ili više plesača."
+msgstr "Ime grupe je potrebno za grupe od 4 ili viÅ¡e plesaÄa."
 
 #: core/forms.py:191
 msgid "Only MP3 files are supported."
-msgstr "Podržani su samo MP3 fajlovi."
+msgstr "PodrÅ¾ani su samo MP3 fajlovi."
 
 #: core/forms.py:198
 msgid "Failed to process the uploaded MP3 file."
@@ -152,7 +152,7 @@ msgstr "Obrada otpremljenog MP3 fajla nije uspela"
 
 #: core/forms.py:211
 msgid "File too long for {group_type}. Max is {limit // 60}:{limit % 60:02d}, "
-msgstr "Fajl je predugačak za {kategoriju}. Max je {limit // 60}:{limit % 60:02d},"
+msgstr "Fajl je predugaÄak za {kategoriju}. Max je {limit // 60}:{limit % 60:02d},"
 
 #: core/forms.py:231 core/models.py:168
 #: core/templates/core/event_awards.html:29
@@ -167,7 +167,7 @@ msgstr "Lozinka"
 
 #: core/models.py:17
 msgid "Confirmed"
-msgstr "Potvrđeno"
+msgstr "PotvrÄ‘eno"
 
 #: core/models.py:26
 msgid "Dance Club"
@@ -190,7 +190,7 @@ msgstr "Klub"
 
 #: core/models.py:43 core/models.py:109 core/models.py:141
 msgid "Dancer"
-msgstr "Plesač"
+msgstr "PlesaÄ"
 
 #: core/models.py:52
 msgid "Is Published"
@@ -203,12 +203,12 @@ msgstr "Objavljeni rezultati"
 #: core/models.py:60 core/models.py:88 core/models.py:110 core/models.py:125
 #: core/models.py:152
 msgid "Event"
-msgstr "Događaj"
+msgstr "DogaÄ‘aj"
 
 #: core/models.py:61 core/templates/core/base.html:342
 #: core/templates/core/base.html:356 core/templates/core/base.html:364
 msgid "Events"
-msgstr "Događaji"
+msgstr "DogaÄ‘aji"
 
 #: core/models.py:66
 msgid "Solo"
@@ -256,7 +256,7 @@ msgstr "Youth (15-17)"
 
 #: core/models.py:80
 msgid "Adult (18 and up)"
-msgstr "Adult (18 i više)"
+msgstr "Adult (18 i viÅ¡e)"
 
 #: core/models.py:84
 msgid "Advanced"
@@ -264,11 +264,11 @@ msgstr "Napredni nivo"
 
 #: core/models.py:85
 msgid "Beginner/Basic"
-msgstr "Početni nivo"
+msgstr "PoÄetni nivo"
 
 #: core/models.py:94
 msgid "Display Order"
-msgstr "Prikaži redosled"
+msgstr "PrikaÅ¾i redosled"
 
 #: core/models.py:95
 msgid "Untitled"
@@ -280,11 +280,11 @@ msgstr ""
 
 #: core/models.py:104 core/models.py:139 core/models.py:161
 msgid "Participation"
-msgstr "Učešće"
+msgstr "UÄeÅ¡Ä‡e"
 
 #: core/models.py:105
 msgid "Participations"
-msgstr "Učešća"
+msgstr "UÄeÅ¡Ä‡a"
 
 #: core/models.py:111 core/models.py:129
 msgid "Style Category"
@@ -292,11 +292,11 @@ msgstr "Stil"
 
 #: core/models.py:119
 msgid "Event Registration"
-msgstr "Registracija događaja"
+msgstr "Registracija dogaÄ‘aja"
 
 #: core/models.py:120
 msgid "Event Registrations"
-msgstr "Prijave za događaj"
+msgstr "Prijave za dogaÄ‘aj"
 
 #: core/models.py:124
 msgid "Name"
@@ -308,11 +308,11 @@ msgstr "Stil"
 
 #: core/models.py:147
 msgid "Dancer Participation"
-msgstr "Učešće plesača"
+msgstr "UÄeÅ¡Ä‡e plesaÄa"
 
 #: core/models.py:148
 msgid "Dancer Participations"
-msgstr "Učešća plesača"
+msgstr "UÄeÅ¡Ä‡a plesaÄa"
 
 #: core/models.py:153
 msgid "Current highlight key"
@@ -333,7 +333,7 @@ msgstr "Sudija"
 
 #: core/models.py:169
 msgid "Final score between 1.00 and 10.00 (step 0.25)"
-msgstr "Konačan rezultat između 1.00 i 10.00 (korak 0.25)"
+msgstr "KonaÄan rezultat izmeÄ‘u 1.00 i 10.00 (korak 0.25)"
 
 #: core/models.py:174
 msgid "Judge Score"
@@ -345,29 +345,29 @@ msgstr "Sudijski Rezultati"
 
 #: core/templates/core/add_dancer.html:7
 msgid "Add Dancer for"
-msgstr "Dodaj Plesača u"
+msgstr "Dodaj PlesaÄa u"
 
 #: core/templates/core/add_dancer.html:9
 #: core/templates/core/list_dancers.html:16
 #: core/templates/core/list_dancers.html:20
 msgid "Add Dancer"
-msgstr "Dodaj Plesača"
+msgstr "Dodaj PlesaÄa"
 
 #: core/templates/core/awaiting_confirmation.html:7
 msgid "Registration Pending"
-msgstr "Registracija na čekanju"
+msgstr "Registracija na Äekanju"
 
 #: core/templates/core/awaiting_confirmation.html:8
 msgid "Your club registration is under review by the admin."
-msgstr "Administrator pregleda vašu registraciju klubu."
+msgstr "Administrator pregleda vaÅ¡u registraciju klubu."
 
 #: core/templates/core/awaiting_confirmation.html:9
 msgid "You will be notified once your account is approved."
-msgstr "Bićete obavešteni kada vaš nalog bude odobren."
+msgstr "BicÌete obaveÅ¡teni kada vaÅ¡ nalog bude odobren."
 
 #: core/templates/core/awaiting_confirmation.html:12
 msgid "Back to Home"
-msgstr "Nazad na početnu"
+msgstr "Nazad na poÄetnu"
 
 #: core/templates/core/base.html:6
 msgid "Dance Portal"
@@ -384,7 +384,7 @@ msgstr "Klubovi"
 
 #: core/templates/core/base.html:345
 msgid "Pending Clubs"
-msgstr "Klubovi na čekanju"
+msgstr "Klubovi na Äekanju"
 
 #: core/templates/core/base.html:354
 msgid "My Club"
@@ -392,7 +392,7 @@ msgstr "Moj Klub"
 
 #: core/templates/core/base.html:361
 msgid "Home"
-msgstr "Početna"
+msgstr "PoÄetna"
 
 #: core/templates/core/base.html:362 core/templates/registration/login.html:29
 msgid "Login"
@@ -437,7 +437,7 @@ msgstr "Pozicija"
 #: core/templates/core/manage_start_list.html:12
 #: core/templates/core/start_list.html:12
 msgid "Dancer(s)"
-msgstr "Plesač(i)"
+msgstr "PlesaÄ(i)"
 
 #: core/templates/core/category_results.html:23
 #: core/templates/core/event_awards.html:27
@@ -460,11 +460,11 @@ msgstr "Unknown"
 
 #: core/templates/core/create_event.html:8
 msgid "Create Competition Event"
-msgstr "Napravi Takmičarski Događaj"
+msgstr "Napravi TakmiÄarski DogaÄ‘aj"
 
 #: core/templates/core/create_event.html:13
-msgid "Create Event"
-msgstr "Napravi Događaj"
+msgid "Create New Event"
+msgstr "Napravi DogaÄ‘aj"
 
 #: core/templates/core/dashboard.html:7
 msgid "All Dance Clubs"
@@ -488,7 +488,7 @@ msgstr "Actions"
 
 #: core/templates/core/dashboard.html:33
 msgid "Manage Dancers"
-msgstr "Uredi Plesače"
+msgstr "Uredi PlesaÄe"
 
 #: core/templates/core/dashboard.html:36
 msgid "Edit Club"
@@ -496,7 +496,7 @@ msgstr "Uredi Klub"
 
 #: core/templates/core/dashboard.html:39
 msgid "Delete Club"
-msgstr "Obriši Klub"
+msgstr "ObriÅ¡i Klub"
 
 #: core/templates/core/dashboard.html:48
 msgid "Manage Start Lists"
@@ -512,7 +512,7 @@ msgstr "Ime Kluba"
 
 #: core/templates/core/dashboard.html:66 core/templates/core/edit_club.html:16
 msgid "Country:"
-msgstr "Država"
+msgstr "DrÅ¾ava"
 
 #: core/templates/core/dashboard.html:67 core/templates/core/edit_club.html:21
 msgid "City:"
@@ -558,29 +558,29 @@ msgstr "Lozinka (ostavite prazno da bi ostali nepromenjeni)"
 #: core/templates/core/edit_dancer.html:14
 #: core/templates/core/edit_participation.html:88
 msgid "Save Changes"
-msgstr "Sačuvaj Promene"
+msgstr "SaÄuvaj Promene"
 
 #: core/templates/core/edit_dancer.html:4
 #: core/templates/core/edit_dancer.html:9
 msgid "Edit Dancer"
-msgstr "Uredi Plesača"
+msgstr "Uredi PlesaÄa"
 
 #: core/templates/core/edit_event.html:5
 msgid "Edit Event:"
-msgstr "Uredi Događaj"
+msgstr "Uredi DogaÄ‘aj"
 
 #: core/templates/core/edit_event.html:10
 #: core/templates/core/judge_view.html:59
 msgid "Save"
-msgstr "Sačuvaj"
+msgstr "SaÄuvaj"
 
 #: core/templates/core/edit_event.html:14
 msgid "Back to Events"
-msgstr "Nazad na Događaje"
+msgstr "Nazad na DogaÄ‘aje"
 
 #: core/templates/core/edit_participation.html:5
 msgid "Edit Participation for "
-msgstr "Uredi učešće za"
+msgstr "Uredi uÄeÅ¡cÌe za"
 
 #: core/templates/core/edit_participation.html:29
 msgid "Group Type:"
@@ -588,7 +588,7 @@ msgstr "Kategorija"
 
 #: core/templates/core/edit_participation.html:34
 msgid "Select Dancer(s):"
-msgstr "Izaberi Plesače"
+msgstr "Izaberi PlesaÄe"
 
 #: core/templates/core/edit_participation.html:39
 #: core/templates/core/register_dancer.html:58
@@ -605,7 +605,7 @@ msgstr "Nivo"
 
 #: core/templates/core/edit_participation.html:54
 msgid "Age Group (auto-calculated)"
-msgstr "Starosna Kategorija (automatski izračunato)"
+msgstr "Starosna Kategorija (automatski izraÄunato)"
 
 #: core/templates/core/edit_participation.html:60
 #: core/templates/core/register_dancer.html:81
@@ -619,11 +619,11 @@ msgstr "Ime Koreografije:"
 
 #: core/templates/core/edit_participation.html:74
 msgid "Your browser does not support the audio tag"
-msgstr "Vaš pretraživač ne podržava audio oznaku"
+msgstr "VaÅ¡ pretraÅ¾ivaÄ ne podrÅ¾ava audio oznaku"
 
 #: core/templates/core/edit_participation.html:81
 msgid "Replace Music File (optional):"
-msgstr "Zameni Muzički Fajl (opciono):"
+msgstr "Zameni MuziÄki Fajl (opciono):"
 
 #: core/templates/core/event_awards.html:2
 #: core/templates/core/event_awards.html:5
@@ -641,7 +641,7 @@ msgstr "Objavi Rezultate"
 
 #: core/templates/core/event_awards.html:26
 msgid "Dancer(s) / Group"
-msgstr "Plesač(i) / Grupa"
+msgstr "PlesaÄ(i) / Grupa"
 
 #: core/templates/core/event_awards.html:55
 msgid "View Detailed Scores"
@@ -649,7 +649,7 @@ msgstr "Pogledaj Detaljnije Rezultate"
 
 #: core/templates/core/event_awards.html:63
 msgid "No results for this category yet."
-msgstr "Još uvek nema rezultata za ovu kategoriju."
+msgstr "JoÅ¡ uvek nema rezultata za ovu kategoriju."
 
 #: core/templates/core/event_awards.html:68
 #: core/templates/core/judge_view.html:54
@@ -658,7 +658,7 @@ msgstr "Prethodno"
 
 #: core/templates/core/event_awards.html:71
 msgid "Next"
-msgstr "Sledeće"
+msgstr "SledeÄ‡e"
 
 #: core/templates/core/event_awards.html:77
 msgid "No results available."
@@ -666,7 +666,7 @@ msgstr "Rezultati nisu dostupni."
 
 #: core/templates/core/event_list.html:5
 msgid "Upcoming Events"
-msgstr "Predstojeći Događaji"
+msgstr "PredstojeÄ‡i DogaÄ‘aji"
 
 #: core/templates/core/event_list.html:25
 msgid "Published"
@@ -692,7 +692,7 @@ msgstr "Nema objavljenih rezultata"
 #: core/templates/core/event_list.html:45
 #: core/templates/core/register_dancer.html:2
 msgid "Register Dancers"
-msgstr "Prijavi Plesače"
+msgstr "Prijavi PlesaÄe"
 
 #: core/templates/core/event_list.html:46
 msgid "View Registered"
@@ -704,7 +704,7 @@ msgstr "Startna Lista"
 
 #: core/templates/core/event_list.html:55
 msgid "More"
-msgstr "Više"
+msgstr "ViÅ¡e"
 
 #: core/templates/core/event_list.html:57
 msgid "Manage Style Categories"
@@ -716,7 +716,7 @@ msgstr "Muzika"
 
 #: core/templates/core/event_list.html:61
 msgid "Edit Event"
-msgstr "Uredi Događaj"
+msgstr "Uredi DogaÄ‘aj"
 
 #: core/templates/core/event_list.html:62
 #: core/templates/core/notify_clubs.html:2
@@ -725,19 +725,19 @@ msgstr "Obavesti Klubove"
 
 #: core/templates/core/event_list.html:73
 msgid "No events yet."
-msgstr "Nema još događaja."
+msgstr "Nema joÅ¡ dogaÄ‘aja."
 
 #: core/templates/core/event_list_public.html:2
 msgid "Upcoming Events | Dance Portal"
-msgstr "Predstojeći Događaji | Plesni Portal"
+msgstr "PredstojeÄ‡i DogaÄ‘aji | Plesni Portal"
 
 #: core/templates/core/event_list_public.html:5
 msgid "Upcoming Dance Events"
-msgstr "Predstojeći Plesni Događaji"
+msgstr "PredstojeÄ‡i Plesni DogaÄ‘aji"
 
 #: core/templates/core/event_list_public.html:16
 msgid "No upcoming events found."
-msgstr "Nema predstojećih događaja."
+msgstr "Nema predstojeÄ‡ih dogaÄ‘aja."
 
 #: core/templates/core/event_music.html:2
 #: core/templates/core/event_music.html:5
@@ -759,7 +759,7 @@ msgstr "Muzika"
 
 #: core/templates/core/event_music.html:44
 msgid "Your browser does not support the audio element."
-msgstr "Vaš pretraživač ne podržava audio element."
+msgstr "VaÅ¡ pretraÅ¾ivaÄ ne podrÅ¾ava audio element."
 
 #: core/templates/core/event_music.html:47
 msgid "No file uploaded"
@@ -771,24 +771,24 @@ msgstr "Prethodna Kategorija"
 
 #: core/templates/core/event_music.html:66
 msgid "Next Category"
-msgstr "Sledeća Kategorija"
+msgstr "SledeÄ‡a Kategorija"
 
 #: core/templates/core/home.html:3
 msgid "Home | Dance Portal"
-msgstr "Početna | Plesni Portal"
+msgstr "PoÄetna | Plesni Portal"
 
 #: core/templates/core/home.html:6
 msgid "Welcome to the Dance Portal"
-msgstr "Dobrodošli na Plesni Portal"
+msgstr "DobrodoÅ¡li na Plesni Portal"
 
 #: core/templates/core/home.html:7
 msgid ""
 "Here you can login, register your club and view events and their start lists"
-msgstr "Ovde se možete prijaviti, registrovati svoj klub i pregledati događaje i njihove startne liste"
+msgstr "Ovde se moÅ¾ete prijaviti, registrovati svoj klub i pregledati dogaÄ‘aje i njihove startne liste"
 
 #: core/templates/core/judge_view.html:6
 msgid "Judging"
-msgstr "Suđenje"
+msgstr "SuÄ‘enje"
 
 #: core/templates/core/judge_view.html:9
 msgid "All entries have been scored!"
@@ -808,11 +808,11 @@ msgstr "od"
 
 #: core/templates/core/judge_view.html:34
 msgid "No dancers registered"
-msgstr "Nema prijavljenih plesača"
+msgstr "Nema prijavljenih plesaÄa"
 
 #: core/templates/core/judge_view.html:57
 msgid "Save & Next"
-msgstr "Sačuvaj i Dalje"
+msgstr "SaÄuvaj i Dalje"
 
 #: core/templates/core/judge_view.html:65
 msgid "No categories available for judging."
@@ -820,15 +820,15 @@ msgstr "Nema dostupnih kategorija za ocenjivanje."
 
 #: core/templates/core/list_dancers.html:2
 msgid "Dancers | Dance Portal"
-msgstr "Plesači | Plesni Portal"
+msgstr "PlesaÄi | Plesni Portal"
 
 #: core/templates/core/list_dancers.html:7
 msgid "Dancers for"
-msgstr "Plesači za"
+msgstr "PlesaÄi za"
 
 #: core/templates/core/list_dancers.html:9
 msgid "Your Dancers"
-msgstr "Tvoji Plesači"
+msgstr "Tvoji PlesaÄi"
 
 #: core/templates/core/list_dancers.html:39
 #: core/templates/core/list_event_participants.html:56
@@ -839,19 +839,19 @@ msgstr "Uredi"
 #: core/templates/core/list_dancers.html:47
 #: core/templates/core/list_event_participants.html:67
 msgid "Delete"
-msgstr "Obriši"
+msgstr "ObriÅ¡i"
 
 #: core/templates/core/list_dancers.html:56
 msgid "No dancers yet"
-msgstr "Nema plesača"
+msgstr "Nema plesaÄa"
 
 #: core/templates/core/list_event_participants.html:2
 msgid "Participants | Dance Portal"
-msgstr "Učesnici | Plesni Portal"
+msgstr "UÄesnici | Plesni Portal"
 
 #: core/templates/core/list_event_participants.html:6
 msgid "Participants for "
-msgstr "Učesnici za "
+msgstr "UÄesnici za "
 
 #: core/templates/core/list_event_participants.html:21
 msgid "View Registered by Club"
@@ -859,11 +859,11 @@ msgstr "Pogledaj Prijave po Klubu"
 
 #: core/templates/core/list_event_participants.html:25
 msgid "# Dancers"
-msgstr "Plesači"
+msgstr "PlesaÄi"
 
 #: core/templates/core/list_event_participants.html:76
 msgid "No participants yet."
-msgstr "Nema prijavljenih učesnika"
+msgstr "Nema prijavljenih uÄesnika"
 
 #: core/templates/core/manage_judges.html:12
 msgid "Judges for "
@@ -871,7 +871,7 @@ msgstr "Sudije za"
 
 #: core/templates/core/manage_judges.html:21
 msgid "No judges have been added for this event yet"
-msgstr "Još uvek nisu dodate sudije za ovaj događaj"
+msgstr "JoÅ¡ uvek nisu dodate sudije za ovaj dogaÄ‘aj"
 
 #: core/templates/core/manage_judges.html:26
 #: core/templates/core/manage_judges.html:31
@@ -904,11 +904,11 @@ msgstr "Uredi Stil za"
 
 #: core/templates/core/manage_styles.html:10
 msgid "Select existing style"
-msgstr "Izaberite postojeći stil"
+msgstr "Izaberite postojecÌi stil"
 
 #: core/templates/core/manage_styles.html:12
 msgid "Choose existing style"
-msgstr "Izaberite postojeći stil"
+msgstr "Izaberite postojecÌi stil"
 
 #: core/templates/core/manage_styles.html:20
 msgid "Or enter a new style"
@@ -920,7 +920,7 @@ msgstr "Ubaci Stil"
 
 #: core/templates/core/manage_styles.html:28
 msgid "Existing Styles for this Event"
-msgstr "Postojeći stilovi za ovaj događaj"
+msgstr "PostojecÌi stilovi za ovaj dogaÄ‘aj"
 
 #: core/templates/core/manage_styles.html:37
 msgid "Remove"
@@ -928,7 +928,7 @@ msgstr "Ukloni"
 
 #: core/templates/core/manage_styles.html:43
 msgid "No styles added for this event yet."
-msgstr "Još uvek nisu dodati stilovi za ovaj događaj."
+msgstr "JoÅ¡ uvek nisu dodati stilovi za ovaj dogaÄ‘aj."
 
 #: core/templates/core/notify_clubs.html:5
 msgid "Notify Clubs about "
@@ -948,7 +948,7 @@ msgstr "Poruka"
 
 #: core/templates/core/notify_clubs.html:18
 msgid "Send Emails"
-msgstr "Pošalji Email"
+msgstr "PoÅ¡alji Email"
 
 #: core/templates/core/participant_summary_by_club.html:2
 msgid "Club Summary"
@@ -956,19 +956,19 @@ msgstr "Pregled Kluba"
 
 #: core/templates/core/participant_summary_by_club.html:5
 msgid "Participants Summary by Club"
-msgstr "Pregled Učesnika po Klubu"
+msgstr "Pregled UÄesnika po Klubu"
 
 #: core/templates/core/participant_summary_by_club.html:17
 msgid "Competitors"
-msgstr "Takmičari"
+msgstr "TakmiÄari"
 
 #: core/templates/core/participant_summary_by_club.html:18
 msgid "Performances"
-msgstr "Učešća"
+msgstr "UÄeÅ¡Ä‡a"
 
 #: core/templates/core/participant_summary_by_club.html:51
 msgid "Back to Participants"
-msgstr "Nazad na Učesnike"
+msgstr "Nazad na UÄesnike"
 
 #: core/templates/core/participation_scores.html:2
 msgid "Scores"
@@ -980,7 +980,7 @@ msgstr "Detaljnije Ocene"
 
 #: core/templates/core/participation_scores.html:38
 msgid "Total Score (after discarding highest & lowest)"
-msgstr "Ukupan rezultat (nakon odbacivanja najvišeg i najnižeg)"
+msgstr "Ukupan rezultat (nakon odbacivanja najviÅ¡eg i najniÅ¾eg)"
 
 #: core/templates/core/participation_scores.html:40
 msgid "Back to Awards"
@@ -988,11 +988,11 @@ msgstr "Nazad na Rezultate"
 
 #: core/templates/core/pending_club_requests.html:2
 msgid "Pending Club Requests"
-msgstr "Klubovi na čekanju"
+msgstr "Klubovi na Äekanju"
 
 #: core/templates/core/pending_club_requests.html:5
 msgid "Pending Club Registrations"
-msgstr "Registracije klubova na čekanju"
+msgstr "Registracije klubova na Äekanju"
 
 #: core/templates/core/pending_club_requests.html:33
 msgid "Accept"
@@ -1004,7 +1004,7 @@ msgstr "Odbij"
 
 #: core/templates/core/pending_club_requests.html:42
 msgid "No pending clubs at the moment"
-msgstr "Nema klubova na čekanju"
+msgstr "Nema klubova na Äekanju"
 
 #: core/templates/core/register_club.html:2
 msgid "Register Dance Club"
@@ -1022,7 +1022,7 @@ msgstr "Prijavi"
 
 #: core/templates/core/register_dancer.html:5
 msgid "Register Dancers for"
-msgstr "Prijavi Plesače za"
+msgstr "Prijavi PlesaÄe za"
 
 #: core/templates/core/register_dancer.html:17
 msgid "Select Club"
@@ -1034,15 +1034,15 @@ msgstr "Izaberi Klub"
 
 #: core/templates/core/register_dancer.html:31
 msgid "Registering dancers for"
-msgstr "Prijavi Plesače za"
+msgstr "Prijavi PlesaÄe za"
 
 #: core/templates/core/register_dancer.html:53
 msgid "Select Dancer(s)"
-msgstr "Izaberi Plesače"
+msgstr "Izaberi PlesaÄe"
 
 #: core/templates/core/register_dancer.html:73
 msgid "Age Group (auto-calculated):"
-msgstr "Starosna Kategorija (automatski izračunato):"
+msgstr "Starosna Kategorija (automatski izraÄunato):"
 
 #: core/templates/core/register_dancer.html:76
 msgid "Average age"
@@ -1050,16 +1050,17 @@ msgstr "Prosek godina"
 
 #: core/templates/core/register_dancer.html:91
 msgid "Upload Music File:"
-msgstr "Otpremite muzički fajl:"
+msgstr "Otpremite muziÄki fajl:"
 
 #: core/templates/core/register_event.html:2
 msgid "Register Dancer"
-msgstr "Prijavi Plesača"
+msgstr "Prijavi PlesaÄa"
 
 #: core/templates/core/register_event.html:5
 msgid "Register Dancer for Event"
-msgstr "Prijavi Plesača za Događaj"
+msgstr "Prijavi PlesaÄa za DogaÄ‘aj"
 
 #: core/templates/core/start_list.html:63
 msgid "The start list has not been published yet"
-msgstr "Startna lista još nije objavljena"
+msgstr "Startna lista joÅ¡ nije objavljena"
+
