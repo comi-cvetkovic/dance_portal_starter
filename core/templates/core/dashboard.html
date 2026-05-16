@@ -81,17 +81,40 @@
   .clubs-table td {
     vertical-align: middle;
   }
+  .clubs-table {
+    table-layout: fixed;
+    width: 100%;
+    font-size: 0.89rem;
+  }
+  .clubs-table th {
+    font-size: 0.8rem;
+    padding: 0.42rem 0.4rem;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+  .clubs-table td {
+    padding: 0.45rem 0.4rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .clubs-table .col-club { width: 15%; }
+  .clubs-table .col-rep { width: 15%; }
+  .clubs-table .col-country { width: 8%; }
+  .clubs-table .col-city { width: 8%; }
+  .clubs-table .col-email { width: 14%; }
+  .clubs-table .col-phone { width: 10%; }
   .clubs-table .col-total-dancers {
-    width: 7rem;
+    width: 7%;
     text-align: center;
     white-space: nowrap;
   }
   .clubs-table .col-status {
-    width: 8rem;
+    width: 8%;
     white-space: nowrap;
   }
   .clubs-table .col-actions {
-    width: 9rem;
+    width: 11%;
     white-space: nowrap;
     text-align: right;
   }
@@ -146,26 +169,35 @@
               <table class="table table-sm table-hover table-striped align-middle mb-0 clubs-table">
                 <thead>
                   <tr>
-                    <th scope="col">{% trans "Club" %}</th>
-                    <th scope="col">{% trans "Representative" %}</th>
-                    <th scope="col" class="hide-lg">{% trans "Country" %}</th>
-                    <th scope="col" class="hide-lg">{% trans "City" %}</th>
-                    <th scope="col" class="hide-lg">{% trans "Email" %}</th>
-                    <th scope="col" class="hide-lg">{% trans "Phone" %}</th>
-                    <th scope="col" class="col-total-dancers">{% trans "Total Dancers" %}</th>
-                    <th scope="col" class="col-status">{% trans "Status" %}</th>
-                    <th scope="col" class="text-end col-actions">{% trans "Actions" %}</th>
+                    <th scope="col" class="col-club"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Club' %}">{% trans "Club" %}</th>
+                    <th scope="col" class="col-rep"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Representative' %}">{% trans "Rep." %}</th>
+                    <th scope="col" class="hide-lg col-country"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Country' %}">{% trans "Ctry" %}</th>
+                    <th scope="col" class="hide-lg col-city"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'City' %}">{% trans "City" %}</th>
+                    <th scope="col" class="hide-lg col-email"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Email' %}">{% trans "Mail" %}</th>
+                    <th scope="col" class="hide-lg col-phone"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Phone' %}">{% trans "Phone" %}</th>
+                    <th scope="col" class="col-total-dancers"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Total Dancers' %}">{% trans "Dcrs" %}</th>
+                    <th scope="col" class="col-status"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Status' %}">{% trans "Sts" %}</th>
+                    <th scope="col" class="text-end col-actions"
+                        data-bs-toggle="tooltip" data-bs-custom-class="dp-tooltip" title="{% trans 'Actions' %}">{% trans "Act." %}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for c in clubs %}
                   <tr>
-                    <td>{{ c.club_name }}</td>
-                    <td>{{ c.representative_name }}</td>
-                    <td class="hide-lg">{{ c.country.name }}</td>
-                    <td class="hide-lg">{{ c.city }}</td>
-                    <td class="hide-lg email-nowrap">{{ c.user.email }}</td>
-                    <td class="hide-lg">{{ c.phone_number }}</td>
+                    <td class="col-club">{{ c.club_name }}</td>
+                    <td class="col-rep">{{ c.representative_name }}</td>
+                    <td class="hide-lg col-country">{{ c.country.name }}</td>
+                    <td class="hide-lg col-city">{{ c.city }}</td>
+                    <td class="hide-lg col-email email-nowrap">{{ c.user.email }}</td>
+                    <td class="hide-lg col-phone">{{ c.phone_number }}</td>
                     <td class="col-total-dancers">{{ c.dancers.count }}</td>
                     <td class="col-status">
                       {% if c.confirmed %}
