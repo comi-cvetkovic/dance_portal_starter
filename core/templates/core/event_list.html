@@ -11,7 +11,7 @@
 </div>
 
 <div class="row g-4">
-  {% for event in events %}
+  {% for event in upcoming_events %}
     <div class="col-12 col-md-6 col-lg-4">
       <div class="card h-100 border-0 shadow-sm overflow-hidden">
 
@@ -104,7 +104,107 @@
       </div>
     </div>
   {% empty %}
-    <p class="text-muted">{% trans "No events yet." %}</p>
+    <p class="text-muted">{% trans "No upcoming events found." %}</p>
+  {% endfor %}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mt-5 mb-3">
+  <h2 class="mb-0">{% trans "Previous Events" %}</h2>
+</div>
+
+<div class="row g-4">
+  {% for event in previous_events %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card h-100 border-0 shadow-sm overflow-hidden">
+
+        <div class="position-relative" style="height: 200px; overflow: hidden; border-radius: .5rem .5rem 0 0;">
+        {% if event.notice_image %}
+            <img src="{{ event.notice_image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ event.name }}">
+        {% else %}
+            <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+            <span class="text-muted">{% trans "No poster" %}</span>
+            </div>
+        {% endif %}
+        <div class="card-img-overlay p-3 gradient-overlay"></div>
+        <div class="card-img-overlay d-flex flex-column justify-content-end p-3">
+            <h5 class="text-white fw-semibold mb-1">{{ event.name }}</h5>
+            <div class="small text-white-50">
+            <span>📍 {{ event.city }} — {{ event.location }}</span>
+            <span class="ms-2">📅 {{ event.date }}</span>
+            {% if event.start_time %}
+                <span class="ms-2">🕒 {{ event.start_time }}</span>
+            {% endif %}
+            </div>
+        </div>
+        </div>
+
+        <div class="card-body" style="
+  background: linear-gradient(180deg, #fff7f4 0%, #ffeae3 100%);
+  border-top: 1px solid #f0d2ca;
+">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="badge status-badge {% if event.is_published %}status-green{% else %}status-red{% endif %}">
+            {% trans "Event Published" %}
+          </span>
+
+          <span class="badge status-badge {% if event.start_list_published %}status-green{% else %}status-red{% endif %}">
+            {% trans "Start List Published" %}
+          </span>
+
+          {% if user.is_superuser %}
+            <span class="badge status-badge {% if event.has_judges %}status-green{% else %}status-red{% endif %}">
+              {% trans "Judges" %}
+            </span>
+          {% endif %}
+
+          <span class="badge status-badge {% if event.results_published %}status-green{% else %}status-red{% endif %}">
+            {% trans "Results Published" %}
+          </span>
+        </div>
+
+        <hr>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          {% if user.is_superuser %}
+            <a class="btn btn-sm btn-coral" href="{% url 'edit_event' event.id %}">{% trans "Edit" %}</a>
+            <a class="btn btn-sm btn-coral" href="{% url 'manage_start_list' event.id %}">{% trans "Start List" %}</a>
+
+            <div class="dropdown ms-auto">
+              <button class="btn btn-sm btn-coral dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="color:#d76f54">
+                {% trans "Actions" %}
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="{% url 'register_dancer' event.id %}">{% trans "Register Dancers" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'manage_styles' event.id %}">{% trans "Manage Style Categories" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'event_music' event.id %}">{% trans "Event Music" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'manage_judges' event.id %}">{% trans "Judges" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'event_awards' event.id %}">{% trans "Awards" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'notify_clubs' event.id %}">{% trans "Notify Clubs" %}</a></li>
+              </ul>
+            </div>
+
+          {% else %}
+            {% if event.is_published %}
+              <a class="btn btn-sm btn-coral" href="{% url 'register_dancer' event.id %}">{% trans "Register" %}</a>
+              <a class="btn btn-sm btn-coral" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a>
+              {% if event.start_list_published %}
+                <a class="btn btn-sm btn-coral" href="{% url 'start_list' event.id %}">{% trans "Start List" %}</a>
+              {% endif %}
+              {% if event.results_published %}
+                <a class="btn btn-sm btn-coral" href="{% url 'event_awards' event.id %}">{% trans "Results" %}</a>
+              {% endif %}
+            {% else %}
+              <span class="text-muted fst-italic small">{% trans "Event published soon – no actions available" %}</span>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted">{% trans "No previous events." %}</p>
   {% endfor %}
 </div>
 {% endblock %}

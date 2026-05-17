@@ -921,15 +921,20 @@ def edit_event(request, event_id):
 def event_list(request):
     user = getattr(request, "user", None)
     is_admin = bool(getattr(user, "is_authenticated", False) and (user.is_superuser or user.is_staff))
-    events = Event.objects.all() if is_admin else Event.objects.filter(is_published=True)
+    base_events = Event.objects.all() if is_admin else Event.objects.filter(is_published=True)
+    events = base_events.order_by("date", "id")
+    today = timezone.localdate()
 
     # Attach a flag to each event indicating if its judge accounts exist
     for event in events:
         event.has_judges = User.objects.filter(username__startswith=f"judge_{event.id}_").exists()
 
+    upcoming_events = [e for e in events if e.date and e.date >= today]
+    previous_events = [e for e in events if e.date and e.date < today]
 
     return render(request, 'core/event_list.html', {
-        'events': events
+        'upcoming_events': upcoming_events,
+        'previous_events': previous_events,
     })
 
 
