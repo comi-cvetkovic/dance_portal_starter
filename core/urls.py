@@ -76,6 +76,7 @@ urlpatterns = [
 
     path("events/<int:event_id>/edit/", views.edit_event, name="edit_event"),
     path("events/<int:event_id>/publish_awards/", views.publish_awards, name="publish_awards"),
+    path("events/<int:event_id>/awards/score-mode/", views.set_awards_score_mode, name="set_awards_score_mode"),
     path("participation/<int:participation_id>/scores/", views.participation_scores, name="participation_scores"),
 
     path('events/<int:event_id>/calculate_age_group/', views.calculate_age_group_view, name='calculate_age_group'),

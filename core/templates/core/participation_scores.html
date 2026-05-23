@@ -112,10 +112,12 @@
     </div>
   </div>
 
-  <div class="text-muted small">
-    <span class="legend-box"></span>
-    {% trans "Struck-out values were discarded (e.g., min/max trimming)" %}
-  </div>
+  {% if discard_extreme_scores %}
+    <div class="text-muted small">
+      <span class="legend-box"></span>
+      {% trans "Struck-out values were discarded (e.g., min/max trimming)" %}
+    </div>
+  {% endif %}
 </div>
 
 {% endblock %}

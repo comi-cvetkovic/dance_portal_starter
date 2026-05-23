@@ -108,7 +108,7 @@ def custom_server_error(request):
     return render(request, "500.html", status=500)
 
 
-def compute_final_score(participation, scores):
+def compute_final_score(participation, scores, discard_extremes=True):
     criterion_fields = ["technique", "composition", "image"]
     if participation.style.name == "Show Dance":
         criterion_fields.append("show_value")
@@ -118,7 +118,7 @@ def compute_final_score(participation, scores):
 
     for f in criterion_fields:
         values = [getattr(s, f) for s in scores if getattr(s, f) is not None]
-        if len(values) >= 3:
+        if discard_extremes and len(values) >= 3:
             values = sorted(values)[1:-1]  # drop high + low
         total_points += sum(values)
         total_counts += len(values)
@@ -1590,7 +1590,11 @@ def event_awards_view(request, event_id):
     for p in participations:
         category_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
         scores = judge_scores.filter(participation=p)
-        final_score = compute_final_score(p, scores)
+        final_score = compute_final_score(
+            p,
+            scores,
+            discard_extremes=event.discard_extreme_scores,
+        )
 
         if final_score is not None:
             result = AwardResult(
@@ -1686,7 +1690,7 @@ def generate_diploma(request, event_id):
             count = 0
             for f in fields:
                 values = [getattr(s, f) for s in scores if getattr(s, f) is not None]
-                if len(values) >= 3:
+                if event.discard_extreme_scores and len(values) >= 3:
                     values = sorted(values)[1:-1]  # drop high + low
                 if values:
                     total += sum(values)
@@ -1837,7 +1841,11 @@ def category_results(request, event_id):
         ranked_entries = []
         for entry in entries:
             scores = JudgeScore.objects.filter(participation=entry)
-            final_score = compute_final_score(entry, scores)
+            final_score = compute_final_score(
+                entry,
+                scores,
+                discard_extremes=event.discard_extreme_scores,
+            )
             if final_score is not None:
                 ranked_entries.append((entry, final_score))
         # Sort high to low
@@ -1866,6 +1874,14 @@ def publish_awards(request, event_id):
     event.save()
     return redirect("event_awards", event_id=event.id)
 
+@staff_member_required
+@require_POST
+def set_awards_score_mode(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    event.discard_extreme_scores = request.POST.get("discard_extreme_scores") == "on"
+    event.save(update_fields=["discard_extreme_scores"])
+    return redirect("event_awards", event_id=event.id)
+
 @login_required
 def participation_scores(request, participation_id):
     participation = get_object_or_404(Participation, id=participation_id)
@@ -1881,11 +1897,12 @@ def participation_scores(request, participation_id):
         criterion_fields.append("show_value")
 
     discarded_ids = {f: set() for f in criterion_fields}
-    for f in criterion_fields:
-        vals = sorted([js for js in judge_scores if getattr(js, f) is not None], key=lambda js: getattr(js, f))
-        if len(vals) > 2:
-            discarded_ids[f].add(vals[0].id)
-            discarded_ids[f].add(vals[-1].id)
+    if event.discard_extreme_scores:
+        for f in criterion_fields:
+            vals = sorted([js for js in judge_scores if getattr(js, f) is not None], key=lambda js: getattr(js, f))
+            if len(vals) > 2:
+                discarded_ids[f].add(vals[0].id)
+                discarded_ids[f].add(vals[-1].id)
 
     total_points = 0
     total_counts = 0
@@ -1908,6 +1925,7 @@ def participation_scores(request, participation_id):
         "discarded_ids": discarded_ids,
         "final_score": final_score,
         "group_index": group_index,
+        "discard_extreme_scores": event.discard_extreme_scores,
     })
 
 from django.contrib.admin.views.decorators import staff_member_required

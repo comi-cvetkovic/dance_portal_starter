@@ -49,6 +49,10 @@ class Event(models.Model):
     is_published = models.BooleanField(default=False, verbose_name=_("Is Published"))
     start_list_published = models.BooleanField(default=False, verbose_name=_("Is Start List Published"))
     results_published = models.BooleanField(default=False, verbose_name=_("Results Published"))
+    discard_extreme_scores = models.BooleanField(
+        default=True,
+        verbose_name=_("Discard Highest/Lowest Judge Scores"),
+    )
     start_time = models.TimeField(null=True, blank=True, verbose_name=_("Start Time"))
     notice_image = models.ImageField(
         upload_to="event_posters/",
