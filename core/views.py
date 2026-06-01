@@ -134,7 +134,7 @@ def _get_ceremony_lock_cutoff(event):
     """
     Return a display_order cutoff from the most recent ceremony at/behind
     the currently highlighted category in live playback.
-    Categories with group_display_order below this cutoff are locked.
+    Categories with participation display_order below this cutoff are locked.
     """
     state = EventPlaybackState.objects.filter(event=event).first()
     if not state or not state.current_highlight_key:
@@ -153,8 +153,8 @@ def _get_ceremony_lock_cutoff(event):
             age_group=age_group,
             difficulty=difficulty,
         )
-        .exclude(group_display_order__isnull=True)
-        .order_by("group_display_order")
+        .exclude(display_order__isnull=True)
+        .order_by("display_order")
         .first()
     )
     if not highlighted:
@@ -164,7 +164,7 @@ def _get_ceremony_lock_cutoff(event):
         StartListSlot.objects.filter(
             event=event,
             is_ceremony=True,
-            display_order__lte=highlighted.group_display_order or 0,
+            display_order__lte=highlighted.display_order or 0,
         )
         .order_by("-display_order")
         .first()
@@ -1565,7 +1565,7 @@ def judge_view(request, event_id):
     for k in sorted_keys:
         order_val = next(
             (
-                p.group_display_order
+                p.display_order
                 for p in participations
                 if (p.style.name, p.group_type, p.age_group, p.difficulty) == k
             ),
