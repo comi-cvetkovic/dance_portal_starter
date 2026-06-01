@@ -69,8 +69,11 @@
       overflow: visible !important;
       position: relative;
     }
-    .participants-table .col-actions .dropdown-menu {
+  .participants-table .col-actions .dropdown-menu {
       z-index: 2000;
+      max-height: none !important;
+      overflow: visible !important;
+      position: absolute;
     }
 
     .participants-shell .participants-table-wrap {
@@ -91,6 +94,10 @@
 
   .participants-table .dropdown {
     position: relative;
+  }
+
+  .participants-table .dropdown-menu.show {
+    display: block;
   }
 </style>
 {% endblock %}
