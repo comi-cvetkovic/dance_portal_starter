@@ -73,6 +73,10 @@
 
 {% block extra_head %}
 <style>
+  html, body {
+    overflow-x: hidden;
+  }
+
   /* Card shell (same as other lists) */
   .table-shell{
     background:#fff;
@@ -127,5 +131,31 @@
   .categories-table tbody tr:hover{ background-color: rgba(0,0,0,.03); }
   .categories-table tbody tr:nth-child(odd):not(.section-row){ background:#fafafa; }
   .categories-table tbody tr:nth-child(even):not(.section-row){ background:#fff; }
+
+  @media (max-width: 767.98px){
+    .table-shell{
+      overflow: hidden !important;
+    }
+    .table-shell .table-responsive{
+      overflow-x: hidden !important;
+    }
+    .categories-table{
+      min-width: 0 !important;
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    .categories-table th,
+    .categories-table td{
+      font-size: .78rem;
+      padding: .45rem .35rem !important;
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+    }
+    .categories-table .col-num,
+    .categories-table .col-count{
+      width: auto !important;
+    }
+  }
 </style>
 {% endblock %}
