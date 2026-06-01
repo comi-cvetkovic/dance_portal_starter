@@ -1096,6 +1096,14 @@ def list_event_participants(request, event_id):
                 dancer_ids.update(linked_dancers)
 
             unique_count = len(dancer_ids)
+            unique_dancers = list(
+                Dancer.objects.filter(
+                    club=club,
+                    dancerparticipation__participation__event=event,
+                )
+                .distinct()
+                .order_by("last_name", "first_name")
+            )
 
             # 🚫 Skip clubs with no registered dancers
             if unique_count == 0 and total_dancer_count == 0:
@@ -1105,7 +1113,8 @@ def list_event_participants(request, event_id):
                 "club": club,
                 "group_type_counts": dict(group_type_counts),
                 "unique_dancer_count": unique_count,
-                "total_dancer_count": total_dancer_count
+                "total_dancer_count": total_dancer_count,
+                "unique_dancers": unique_dancers,
             })
 
             # Update totals only for clubs with dancers

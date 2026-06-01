@@ -45,7 +45,14 @@
         {% for row in summary_data %}
         <tr>
           <td class="text-center">{{ forloop.counter }}</td>
-          <td class="fw-semibold">{{ row.club.club_name }}</td>
+          <td class="fw-semibold">
+            <button type="button"
+                    class="btn btn-link p-0 fw-semibold club-link"
+                    data-bs-toggle="modal"
+                    data-bs-target="#clubDancersModal{{ row.club.id }}">
+              {{ row.club.club_name }}
+            </button>
+          </td>
           <td class="text-center">{{ row.group_type_counts.Solo|default:"0" }}</td>
           <td class="text-center">{{ row.group_type_counts.Duo|default:"0" }}</td>
           <td class="text-center">{{ row.group_type_counts.Trio|default:"0" }}</td>
@@ -74,6 +81,32 @@
     </table>
   </div>
 </div>
+
+{% for row in summary_data %}
+<div class="modal fade" id="clubDancersModal{{ row.club.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ row.club.club_name }} — {% trans "Dancers for this event" %}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+      </div>
+      <div class="modal-body">
+        {% if row.unique_dancers %}
+          <ol class="mb-0 ps-3">
+            {% for dancer in row.unique_dancers %}
+              <li>{{ dancer.first_name }} {{ dancer.last_name }}</li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p class="mb-0 text-muted">{% trans "No dancers found for this event." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
 
 {% endblock %}
 
@@ -121,5 +154,15 @@
   .summary-table tbody tr:nth-child(odd){ background:#fafafa; }
   .summary-table tbody tr:nth-child(even){ background:#fff; }
   .summary-table tbody tr:hover{ background-color: rgba(0,0,0,.03); }
+
+  .club-link{
+    text-decoration: none;
+    color: #0d6efd;
+  }
+  .club-link:hover,
+  .club-link:focus{
+    text-decoration: underline;
+    color: #0a58ca;
+  }
 </style>
 {% endblock %}
