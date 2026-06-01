@@ -1382,42 +1382,32 @@ def edit_participation(request, participation_id):
 
     
 @login_required
-def delete_participation(request):
-    if request.method == 'POST':
-        event_id = request.POST.get("event_id")
-        style_id = request.POST.get("style_id")
-        group_type = request.POST.get("group_type")
-        age_group = request.POST.get("age_group")
-        difficulty = request.POST.get("difficulty")
-        choreographer_name = request.POST.get("choreographer_name")
+def delete_participation(request, participation_id):
+    participation = get_object_or_404(Participation, id=participation_id)
+    event = participation.event
 
-        event = get_object_or_404(Event, id=event_id)
+    if request.method != "POST":
+        return redirect("list_event_participants", event_id=event.id)
 
-        # ⛔ Block normal clubs if registration is closed
-        if not request.user.is_superuser and not event.registration_open:
-            messages.error(request, _("You cannot delete participations after registration has closed."))
-            return redirect('list_event_participants', event_id=event.id)
+    # Block normal clubs if registration is closed
+    if not request.user.is_superuser and not event.registration_open:
+        messages.error(request, _("You cannot delete participations after registration has closed."))
+        return redirect("list_event_participants", event_id=event.id)
 
-        participations = Participation.objects.filter(
-            event=event,
-            style_id=style_id,
-            group_type=group_type,
-            age_group=age_group,
-            difficulty=difficulty,
-            choreographer_name=choreographer_name
-        )
+    # Permission check: admin can delete any; club user only their own participation
+    if not request.user.is_superuser:
+        club = get_object_or_404(DanceClub, user=request.user)
+        owns_participation = DancerParticipation.objects.filter(
+            participation=participation,
+            dancer__club=club,
+        ).exists()
+        if not owns_participation:
+            messages.error(request, _("You do not have permission to delete this participation."))
+            return redirect("list_event_participants", event_id=event.id)
 
-        # Permission check: allow if user owns the club(s) or is superuser
-        if not request.user.is_superuser:
-            club = get_object_or_404(DanceClub, user=request.user)
-            participations = participations.filter(dancer_links__dancer__club=club).distinct()
-
-        participations.delete()
-        messages.success(request, _("Participation deleted successfully."))
-
-        return redirect('list_event_participants', event_id=event.id)
-
-    return redirect('event_list')
+    participation.delete()
+    messages.success(request, _("Participation deleted successfully."))
+    return redirect("list_event_participants", event_id=event.id)
 
 
 @login_required
