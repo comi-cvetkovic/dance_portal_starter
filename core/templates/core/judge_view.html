@@ -24,6 +24,11 @@
   </div>
 
 {% elif current_key %}
+  {% if current_category_locked %}
+    <div class="alert alert-warning">
+      {% trans "This category is locked because ceremony handout has started for earlier categories." %}
+    </div>
+  {% endif %}
   <!-- Active category chips (style - group - age - difficulty) -->
   <div class="dp-card mb-3">
     <div class="card-body d-flex flex-wrap align-items-center gap-2">
@@ -90,15 +95,15 @@
               <label class="form-label mb-1">{% trans "Technique (T)" %}</label>
               <div class="d-flex align-items-center gap-2">
                 <button type="button" class="btn btn-outline-danger btn-sm stepper"
-                        data-target="technique_{{ p.id }}" data-step="-0.25">&minus;</button>
+                        data-target="technique_{{ p.id }}" data-step="-0.25" {% if current_category_locked %}disabled{% endif %}>&minus;</button>
                 <input type="range" name="technique_{{ p.id }}" id="technique_{{ p.id }}"
                        class="form-range score-slider"
                        min="1" max="10" step="0.25"
                        value="{{ existing_scores|get_item:p.id|get_item:'technique'|default:5 }}"
-                       data-output="technique_output_{{ p.id }}">
+                       data-output="technique_output_{{ p.id }}" {% if current_category_locked %}disabled{% endif %}>
                 <output id="technique_output_{{ p.id }}" class="score-out">0</output>
                 <button type="button" class="btn btn-outline-success btn-sm stepper"
-                        data-target="technique_{{ p.id }}" data-step="0.25">+</button>
+                        data-target="technique_{{ p.id }}" data-step="0.25" {% if current_category_locked %}disabled{% endif %}>+</button>
               </div>
             </div>
 
@@ -107,15 +112,15 @@
               <label class="form-label mb-1">{% trans "Composition (C)" %}</label>
               <div class="d-flex align-items-center gap-2">
                 <button type="button" class="btn btn-outline-danger btn-sm stepper"
-                        data-target="composition_{{ p.id }}" data-step="-0.25">&minus;</button>
+                        data-target="composition_{{ p.id }}" data-step="-0.25" {% if current_category_locked %}disabled{% endif %}>&minus;</button>
                 <input type="range" name="composition_{{ p.id }}" id="composition_{{ p.id }}"
                        class="form-range score-slider"
                        min="1" max="10" step="0.25"
                        value="{{ existing_scores|get_item:p.id|get_item:'composition'|default:5 }}"
-                       data-output="composition_output_{{ p.id }}">
+                       data-output="composition_output_{{ p.id }}" {% if current_category_locked %}disabled{% endif %}>
                 <output id="composition_output_{{ p.id }}" class="score-out">0</output>
                 <button type="button" class="btn btn-outline-success btn-sm stepper"
-                        data-target="composition_{{ p.id }}" data-step="0.25">+</button>
+                        data-target="composition_{{ p.id }}" data-step="0.25" {% if current_category_locked %}disabled{% endif %}>+</button>
               </div>
             </div>
 
@@ -124,15 +129,15 @@
               <label class="form-label mb-1">{% trans "Image (I)" %}</label>
               <div class="d-flex align-items-center gap-2">
                 <button type="button" class="btn btn-outline-danger btn-sm stepper"
-                        data-target="image_{{ p.id }}" data-step="-0.25">&minus;</button>
+                        data-target="image_{{ p.id }}" data-step="-0.25" {% if current_category_locked %}disabled{% endif %}>&minus;</button>
                 <input type="range" name="image_{{ p.id }}" id="image_{{ p.id }}"
                        class="form-range score-slider"
                        min="1" max="10" step="0.25"
                        value="{{ existing_scores|get_item:p.id|get_item:'image'|default:5 }}"
-                       data-output="image_output_{{ p.id }}">
+                       data-output="image_output_{{ p.id }}" {% if current_category_locked %}disabled{% endif %}>
                 <output id="image_output_{{ p.id }}" class="score-out">0</output>
                 <button type="button" class="btn btn-outline-success btn-sm stepper"
-                        data-target="image_{{ p.id }}" data-step="0.25">+</button>
+                        data-target="image_{{ p.id }}" data-step="0.25" {% if current_category_locked %}disabled{% endif %}>+</button>
               </div>
             </div>
 
@@ -142,15 +147,15 @@
               <label class="form-label mb-1">{% trans "Show Value (S)" %}</label>
               <div class="d-flex align-items-center gap-2">
                 <button type="button" class="btn btn-outline-danger btn-sm stepper"
-                        data-target="show_value_{{ p.id }}" data-step="-0.25">&minus;</button>
+                        data-target="show_value_{{ p.id }}" data-step="-0.25" {% if current_category_locked %}disabled{% endif %}>&minus;</button>
                 <input type="range" name="show_value_{{ p.id }}" id="show_value_{{ p.id }}"
                        class="form-range score-slider"
                        min="1" max="10" step="0.25"
                        value="{{ existing_scores|get_item:p.id|get_item:'show_value'|default:5 }}"
-                       data-output="show_value_output_{{ p.id }}">
+                       data-output="show_value_output_{{ p.id }}" {% if current_category_locked %}disabled{% endif %}>
                 <output id="show_value_output_{{ p.id }}" class="score-out">0</output>
                 <button type="button" class="btn btn-outline-success btn-sm stepper"
-                        data-target="show_value_{{ p.id }}" data-step="0.25">+</button>
+                        data-target="show_value_{{ p.id }}" data-step="0.25" {% if current_category_locked %}disabled{% endif %}>+</button>
               </div>
             </div>
             {% endif %}
@@ -175,9 +180,9 @@
       {% endif %}
 
       {% if has_next %}
-        <button type="submit" name="next" class="btn btn-coral">{% trans "Save & Next" %} &rarr;</button>
+        <button type="submit" name="next" class="btn btn-coral">{% if current_category_locked %}{% trans "Next" %}{% else %}{% trans "Save & Next" %}{% endif %} &rarr;</button>
       {% else %}
-        <button type="submit" name="save_last" class="btn btn-coral">{% trans "Save" %}</button>
+        <button type="submit" name="save_last" class="btn btn-coral" {% if current_category_locked %}disabled{% endif %}>{% trans "Save" %}</button>
       {% endif %}
     </div>
   </form>

@@ -130,6 +130,48 @@ def compute_final_score(participation, scores, discard_extremes=True):
     return round(total_points / total_counts, 2)
 
 
+def _get_ceremony_lock_cutoff(event):
+    """
+    Return a display_order cutoff from the most recent ceremony at/behind
+    the currently highlighted category in live playback.
+    Categories with group_display_order below this cutoff are locked.
+    """
+    state = EventPlaybackState.objects.filter(event=event).first()
+    if not state or not state.current_highlight_key:
+        return None
+
+    parts = state.current_highlight_key.split("|")
+    if len(parts) != 4:
+        return None
+
+    style_name, group_type, age_group, difficulty = [p.strip() for p in parts]
+    highlighted = (
+        Participation.objects.filter(
+            event=event,
+            style__name=style_name,
+            group_type=group_type,
+            age_group=age_group,
+            difficulty=difficulty,
+        )
+        .exclude(group_display_order__isnull=True)
+        .order_by("group_display_order")
+        .first()
+    )
+    if not highlighted:
+        return None
+
+    ceremony = (
+        StartListSlot.objects.filter(
+            event=event,
+            is_ceremony=True,
+            display_order__lte=highlighted.group_display_order or 0,
+        )
+        .order_by("-display_order")
+        .first()
+    )
+    return ceremony.display_order if ceremony else None
+
+
 class NotifyClubsForm(forms.Form):
     clubs = forms.ModelMultipleChoiceField(
         queryset=DanceClub.objects.filter(confirmed=True),
@@ -1519,6 +1561,17 @@ def judge_view(request, event_id):
             0
         )
     )
+    category_order_map = {}
+    for k in sorted_keys:
+        order_val = next(
+            (
+                p.group_display_order
+                for p in participations
+                if (p.style.name, p.group_type, p.age_group, p.difficulty) == k
+            ),
+            0,
+        )
+        category_order_map[k] = order_val or 0
 
     current_index = int(request.GET.get("group", 0))
     if current_index >= len(sorted_keys):
@@ -1528,30 +1581,41 @@ def judge_view(request, event_id):
 
     current_key = sorted_keys[current_index] if sorted_keys else None
     current_entries = grouped.get(current_key, [])
+    lock_cutoff = _get_ceremony_lock_cutoff(event)
+    current_category_order = category_order_map.get(current_key, 0) if current_key else 0
+    current_category_locked = bool(
+        lock_cutoff is not None and current_key is not None and current_category_order < lock_cutoff
+    )
 
     all_scored = False
 
     if request.method == "POST":
         if "review" in request.POST:
             return redirect(f"{reverse('judge_view', args=[event.id])}?group=0")
+        if not current_category_locked:
+            # Save multi-criteria scores
+            for p in current_entries:
+                fields = ["technique", "composition", "image"]
+                if p.style.name == "Show Dance":
+                    fields.append("show_value")
 
-        # Save multi-criteria scores
-        for p in current_entries:
-            fields = ["technique", "composition", "image"]
-            if p.style.name == "Show Dance":
-                fields.append("show_value")
+                data = {}
+                for f in fields:
+                    val = request.POST.get(f"{f}_{p.id}")
+                    if val:
+                        data[f] = float(val)
 
-            data = {}
-            for f in fields:
-                val = request.POST.get(f"{f}_{p.id}")
-                if val:
-                    data[f] = float(val)
-
-            if data:
-                JudgeScore.objects.update_or_create(
-                    participation=p,
-                    judge=request.user,
-                    defaults=data,
+                if data:
+                    JudgeScore.objects.update_or_create(
+                        participation=p,
+                        judge=request.user,
+                        defaults=data,
+                    )
+        else:
+            if "save_last" in request.POST:
+                messages.warning(
+                    request,
+                    _("This category is locked because ceremony handout has started for earlier categories."),
                 )
 
         if "next" in request.POST and current_index + 1 < len(sorted_keys):
@@ -1584,6 +1648,7 @@ def judge_view(request, event_id):
         "has_prev": current_index > 0,
         "existing_scores": existing_scores,
         "all_scored": all_scored,
+        "current_category_locked": current_category_locked,
     }
     return render(request, "core/judge_view.html", context)
 
