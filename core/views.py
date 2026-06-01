@@ -36,6 +36,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 import json
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+import zipfile
 from PIL import Image, ImageDraw, ImageFont
 import io
 import os
@@ -300,6 +301,55 @@ def event_music_view(request, event_id):
         "next_key": group_keys[current_index + 1] if current_index + 1 < len(group_keys) else None,
         "previous_key": group_keys[current_index - 1] if current_index > 0 else None,
     })
+
+
+@staff_member_required
+def download_event_music(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    participations = (
+        Participation.objects.filter(event=event)
+        .exclude(music_file="")
+        .exclude(music_file__isnull=True)
+        .select_related("style")
+        .order_by("group_display_order", "display_order", "id")
+    )
+
+    if not participations.exists():
+        messages.warning(request, _("No uploaded music files found for this event."))
+        return redirect("event_music", event_id=event.id)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for p in participations:
+            try:
+                file_obj = p.music_file
+                if not file_obj:
+                    continue
+                file_obj.open("rb")
+                data = file_obj.read()
+                ext = os.path.splitext(file_obj.name)[1] or ".mp3"
+                safe_ext = ext if len(ext) <= 10 else ".mp3"
+                filename = f"{p.id:04d}_{p.group_type}_{p.age_group}_{p.difficulty}{safe_ext}"
+                filename = filename.replace("/", "-").replace("\\", "-")
+                zf.writestr(filename, data)
+            except Exception:
+                logger.exception(
+                    "Failed to add music file to zip",
+                    extra={"event_id": event_id, "participation_id": p.id},
+                )
+            finally:
+                try:
+                    p.music_file.close()
+                except Exception:
+                    pass
+
+    zip_buffer.seek(0)
+    city = (event.city or "event").replace(" ", "_")
+    date_str = event.date.isoformat() if event.date else "no-date"
+    response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{city}_{date_str}_music.zip"'
+    return response
 
 @staff_member_required
 def delete_event(request, event_id):

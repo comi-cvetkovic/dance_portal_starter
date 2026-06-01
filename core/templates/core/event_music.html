@@ -37,7 +37,9 @@
   <h2 class="mb-0">
     {% trans "Music Playback" %} — {{ event.name }} ({{ event.date }})
   </h2>
-  <!-- Breadcrumbs handle navigation -->
+  <a href="{% url 'download_event_music' event.id %}" class="btn btn-coral-outline btn-sm">
+    {% trans "Download All Music" %}
+  </a>
 </div>
 
 {% for group_key, entries in grouped_entries.items %}

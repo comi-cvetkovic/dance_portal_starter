@@ -59,6 +59,7 @@ urlpatterns = [
     path('events/<int:event_id>/startlist/unpublish/', views.unpublish_start_list, name='unpublish_start_list'),
     
     path("events/<int:event_id>/music/", views.event_music_view, name="event_music"),
+    path("events/<int:event_id>/music/download-all/", views.download_event_music, name="download_event_music"),
 
     path('manage/clubs/pending/', views.pending_club_requests, name='pending_club_requests'),
 
