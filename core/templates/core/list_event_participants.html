@@ -15,7 +15,7 @@
   }
   .participants-shell .participants-table-wrap {
     overflow-x: auto !important;
-    overflow-y: hidden !important;
+    overflow-y: visible !important;
     overscroll-behavior-x: none;
   }
 
@@ -70,12 +70,12 @@
       position: relative;
     }
     .participants-table .col-actions .dropdown-menu {
-      z-index: 1200;
+      z-index: 2000;
     }
 
     .participants-shell .participants-table-wrap {
       overflow-x: hidden !important;
-      overflow-y: hidden !important;
+      overflow-y: visible !important;
     }
   }
 
@@ -85,7 +85,12 @@
     }
     .participants-shell .participants-table-wrap {
       overflow-x: hidden !important;
+      overflow-y: visible !important;
     }
+  }
+
+  .participants-table .dropdown {
+    position: relative;
   }
 </style>
 {% endblock %}
