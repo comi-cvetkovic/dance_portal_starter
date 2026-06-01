@@ -481,6 +481,13 @@
         tables.forEach(function(table) {
           const wrapper = table.parentElement;
           if (!wrapper) return;
+          if (
+            wrapper.classList.contains('no-mobile-table-scale') ||
+            table.classList.contains('no-mobile-table-scale') ||
+            table.classList.contains('participants-table')
+          ) {
+            return;
+          }
 
           table.style.transform = '';
           table.style.width = '';
