@@ -449,9 +449,13 @@ $(function(){
     if(ids.length===0){ ageGroupField.prop("value","").trigger("change"); avgAgeSpan.text(''); refreshCount(); return; }
     $.ajax({
       url:"{% url 'calculate_age_group' participation.event.id %}",
-      type:"POST", data:{"dancers[]":ids,csrfmiddlewaretoken:'{{ csrf_token }}'},
+      type:"POST", data:{"dancers[]":ids,group_type:groupTypeSelect.val(),csrfmiddlewaretoken:'{{ csrf_token }}'},
       success:function(data){
-        if(data.age_group){ ageGroupField.prop("value",data.age_group).trigger("change"); avgAgeSpan.text(`(Average age: ${data.avg_age})`);}
+        if(data.age_group){
+          ageGroupField.prop("value",data.age_group).trigger("change");
+          if (data.avg_age) { avgAgeSpan.text(`(Average age: ${data.avg_age})`); }
+          else { avgAgeSpan.text(''); }
+        }
         else{ ageGroupField.prop("value","").trigger("change"); avgAgeSpan.text(''); }
         refreshCount();
       }

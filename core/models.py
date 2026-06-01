@@ -115,6 +115,7 @@ class Participation(models.Model):
         ('Teen', _("Teen (12-14)")),
         ('Youth', _("Youth (15-17)")),
         ('Adult', _("Adult (18 and up)")),
+        ('Mixed Age', _("Mixed Age")),
     ]
 
     DIFFICULTY_CHOICES = [

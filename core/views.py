@@ -63,7 +63,7 @@ DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Ja
                'K-Pop', 'Oriental Dance', 'Indian Classical', 'Bollywood', 'Character Ethnic', 'Majorette', 'Pom-Pom']
 
 STYLE_ORDER = DEFAULT_STYLES
-AGE_GROUP_ORDER = ['Baby', 'Mini Kids', 'Kids', 'Teen', 'Youth', 'Adult']
+AGE_GROUP_ORDER = ['Baby', 'Mini Kids', 'Kids', 'Teen', 'Youth', 'Adult', 'Mixed Age']
 GROUP_TYPE_ORDER = ['Solo', 'Duo', 'Trio', 'Group', 'Formation', 'Production']
 logger = logging.getLogger(__name__)
 
@@ -176,9 +176,16 @@ def get_order_index(value, order_list):
 @login_required
 def calculate_age_group_view(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+    group_type = request.POST.get("group_type")
 
     # ✅ Use dancers[] and strip blanks
     dancer_ids = [d for d in request.POST.getlist("dancers[]") if d]
+
+    if group_type == "Production":
+        return JsonResponse({
+            "age_group": "Mixed Age",
+            "avg_age": "",
+        })
 
     dancers = Dancer.objects.filter(id__in=dancer_ids)
 
@@ -977,7 +984,11 @@ def register_dancer(request, event_id):
         form = GroupParticipationForm(request.POST, request.FILES, club=selected_club, event=event)
         if form.is_valid():
             dancers = form.cleaned_data['dancers']
-            age_group, avg_age = calculate_age_group(dancers)
+            group_type = form.cleaned_data['group_type']
+            if group_type == "Production":
+                age_group, avg_age = "Mixed Age", None
+            else:
+                age_group, avg_age = calculate_age_group(dancers)
 
             participation = Participation.objects.create(
                 event=event,
@@ -1007,7 +1018,11 @@ def register_dancer(request, event_id):
     # ✅ Pre-fill age group whenever dancers are selected
     if form.is_bound and form.is_valid():
         dancers = form.cleaned_data.get('dancers')
-        age_group, avg_age = calculate_age_group(dancers)
+        group_type = form.cleaned_data.get('group_type')
+        if group_type == "Production":
+            age_group, avg_age = "Mixed Age", None
+        else:
+            age_group, avg_age = calculate_age_group(dancers)
     elif request.method == 'GET' and selected_club:
         pass  # possible AJAX age calc
 
@@ -1249,7 +1264,11 @@ def edit_participation(request, participation_id):
         form = GroupParticipationForm(request.POST, request.FILES, club=club, event=event)
         if form.is_valid():
             new_dancers = form.cleaned_data['dancers']
-            age_group, avg_age = calculate_age_group(new_dancers)
+            group_type = form.cleaned_data['group_type']
+            if group_type == "Production":
+                age_group, avg_age = "Mixed Age", None
+            else:
+                age_group, avg_age = calculate_age_group(new_dancers)
 
             participation.style = form.cleaned_data['style']
             participation.group_type = form.cleaned_data['group_type']
