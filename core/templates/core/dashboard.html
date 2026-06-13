@@ -123,6 +123,51 @@
     white-space: normal;
   }
 
+  .mobile-clubs-list {
+    display: none;
+  }
+  .mobile-club-card {
+    border: 1px solid #111;
+    border-radius: 12px;
+    background: #fff;
+    padding: .9rem;
+  }
+  .mobile-club-card + .mobile-club-card {
+    margin-top: .75rem;
+  }
+  .mobile-club-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: .75rem;
+  }
+  .mobile-club-card__name {
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .mobile-club-card__meta {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: .35rem .65rem;
+    margin: .8rem 0 0;
+    font-size: .92rem;
+  }
+  .mobile-club-card__label {
+    color: #6c757d;
+    font-weight: 700;
+  }
+  .mobile-club-card__value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .mobile-club-card__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: .85rem;
+  }
+
   /* Responsive tweaks */
   @media (max-width: 992px) {
     .hide-lg { display: none; }
@@ -135,6 +180,18 @@
     .dash-hero .btn {
       width: 100%;
       margin-top: 0.4rem;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .dp-card .card-body {
+      padding: .8rem;
+    }
+    .mobile-clubs-list {
+      display: block;
+    }
+    .clubs-table-wrap {
+      display: none !important;
     }
   }
 </style>
@@ -169,7 +226,68 @@
         </div>
         <div class="card-body">
           {% if clubs %}
-            <div class="table-responsive">
+            <div class="mobile-clubs-list">
+              {% for c in clubs %}
+                <div class="mobile-club-card">
+                  <div class="mobile-club-card__top">
+                    <h4 class="mobile-club-card__name">{{ c.club_name }}</h4>
+                    {% if c.confirmed %}
+                      <span class="chip"><span class="dot dot-ok"></span>{% trans "Confirmed" %}</span>
+                    {% else %}
+                      <span class="chip"><span class="dot dot-warn"></span>{% trans "Pending" %}</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="mobile-club-card__meta">
+                    <div class="mobile-club-card__label">{% trans "Representative" %}</div>
+                    <div class="mobile-club-card__value">{{ c.representative_name }}</div>
+                    <div class="mobile-club-card__label">{% trans "Location" %}</div>
+                    <div class="mobile-club-card__value">{{ c.city }}, {{ c.country.name }}</div>
+                    <div class="mobile-club-card__label">{% trans "Email" %}</div>
+                    <div class="mobile-club-card__value">{{ c.user.email }}</div>
+                    <div class="mobile-club-card__label">{% trans "Phone" %}</div>
+                    <div class="mobile-club-card__value">{{ c.phone_number }}</div>
+                    <div class="mobile-club-card__label">{% trans "Dancers" %}</div>
+                    <div class="mobile-club-card__value">{{ c.dancers.count }}</div>
+                  </div>
+
+                  <div class="mobile-club-card__actions">
+                    <div class="dropdown">
+                      <button class="btn btn-coral btn-sm dropdown-toggle"
+                              type="button"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false">
+                        {% trans "Actions" %}
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                          <a class="dropdown-item"
+                             href="{% url 'admin_list_dancers' c.id %}">
+                            <i class="bi bi-people me-1"></i>{% trans "Dancers" %}
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item text-primary"
+                             href="{% url 'edit_club' c.id %}">
+                            <i class="bi bi-pencil-square me-1"></i>{% trans "Edit" %}
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <a class="dropdown-item text-danger"
+                             href="{% url 'delete_club' c.id %}"
+                             onclick="return confirm('{% blocktrans %}Delete this club? This cannot be undone.{% endblocktrans %}');">
+                            <i class="bi bi-trash me-1"></i>{% trans "Delete" %}
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="table-responsive clubs-table-wrap">
               <table class="table table-sm table-hover table-striped align-middle mb-0 clubs-table">
                 <thead>
                   <tr>
