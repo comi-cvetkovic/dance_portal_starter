@@ -169,3 +169,21 @@ ADMINS = [
     ("Developer", DEVELOPER_ALERT_EMAIL),
 ]
 
+# Invalid Host headers are usually internet scanners hitting the VPS IP/reverse DNS.
+# Keep real 500 emails, but do not email admins for this noisy security logger.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "null": {
+            "class": "logging.NullHandler",
+        },
+    },
+    "loggers": {
+        "django.security.DisallowedHost": {
+            "handlers": ["null"],
+            "propagate": False,
+        },
+    },
+}
+
