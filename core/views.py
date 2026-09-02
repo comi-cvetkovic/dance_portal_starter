@@ -1754,9 +1754,36 @@ def event_awards_view(request, event_id):
     for key in sorted_keys:
         grouped_results[key] = results_by_category[key]
 
+    award_categories = [
+        {"key": key, "results": results, "index": index}
+        for index, (key, results) in enumerate(grouped_results.items())
+    ]
+    total_categories = len(award_categories)
+    awards_view_mode = request.GET.get("view", "all")
+    if awards_view_mode not in {"all", "single"}:
+        awards_view_mode = "all"
+
+    current_index = 0
+    if total_categories:
+        try:
+            current_index = int(request.GET.get("group", 0))
+        except (TypeError, ValueError):
+            current_index = 0
+        current_index = max(0, min(current_index, total_categories - 1))
+
+    displayed_categories = award_categories
+    if awards_view_mode == "single" and total_categories:
+        displayed_categories = [award_categories[current_index]]
+
     return render(request, "core/event_awards.html", {
         "event": event,
         "grouped_results": grouped_results,
+        "award_categories": award_categories,
+        "displayed_categories": displayed_categories,
+        "awards_view_mode": awards_view_mode,
+        "current_index": current_index,
+        "total_categories": total_categories,
+        "has_next": current_index < total_categories - 1,
     })
 
 @staff_member_required

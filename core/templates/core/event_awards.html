@@ -15,7 +15,7 @@
 {% block content %}
 
 <!-- Header + toolbar -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3 awards-page-header">
   <h2 class="mb-0">
     {% trans "Awards" %} — {{ event.name }} ({{ event.date }})
   </h2>
@@ -50,8 +50,43 @@
   {% endif %}
 </div>
 
-{% if grouped_results %}
-  {% for group_key, results in grouped_results.items %}
+{% if total_categories %}
+  <div class="awards-view-controls d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div class="btn-group" role="group" aria-label="{% trans 'Awards view mode' %}">
+      <a href="?view=single&group={{ current_index }}"
+         class="btn btn-sm {% if awards_view_mode == 'single' %}btn-coral{% else %}btn-coral-outline{% endif %}">
+        {% trans "One by One" %}
+      </a>
+      <a href="?view=all"
+         class="btn btn-sm {% if awards_view_mode == 'all' %}btn-coral{% else %}btn-coral-outline{% endif %}">
+        {% trans "All Categories" %}
+      </a>
+    </div>
+
+    {% if awards_view_mode == 'single' %}
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="text-muted small">
+          {% trans "Category" %} {{ current_index|add:1 }} / {{ total_categories }}
+        </span>
+        <form class="d-flex align-items-center gap-2 mb-0" onsubmit="return jumpToAwardCategory(event);">
+          <label for="jump-award-category" class="form-label small mb-0">{% trans "Go to" %}</label>
+          <input type="number"
+                 id="jump-award-category"
+                 class="form-control form-control-sm"
+                 min="1"
+                 max="{{ total_categories }}"
+                 style="width: 90px;"
+                 placeholder="1-{{ total_categories }}">
+          <button type="submit" class="btn btn-coral btn-sm">{% trans "Go" %}</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if displayed_categories %}
+  {% for category in displayed_categories %}
+    {% with group_key=category.key results=category.results %}
     <div class="mb-4">
       <!-- Category bar: readable chips + inline action -->
       <div class="category-bar d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -124,7 +159,7 @@
                     </td>
                     <td class="text-end fw-bold">{{ item.score }}</td>
                     <td class="text-end">
-                      <a href="{% url 'participation_scores' item.participation.id %}?group={{ forloop.parentloop.counter0 }}"
+                      <a href="{% url 'participation_scores' item.participation.id %}?group={{ category.index }}"
                          class="btn btn-coral-outline btn-sm">
                         {% trans "View Detailed Scores" %}
                       </a>
@@ -141,13 +176,61 @@
         </div>
       {% endif %}
     </div>
+    {% endwith %}
   {% endfor %}
+
+  {% if awards_view_mode == 'single' %}
+    <div class="d-flex gap-2 justify-content-between justify-content-md-end mt-3 flex-wrap align-items-center">
+      <div class="me-auto text-muted small d-none d-md-block">
+        {% trans "Category" %} {{ current_index|add:1 }} / {{ total_categories }}
+      </div>
+
+      {% if current_index > 0 %}
+        <form method="get" class="d-inline">
+          <input type="hidden" name="view" value="single">
+          <input type="hidden" name="group" value="{{ current_index|add:-1 }}">
+          <button type="submit" class="btn btn-coral-outline">
+            &larr; {% trans "Previous Category" %}
+          </button>
+        </form>
+      {% endif %}
+
+      {% if has_next %}
+        <form method="get" class="d-inline">
+          <input type="hidden" name="view" value="single">
+          <input type="hidden" name="group" value="{{ current_index|add:1 }}">
+          <button type="submit" class="btn btn-coral">
+            {% trans "Next Category" %} &rarr;
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
 {% else %}
   <div class="alert alert-warning mb-0">
     {% trans "No results available." %}
   </div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function jumpToAwardCategory(e) {
+    e.preventDefault();
+    const input = document.getElementById('jump-award-category');
+    if (!input) return false;
+    const total = {{ total_categories|default:0 }};
+    let value = parseInt(input.value || "0", 10);
+    if (!value || value < 1) value = 1;
+    if (total && value > total) value = total;
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', 'single');
+    url.searchParams.set('group', value - 1);
+    window.location.href = url.toString();
+    return false;
+  }
+</script>
 {% endblock %}
 
 {% block extra_head %}
@@ -219,5 +302,25 @@
   .place-first  { background: #fff8dc; }  /* gold tint */
   .place-second { background: #f5f5f5; }  /* silver tint */
   .place-third  { background: #ffe9d6; }  /* bronze tint */
+
+  @media (max-width: 768px){
+    .awards-page-header{
+      flex-direction: column;
+      align-items: stretch !important;
+      gap: .75rem;
+    }
+    .awards-page-header > .d-flex{
+      align-items: stretch !important;
+      flex-direction: column;
+      gap: .75rem !important;
+    }
+    .awards-view-controls{
+      align-items: stretch !important;
+    }
+    .awards-view-controls .btn-group,
+    .awards-view-controls .btn-group .btn{
+      width: 100%;
+    }
+  }
 </style>
 {% endblock %}
