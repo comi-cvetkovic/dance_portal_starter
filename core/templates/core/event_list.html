@@ -89,8 +89,8 @@
               <a class="btn btn-sm btn-coral" href="{% url 'register_dancer' event.id %}">{% trans "Register" %}</a>
               <a class="btn btn-sm btn-coral" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a>
               {% if event.is_organizer_for_user %}
-                <a class="btn btn-sm btn-coral-outline" href="{% url 'list_event_participants' event.id %}?scope=all">{% trans "Organizer View" %}</a>
-                <a class="btn btn-sm btn-coral-outline" href="{% url 'start_list' event.id %}">{% trans "Start List" %}</a>
+                <a class="btn btn-sm btn-coral" href="{% url 'list_event_participants' event.id %}?scope=all">{% trans "Organizer View" %}</a>
+                <a class="btn btn-sm btn-coral" href="{% url 'start_list' event.id %}">{% trans "Start List" %}</a>
               {% endif %}
               {% if event.start_list_published and not event.is_organizer_for_user %}
                 <a class="btn btn-sm btn-coral" href="{% url 'start_list' event.id %}">{% trans "Start List" %}</a>
@@ -193,8 +193,8 @@
               <a class="btn btn-sm btn-coral" href="{% url 'register_dancer' event.id %}">{% trans "Register" %}</a>
               <a class="btn btn-sm btn-coral" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a>
               {% if event.is_organizer_for_user %}
-                <a class="btn btn-sm btn-coral-outline" href="{% url 'list_event_participants' event.id %}?scope=all">{% trans "Organizer View" %}</a>
-                <a class="btn btn-sm btn-coral-outline" href="{% url 'start_list' event.id %}">{% trans "Start List" %}</a>
+                <a class="btn btn-sm btn-coral" href="{% url 'list_event_participants' event.id %}?scope=all">{% trans "Organizer View" %}</a>
+                <a class="btn btn-sm btn-coral" href="{% url 'start_list' event.id %}">{% trans "Start List" %}</a>
               {% endif %}
               {% if event.start_list_published and not event.is_organizer_for_user %}
                 <a class="btn btn-sm btn-coral" href="{% url 'start_list' event.id %}">{% trans "Start List" %}</a>
