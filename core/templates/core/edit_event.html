@@ -72,6 +72,11 @@
               <div class="form-text">{% trans "Format" %}: HH:MM</div>
             </div>
             <div class="col-md-6">
+              <label class="form-label" for="id_organizer">{% trans "Organizer (optional)" %}</label>
+              {{ form.organizer }}
+              <div class="form-text">{% trans "Organizer can view all registrations and the start list before publication, but cannot edit them." %}</div>
+            </div>
+            <div class="col-md-6">
               <label class="form-label" for="id_registration_start">{% trans "Registration Start Date" %}</label>
               {{ form.registration_start }}
             </div>

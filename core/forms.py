@@ -118,11 +118,18 @@ class EventForm(forms.ModelForm):
         label=_("Music Upload End Date (optional)")
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["organizer"].queryset = DanceClub.objects.filter(confirmed=True).order_by("club_name")
+        self.fields["organizer"].required = False
+        self.fields["organizer"].empty_label = _("No organizer")
+
     class Meta:
         model = Event
         fields = [
             'name', 'location', 'city',
             'date', 'start_time',
+            'organizer',
             'notice_image', 'is_published',
             'allow_registrations', 'diploma_template',
             'registration_start', 'registration_end', 'music_end'
@@ -132,6 +139,7 @@ class EventForm(forms.ModelForm):
             'location': _("Location"),
             'city': _("City"),
             'date': _("Date"),
+            'organizer': _("Organizer"),
             'notice_image': _("Event Poster / Notice (optional)"),
             'is_published': _("Is Published"),
             'allow_registrations': _("Allow Registrations"),

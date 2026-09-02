@@ -66,6 +66,14 @@ class Event(models.Model):
         blank=True,
         verbose_name=_("Diploma Template"),
     )
+    organizer = models.ForeignKey(
+        DanceClub,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="organized_events",
+        verbose_name=_("Organizer"),
+    )
     allow_registrations = models.BooleanField(default=False)
 
     # NEW fields

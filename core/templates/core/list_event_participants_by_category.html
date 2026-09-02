@@ -8,7 +8,7 @@
   <ol class="breadcrumb mb-0">
     <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
     <li class="breadcrumb-item"><a href="{% url 'event_list' %}">{% trans "Events" %}</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'list_event_participants' event.id %}">{% trans "Participants" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'list_event_participants' event.id %}{% if is_organizer_read_only %}?scope=all{% endif %}">{% trans "Participants" %}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{% trans "By Category" %}</li>
   </ol>
 </nav>

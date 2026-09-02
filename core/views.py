@@ -69,6 +69,15 @@ GROUP_TYPE_ORDER = ['Solo', 'Duo', 'Trio', 'Group', 'Formation', 'Production']
 logger = logging.getLogger(__name__)
 
 
+def user_organizes_event(user, event):
+    if not user.is_authenticated or user.is_superuser:
+        return False
+    organizer_id = getattr(event, "organizer_id", None)
+    if not organizer_id:
+        return False
+    return DanceClub.objects.filter(id=organizer_id, user=user).exists()
+
+
 def custom_server_error(request):
     path = request.get_full_path() if request else "unknown"
     user_id = getattr(getattr(request, "user", None), "id", None)
@@ -415,7 +424,8 @@ def delete_event(request, event_id):
 def start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     is_admin = request.user.is_superuser
-    show_entries = event.start_list_published or is_admin
+    is_organizer = user_organizes_event(request.user, event)
+    show_entries = event.start_list_published or is_admin or is_organizer
     enable_auto_refresh = is_admin
 
     participations = list(
@@ -507,6 +517,7 @@ def start_list(request, event_id):
         "event": event,
         "grouped_entries": grouped_entries if show_entries else {},
         "is_admin": is_admin,
+        "is_organizer": is_organizer,
         "is_published": event.start_list_published,
         "show_entries": show_entries,
         "highlight_key": highlight_key,
@@ -1027,6 +1038,7 @@ def event_list(request):
     # Attach a flag to each event indicating if its judge accounts exist
     for event in events:
         event.has_judges = User.objects.filter(username__startswith=f"judge_{event.id}_").exists()
+        event.is_organizer_for_user = user_organizes_event(request.user, event)
 
     upcoming_events = [e for e in events if e.date and e.date >= today]
     previous_events = [e for e in events if e.date and e.date < today]
@@ -1137,8 +1149,11 @@ def register_dancer(request, event_id):
 def list_event_participants(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     view_mode = request.GET.get("view")
+    scope = request.GET.get("scope")
+    is_organizer = user_organizes_event(request.user, event)
+    organizer_read_only = is_organizer and scope == "all" and not request.user.is_superuser
 
-    if request.user.is_superuser:
+    if request.user.is_superuser or organizer_read_only:
         participations = (
             Participation.objects.filter(event=event)
             .select_related("style")
@@ -1157,7 +1172,7 @@ def list_event_participants(request, event_id):
         )
 
     # 📊 Club Summary Mode
-    if request.user.is_superuser and view_mode == "summary":
+    if (request.user.is_superuser or organizer_read_only) and view_mode == "summary":
         clubs = DanceClub.objects.all()
         summary_data = []
 
@@ -1218,7 +1233,8 @@ def list_event_participants(request, event_id):
         return render(request, "core/participant_summary_by_club.html", {
             "event": event,
             "summary_data": summary_data,
-            "total_counts": total_counts
+            "total_counts": total_counts,
+            "is_organizer_read_only": organizer_read_only,
         })
 
     # Regular participant view: one table row per Participation (no category merge).
@@ -1239,7 +1255,9 @@ def list_event_participants(request, event_id):
 
     return render(request, "core/list_event_participants.html", {
         "event": event,
-        "grouped_participations": grouped_participations
+        "grouped_participations": grouped_participations,
+        "is_organizer": is_organizer,
+        "is_organizer_read_only": organizer_read_only,
     })
 
 
@@ -2156,6 +2174,9 @@ def delete_ceremony(request, slot_id):
 @login_required
 def list_event_participants_by_category(request, event_id):
     event = get_object_or_404(Event, id=event_id)
+    scope = request.GET.get("scope")
+    is_organizer = user_organizes_event(request.user, event)
+    organizer_read_only = is_organizer and scope == "all" and not request.user.is_superuser
 
     # Group participations by (style, group_type, age_group, difficulty)
     categories = (
@@ -2173,5 +2194,6 @@ def list_event_participants_by_category(request, event_id):
 
     return render(request, "core/list_event_participants_by_category.html", {
         "event": event,
-        "categories": categories
+        "categories": categories,
+        "is_organizer_read_only": organizer_read_only,
     })
