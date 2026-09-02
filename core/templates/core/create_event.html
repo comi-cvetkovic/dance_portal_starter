@@ -12,6 +12,28 @@
 
   .card { border:0; box-shadow:0 6px 18px rgba(0,0,0,.06); }
   .divider { height:1px; background:rgba(0,0,0,.1); margin:1.5rem 0; }
+  .event-form-card .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: .35rem;
+  }
+  #eventForm input[type="text"],
+  #eventForm input[type="date"],
+  #eventForm input[type="time"],
+  #eventForm select,
+  #eventForm textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+  }
+  #eventForm input[type="file"] {
+    display: block;
+    width: 100%;
+  }
+  #eventForm .form-text {
+    margin-top: .35rem;
+    line-height: 1.35;
+  }
 
   .sticky-save {
     position:sticky;
@@ -38,7 +60,7 @@
   <div class="row g-4">
     <!-- LEFT COLUMN -->
     <div class="col-12 col-lg-8">
-      <div class="card mb-4">
+      <div class="card mb-4 event-form-card">
         <div class="card-body p-4">
           <div class="row g-3">
             <div class="col-12">
@@ -63,7 +85,7 @@
               {{ form.start_time }}
               <div class="form-text">{% trans "Format" %}: HH:MM</div>
             </div>
-            <div class="col-md-6">
+            <div class="col-12">
               <label class="form-label" for="id_organizer">{% trans "Organizer (optional)" %}</label>
               {{ form.organizer }}
               <div class="form-text">{% trans "Organizer can view all registrations and the start list before publication, but cannot edit them." %}</div>
@@ -116,7 +138,7 @@
 
 {% endblock %}
 
-{% block extra_js_bottom %}
+{% block extra_scripts %}
 <script>
   (function () {
     const form = document.getElementById('eventForm');
