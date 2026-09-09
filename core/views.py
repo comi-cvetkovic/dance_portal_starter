@@ -23,7 +23,7 @@ from .forms import (
     CeremonyForm,
     IMPROV_CHALLENGE_STYLE,
 )
-from django.db import IntegrityError
+from django.db import DatabaseError, IntegrityError
 from django.views.decorators.http import require_POST
 from collections import defaultdict
 from django.db.models import Q, Prefetch, Max, Avg
@@ -795,12 +795,15 @@ def improv_challenge_dashboard(request, event_id):
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
         if action == "save_qualifiers":
-            round_obj = get_object_or_404(
-                ImprovChallengeRound,
+            round_obj = ImprovChallengeRound.objects.filter(
                 id=request.POST.get("round_id"),
                 event=event,
                 is_final=False,
-            )
+            ).first()
+            if not round_obj:
+                messages.error(request, _("That Improv Challenge round could not be found."))
+                return redirect("improv_challenge_dashboard", event_id=event.id)
+
             selected_ids = [int(value) for value in request.POST.getlist("qualifiers") if value.isdigit()]
             if len(selected_ids) != round_obj.target_count:
                 messages.error(
@@ -812,25 +815,29 @@ def improv_challenge_dashboard(request, event_id):
                 if any(selected_id not in valid_ids for selected_id in selected_ids):
                     messages.error(request, _("Invalid qualifier selection."))
                 else:
-                    with transaction.atomic():
-                        ImprovRoundQualifier.objects.filter(round=round_obj).delete()
-                        for participation_id in selected_ids:
-                            ImprovRoundQualifier.objects.create(
-                                round=round_obj,
-                                participation_id=participation_id,
-                            )
-                        round_obj.finalized = True
-                        round_obj.save(update_fields=["finalized"])
-                        next_round = ImprovChallengeRound.objects.filter(
-                            event=event,
-                            age_group=round_obj.age_group,
-                            round_number=round_obj.round_number + 1,
-                        ).first()
-                        if next_round:
-                            config.current_age_group = next_round.age_group
-                            config.current_round_number = next_round.round_number
-                            config.save(update_fields=["current_age_group", "current_round_number"])
-                    messages.success(request, _("Qualifiers saved."))
+                    try:
+                        with transaction.atomic():
+                            ImprovRoundQualifier.objects.filter(round=round_obj).delete()
+                            for participation_id in selected_ids:
+                                ImprovRoundQualifier.objects.create(
+                                    round=round_obj,
+                                    participation_id=participation_id,
+                                )
+                            round_obj.finalized = True
+                            round_obj.save(update_fields=["finalized"])
+                            next_round = ImprovChallengeRound.objects.filter(
+                                event=event,
+                                age_group=round_obj.age_group,
+                                round_number=round_obj.round_number + 1,
+                            ).first()
+                            if next_round:
+                                config.current_age_group = next_round.age_group
+                                config.current_round_number = next_round.round_number
+                                config.save(update_fields=["current_age_group", "current_round_number"])
+                        messages.success(request, _("Qualifiers saved."))
+                    except DatabaseError:
+                        logger.exception("Failed to save Improv Challenge qualifiers", extra={"event_id": event.id, "round_id": round_obj.id})
+                        messages.error(request, _("Could not save qualifiers because of a database constraint. Please try again."))
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
     rounds = sorted(
@@ -2312,6 +2319,23 @@ def judge_view(request, event_id):
     rank_options = []
 
     if is_improv_category:
+        try:
+            config = event.improv_config
+        except ImprovChallengeConfig.DoesNotExist:
+            config = None
+
+        if config and config.current_age_group and config.current_age_group != current_key[2]:
+            active_key = next(
+                (
+                    key
+                    for key in sorted_keys
+                    if key[0] == IMPROV_CHALLENGE_STYLE and key[2] == config.current_age_group
+                ),
+                None,
+            )
+            if active_key:
+                return redirect(f"{reverse('judge_view', args=[event.id])}?group={sorted_keys.index(active_key)}")
+
         current_improv_round = get_active_improv_round(event, current_key[2])
         if current_improv_round:
             existing_improv = {
