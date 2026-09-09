@@ -291,6 +291,100 @@ def get_active_improv_round(event, age_group):
     )
 
 
+def get_event_judges(event):
+    return User.objects.filter(
+        username__startswith=f"judge_{event.id}_",
+        is_active=True,
+    ).order_by("first_name", "last_name", "username")
+
+
+def is_improv_final_complete(round_obj):
+    if not round_obj or not round_obj.is_final:
+        return False
+
+    participants = get_improv_round_participations(round_obj)
+    judges = list(get_event_judges(round_obj.event))
+    if not participants or not judges:
+        return False
+
+    participant_ids = {participation.id for participation in participants}
+    expected_ranks = set(range(1, len(participant_ids) + 1))
+
+    for judge in judges:
+        selections = ImprovJudgeSelection.objects.filter(
+            round=round_obj,
+            judge=judge,
+            participation_id__in=participant_ids,
+            rank__isnull=False,
+        )
+        ranks = list(selections.values_list("rank", flat=True))
+        selected_ids = set(selections.values_list("participation_id", flat=True))
+        if selected_ids != participant_ids or set(ranks) != expected_ranks:
+            return False
+
+    return True
+
+
+def build_improv_judge_detail_rows(round_obj):
+    if not round_obj:
+        return []
+
+    participant_name_by_id = {
+        participation.id: get_improv_participant_name(participation)
+        for participation in get_improv_round_participations(round_obj)
+    }
+    judges = list(get_event_judges(round_obj.event))
+    selections_by_judge = defaultdict(list)
+    selections = (
+        ImprovJudgeSelection.objects.filter(
+            round=round_obj,
+            judge__in=judges,
+            participation_id__in=participant_name_by_id.keys(),
+        )
+        .select_related("judge", "participation")
+        .order_by("rank", "participation__start_number", "participation_id")
+    )
+
+    for selection in selections:
+        selections_by_judge[selection.judge_id].append(selection)
+
+    rows = []
+    participant_count = len(participant_name_by_id)
+    expected_ranks = set(range(1, participant_count + 1))
+
+    for judge in judges:
+        judge_selections = selections_by_judge.get(judge.id, [])
+        if round_obj.is_final:
+            selected = [
+                {
+                    "rank": selection.rank,
+                    "name": participant_name_by_id.get(selection.participation_id, ""),
+                }
+                for selection in judge_selections
+                if selection.rank
+            ]
+            selected.sort(key=lambda item: item["rank"])
+            rank_values = {item["rank"] for item in selected}
+            complete = len(selected) == participant_count and rank_values == expected_ranks
+        else:
+            selected = [
+                {
+                    "name": participant_name_by_id.get(selection.participation_id, ""),
+                }
+                for selection in judge_selections
+            ]
+            complete = len(selected) == round_obj.target_count
+
+        rows.append({
+            "judge_name": judge.get_full_name() or judge.username,
+            "selected": selected,
+            "complete": complete,
+            "submitted_count": len(selected),
+        })
+
+    return rows
+
+
 def user_organizes_event(user, event):
     if not user.is_authenticated or user.is_superuser:
         return False
@@ -856,6 +950,8 @@ def improv_challenge_dashboard(request, event_id):
         None,
     )
     current_rows = build_improv_round_rows(current_round) if current_round else []
+    judge_detail_rows = build_improv_judge_detail_rows(current_round) if current_round else []
+    final_complete = is_improv_final_complete(current_round) if current_round else False
     round_counts_by_age = {
         age_group: ",".join(
             str(round_obj.target_count)
@@ -875,6 +971,8 @@ def improv_challenge_dashboard(request, event_id):
         "rounds": rounds,
         "current_round": current_round,
         "current_rows": current_rows,
+        "judge_detail_rows": judge_detail_rows,
+        "final_complete": final_complete,
         "mini_round_counts": round_counts_by_age["Mini Improv Challenge"],
         "challenge_round_counts": round_counts_by_age["Improv Challenge 11+"],
     })
@@ -2316,6 +2414,8 @@ def judge_view(request, event_id):
     current_improv_round = None
     improv_participant_rows = []
     improv_has_saved = False
+    improv_can_advance_category = False
+    improv_round_locked_for_judge = False
     rank_options = []
 
     if is_improv_category:
@@ -2324,7 +2424,25 @@ def judge_view(request, event_id):
         except ImprovChallengeConfig.DoesNotExist:
             config = None
 
-        if config and config.current_age_group and config.current_age_group != current_key[2]:
+        should_follow_active_improv_round = True
+        if config and config.current_age_group:
+            configured_active_round = ImprovChallengeRound.objects.filter(
+                event=event,
+                age_group=config.current_age_group,
+                round_number=config.current_round_number,
+            ).first()
+            if configured_active_round:
+                if configured_active_round.is_final:
+                    should_follow_active_improv_round = not is_improv_final_complete(configured_active_round)
+                else:
+                    should_follow_active_improv_round = not configured_active_round.finalized
+
+        if (
+            config
+            and config.current_age_group
+            and config.current_age_group != current_key[2]
+            and should_follow_active_improv_round
+        ):
             active_key = next(
                 (
                     key
@@ -2364,6 +2482,15 @@ def judge_view(request, event_id):
                     len(existing_improv) == current_improv_round.target_count
                     and current_improv_round.target_count > 0
                 )
+            if current_improv_round.is_final:
+                improv_can_advance_category = is_improv_final_complete(current_improv_round)
+            else:
+                improv_can_advance_category = current_improv_round.finalized
+            improv_round_locked_for_judge = (
+                improv_has_saved
+                or (not current_improv_round.is_final and current_improv_round.finalized)
+                or (current_improv_round.is_final and improv_can_advance_category)
+            )
     lock_cutoff = _get_ceremony_lock_cutoff(event)
     current_category_order = category_order_map.get(current_key, 0) if current_key else 0
     current_category_locked = bool(
@@ -2379,6 +2506,10 @@ def judge_view(request, event_id):
         if is_improv_category:
             if not current_improv_round:
                 messages.warning(request, _("This Improv Challenge round is not open yet. Please wait for the admin."))
+            elif not current_improv_round.is_final and current_improv_round.finalized:
+                messages.info(request, _("This round has been finalized by the admin. Please continue to the next category."))
+            elif current_improv_round.is_final and improv_can_advance_category:
+                messages.info(request, _("All judges have saved final rankings. Please continue to the next category."))
             elif current_improv_round.is_final:
                 ranks = {}
                 for row in improv_participant_rows:
@@ -2489,6 +2620,8 @@ def judge_view(request, event_id):
         "current_improv_round": current_improv_round,
         "improv_participant_rows": improv_participant_rows,
         "improv_has_saved": improv_has_saved,
+        "improv_can_advance_category": improv_can_advance_category,
+        "improv_round_locked_for_judge": improv_round_locked_for_judge,
         "rank_options": rank_options,
     }
     return render(request, "core/judge_view.html", context)

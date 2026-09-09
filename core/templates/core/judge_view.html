@@ -68,7 +68,9 @@
             </div>
 
             <div class="alert alert-info mb-3">
-              {% if improv_has_saved %}
+              {% if improv_can_advance_category %}
+                {% trans "This Improv Challenge round is complete. Continue to the next category." %}
+              {% elif improv_has_saved %}
                 {% trans "Your choices are saved. Please wait here while the admin reviews the results and opens the next round." %}
               {% else %}
                 {% trans "After saving, please wait here while the admin reviews the results and opens the next round." %}
@@ -88,7 +90,7 @@
                             <label class="form-label small text-muted mt-2 mb-1" for="rank_{{ row.participation.id }}">
                               {% trans "Rank" %}
                             </label>
-                            <select name="rank_{{ row.participation.id }}" id="rank_{{ row.participation.id }}" class="form-select rank-select" {% if improv_has_saved %}disabled{% endif %}>
+                            <select name="rank_{{ row.participation.id }}" id="rank_{{ row.participation.id }}" class="form-select rank-select" {% if improv_round_locked_for_judge %}disabled{% endif %}>
                               <option value="">-</option>
                               {% for rank in rank_options %}
                                 <option value="{{ rank }}" {% if row.selection and row.selection.rank == rank %}selected{% endif %}>
@@ -105,7 +107,7 @@
                                 value="{{ row.participation.id }}"
                                 id="selected_{{ row.participation.id }}"
                                 {% if row.selection %}checked{% endif %}
-                                {% if improv_has_saved %}disabled{% endif %}
+                                {% if improv_round_locked_for_judge %}disabled{% endif %}
                               >
                               <label class="form-check-label" for="selected_{{ row.participation.id }}">
                                 {% trans "Advance" %}
@@ -256,7 +258,7 @@
       <div class="me-auto text-muted small d-none d-md-block">
         {% trans "Category" %} {{ current_index|add:1 }} / {{ total_categories }}
       </div>
-      {% if not is_improv_category or not improv_has_saved %}
+      {% if not is_improv_category or not improv_has_saved or improv_can_advance_category %}
         <div class="d-flex align-items-center gap-2">
           <label for="jump-category" class="form-label small mb-0">{% trans "Go to" %}</label>
           <input type="number" id="jump-category" class="form-control form-control-sm" min="1" max="{{ total_categories }}" style="width: 90px;" placeholder="1-{{ total_categories }}">
@@ -265,13 +267,19 @@
       {% endif %}
 
       {% if has_prev %}
-        {% if not is_improv_category or not improv_has_saved %}
+        {% if not is_improv_category or not improv_has_saved or improv_can_advance_category %}
           <button type="submit" name="prev" class="btn btn-coral-outline">&larr; {% trans "Previous" %}</button>
         {% endif %}
       {% endif %}
 
       {% if is_improv_category %}
-        <button type="submit" name="save_improv" class="btn btn-coral" {% if not current_improv_round or improv_has_saved %}disabled{% endif %}>{% trans "Save" %}</button>
+        {% if has_next and improv_can_advance_category %}
+          <a href="{% url 'judge_view' event.id %}?group={{ current_index|add:1 }}" class="btn btn-coral">
+            {% trans "Next Category" %} &rarr;
+          </a>
+        {% else %}
+          <button type="submit" name="save_improv" class="btn btn-coral" {% if not current_improv_round or improv_round_locked_for_judge %}disabled{% endif %}>{% trans "Save" %}</button>
+        {% endif %}
       {% elif has_next %}
         <button type="submit" name="next" class="btn btn-coral">{% if current_category_locked %}{% trans "Next" %}{% else %}{% trans "Save & Next" %}{% endif %} &rarr;</button>
       {% else %}
@@ -377,7 +385,7 @@ function jumpToCategory(e) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  {% if is_improv_category and improv_has_saved %}
+  {% if is_improv_category and improv_has_saved and not improv_can_advance_category %}
   setTimeout(() => window.location.reload(), 10000);
   {% endif %}
 

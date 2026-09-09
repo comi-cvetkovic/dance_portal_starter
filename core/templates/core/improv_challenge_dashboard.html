@@ -152,6 +152,16 @@
             {% trans "Advance exactly" %} {{ current_round.target_count }}
           </span>
         {% endif %}
+        {% if current_round %}
+          <button
+            type="button"
+            class="btn btn-sm btn-coral-outline ms-auto"
+            data-bs-toggle="modal"
+            data-bs-target="#improvJudgeDetailsModal"
+          >
+            {% trans "View Detailed Scores" %}
+          </button>
+        {% endif %}
       </div>
       <div class="card-body p-0">
         {% if current_round %}
@@ -232,6 +242,87 @@
     </div>
   </div>
 </div>
+
+{% if current_round %}
+<div class="modal fade" id="improvJudgeDetailsModal" tabindex="-1" aria-labelledby="improvJudgeDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="improvJudgeDetailsModalLabel">{% trans "Detailed Improv Scores" %}</h5>
+          <div class="text-muted small">
+            {% if current_round.is_final %}
+              {{ current_round.age_group }} - {% trans "Final Ranking" %}
+            {% else %}
+              {{ current_round.age_group }} - {% trans "Round" %} {{ current_round.round_number }}
+            {% endif %}
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+      </div>
+      <div class="modal-body">
+        {% if current_round.is_final %}
+          <div class="alert alert-info">
+            {% trans "Final rankings are ordered by each judge's selected rank. Lowest total rank wins." %}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            {% trans "Selections show the dancers each judge chose to advance." %}
+          </div>
+        {% endif %}
+
+        <div class="table-responsive">
+          <table class="table table-striped align-middle mb-0">
+            <thead>
+              <tr>
+                <th>{% trans "Judge" %}</th>
+                <th class="text-center">{% trans "Status" %}</th>
+                <th>{% trans "Votes / Rankings" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for detail in judge_detail_rows %}
+                <tr>
+                  <td class="fw-semibold">{{ detail.judge_name }}</td>
+                  <td class="text-center">
+                    {% if detail.complete %}
+                      <span class="badge text-bg-success">{% trans "Complete" %}</span>
+                    {% else %}
+                      <span class="badge text-bg-warning">{% trans "Pending" %}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if detail.selected %}
+                      <div class="d-flex flex-wrap gap-2">
+                        {% for selection in detail.selected %}
+                          <span class="badge rounded-pill text-bg-light border improv-detail-pill">
+                            {% if current_round.is_final %}{{ selection.rank }}. {% endif %}{{ selection.name|default:"-" }}
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <span class="text-muted">{% trans "No selection saved yet." %}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted py-4">
+                    {% trans "No judges have been created for this event." %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-coral-outline" data-bs-dismiss="modal">{% trans "Close" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_head %}
@@ -258,6 +349,12 @@
   .improv-table td:first-child {
     width: 90px;
     text-align: center;
+  }
+
+  .improv-detail-pill {
+    font-size: 0.95rem;
+    white-space: normal;
+    text-align: left;
   }
 
   @media (max-width: 576px) {
