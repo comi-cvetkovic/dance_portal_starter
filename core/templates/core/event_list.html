@@ -78,6 +78,9 @@
                 <li><a class="dropdown-item" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'manage_styles' event.id %}">{% trans "Manage Style Categories" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'event_music' event.id %}">{% trans "Event Music" %}</a></li>
+                {% if event.allow_improv_challenge %}
+                  <li><a class="dropdown-item" href="{% url 'improv_challenge_dashboard' event.id %}">{% trans "Improv Challenge" %}</a></li>
+                {% endif %}
                 <li><a class="dropdown-item" href="{% url 'manage_judges' event.id %}">{% trans "Judges" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'event_awards' event.id %}">{% trans "Awards" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'notify_clubs' event.id %}">{% trans "Notify Clubs" %}</a></li>
@@ -182,6 +185,9 @@
                 <li><a class="dropdown-item" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'manage_styles' event.id %}">{% trans "Manage Style Categories" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'event_music' event.id %}">{% trans "Event Music" %}</a></li>
+                {% if event.allow_improv_challenge %}
+                  <li><a class="dropdown-item" href="{% url 'improv_challenge_dashboard' event.id %}">{% trans "Improv Challenge" %}</a></li>
+                {% endif %}
                 <li><a class="dropdown-item" href="{% url 'manage_judges' event.id %}">{% trans "Judges" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'event_awards' event.id %}">{% trans "Awards" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'notify_clubs' event.id %}">{% trans "Notify Clubs" %}</a></li>

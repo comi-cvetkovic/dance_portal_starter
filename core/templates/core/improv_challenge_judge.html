@@ -1,0 +1,158 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Improv Challenge Judging" %} - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h2 class="mb-1">{% trans "Improv Challenge Judging" %}</h2>
+    <p class="text-muted mb-0">{{ event.name }}</p>
+  </div>
+  <a href="{% url 'judge_view' event.id %}" class="btn btn-coral-outline">{% trans "Normal Judging" %}</a>
+</div>
+
+{% if current_round %}
+  <div class="dp-card mb-3">
+    <div class="card-body d-flex flex-wrap align-items-center gap-2">
+      <span class="badge rounded-pill text-bg-secondary">
+        {% if current_round.is_final %}
+          {% trans "Final Round" %}
+        {% else %}
+          {% trans "Round" %} {{ current_round.round_number }}
+        {% endif %}
+      </span>
+      {% if current_round.is_final %}
+        <span class="text-muted small">{% trans "Rank every finalist. Use each rank once." %}</span>
+      {% else %}
+        <span class="text-muted small">
+          {% trans "Select exactly" %} {{ current_round.target_count }} {% trans "participants to advance." %}
+        </span>
+        <span class="badge text-bg-light border ms-auto" id="selection-count">0 / {{ current_round.target_count }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" id="improv-judge-form">
+    {% csrf_token %}
+    <div class="row g-3">
+      {% for row in participants %}
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="improv-choice dp-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-start gap-3">
+                <div class="improv-start-number">
+                  {{ row.participation.start_number|default:"-" }}
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">{{ row.name|default:"-" }}</div>
+                  {% if current_round.is_final %}
+                    <label class="form-label small text-muted mt-2 mb-1" for="rank_{{ row.participation.id }}">
+                      {% trans "Rank" %}
+                    </label>
+                    <select name="rank_{{ row.participation.id }}" id="rank_{{ row.participation.id }}" class="form-select rank-select">
+                      <option value="">-</option>
+                      {% for rank in rank_options %}
+                        <option value="{{ rank }}" {% if row.selection and row.selection.rank == rank %}selected{% endif %}>
+                          {{ rank }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  {% else %}
+                    <div class="form-check mt-3">
+                      <input
+                        class="form-check-input improv-select"
+                        type="checkbox"
+                        name="selected"
+                        value="{{ row.participation.id }}"
+                        id="selected_{{ row.participation.id }}"
+                        {% if row.selection %}checked{% endif %}
+                      >
+                      <label class="form-check-label" for="selected_{{ row.participation.id }}">
+                        {% trans "Advance" %}
+                      </label>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="alert alert-warning">{% trans "No participants are available for this round." %}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if participants %}
+      <div class="sticky-submit mt-4">
+        <button type="submit" class="btn btn-coral">{% trans "Save Improv Scores" %}</button>
+      </div>
+    {% endif %}
+  </form>
+{% else %}
+  <div class="alert alert-warning">
+    {% trans "The admin has not configured Improv Challenge rounds yet." %}
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .improv-choice {
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+
+  .improv-choice:has(.improv-select:checked) {
+    border-color: var(--brand-coral);
+    box-shadow: 0 0 0 3px rgba(215,111,84,.18);
+  }
+
+  .improv-start-number {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: #fff2ee;
+    color: #b34f3a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .sticky-submit {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 5;
+    display: flex;
+    justify-content: flex-end;
+    padding: .75rem;
+    background: rgba(255,255,255,.88);
+    border: 1px solid rgba(215,111,84,.18);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const checkboxes = Array.from(document.querySelectorAll('.improv-select'));
+  const counter = document.getElementById('selection-count');
+  const target = {{ current_round.target_count|default:0 }};
+
+  function updateCount() {
+    if (!counter) return;
+    const selected = checkboxes.filter(box => box.checked).length;
+    counter.textContent = `${selected} / ${target}`;
+    counter.classList.toggle('text-bg-success', selected === target);
+    counter.classList.toggle('text-bg-light', selected !== target);
+  }
+
+  checkboxes.forEach(box => box.addEventListener('change', updateCount));
+  updateCount();
+});
+</script>
+{% endblock %}

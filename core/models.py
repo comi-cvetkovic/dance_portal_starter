@@ -222,6 +222,65 @@ class JudgeScore(models.Model):
         verbose_name = _("Judge Score")
         verbose_name_plural = _("Judge Scores")
 
+
+class ImprovChallengeConfig(models.Model):
+    event = models.OneToOneField(Event, on_delete=models.CASCADE, related_name="improv_config")
+    duration_minutes = models.PositiveIntegerField(default=0, verbose_name=_("Improv Challenge Duration (minutes)"))
+    current_round_number = models.PositiveIntegerField(default=1, verbose_name=_("Current Round"))
+
+    class Meta:
+        verbose_name = _("Improv Challenge Config")
+        verbose_name_plural = _("Improv Challenge Configs")
+
+    def __str__(self):
+        return f"{self.event} improv challenge"
+
+
+class ImprovChallengeRound(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="improv_rounds")
+    round_number = models.PositiveIntegerField(verbose_name=_("Round Number"))
+    target_count = models.PositiveIntegerField(verbose_name=_("Participants to Advance"))
+    is_final = models.BooleanField(default=False, verbose_name=_("Final Round"))
+    finalized = models.BooleanField(default=False, verbose_name=_("Finalized"))
+
+    class Meta:
+        unique_together = ("event", "round_number")
+        ordering = ["round_number"]
+        verbose_name = _("Improv Challenge Round")
+        verbose_name_plural = _("Improv Challenge Rounds")
+
+    def __str__(self):
+        return f"{self.event} - Round {self.round_number}"
+
+
+class ImprovJudgeSelection(models.Model):
+    round = models.ForeignKey(ImprovChallengeRound, on_delete=models.CASCADE, related_name="judge_selections")
+    judge = models.ForeignKey(User, on_delete=models.CASCADE, related_name="improv_selections")
+    participation = models.ForeignKey(Participation, on_delete=models.CASCADE, related_name="improv_selections")
+    rank = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Rank"))
+
+    class Meta:
+        unique_together = ("round", "judge", "participation")
+        verbose_name = _("Improv Judge Selection")
+        verbose_name_plural = _("Improv Judge Selections")
+
+    def __str__(self):
+        return f"{self.judge} - {self.round} - {self.participation}"
+
+
+class ImprovRoundQualifier(models.Model):
+    round = models.ForeignKey(ImprovChallengeRound, on_delete=models.CASCADE, related_name="qualifiers")
+    participation = models.ForeignKey(Participation, on_delete=models.CASCADE, related_name="improv_qualifications")
+
+    class Meta:
+        unique_together = ("round", "participation")
+        verbose_name = _("Improv Round Qualifier")
+        verbose_name_plural = _("Improv Round Qualifiers")
+
+    def __str__(self):
+        return f"{self.participation} qualified from {self.round}"
+
+
 class Diploma(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name=_("Event"))
     dancer = models.ForeignKey(Dancer, on_delete=models.CASCADE, verbose_name=_("Dancer"))

@@ -6,6 +6,11 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">{% trans "Judging" %} &mdash; {{ event.name }}</h2>
+  {% if event.allow_improv_challenge %}
+    <a href="{% url 'improv_challenge_judge' event.id %}" class="btn btn-coral-outline">
+      {% trans "Improv Challenge" %}
+    </a>
+  {% endif %}
 </div>
 
 {% if all_scored %}

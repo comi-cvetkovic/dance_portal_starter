@@ -8,7 +8,8 @@ from collections import defaultdict
 from .models import ( 
     Event, Participation, DanceClub, Dancer, StyleCategory, 
     DancerParticipation, EventPlaybackState, JudgeScore, StartListSlot,
-    Diploma,
+    Diploma, ImprovChallengeConfig, ImprovChallengeRound, ImprovJudgeSelection,
+    ImprovRoundQualifier,
 )
 from .forms import (
     EventForm,
@@ -54,6 +55,7 @@ from decimal import Decimal
 import builtins
 from django.db.models import Min
 from django.db.models import Count
+from django.db import transaction
 from mutagen.mp3 import MP3
 import logging
 
@@ -175,6 +177,78 @@ def get_start_list_category_label(style_name, group_type, age_group, difficulty)
     if difficulty:
         parts.append(difficulty)
     return " - ".join(parts)
+
+
+def get_improv_participations(event):
+    return (
+        Participation.objects.filter(event=event, style__name=IMPROV_CHALLENGE_STYLE)
+        .select_related("style")
+        .prefetch_related("dancer_links__dancer__club")
+        .order_by("start_number", "display_order", "id")
+    )
+
+
+def get_improv_participant_name(participation):
+    dancer_link = participation.dancer_links.first()
+    if not dancer_link:
+        return ""
+    return f"{dancer_link.dancer.first_name} {dancer_link.dancer.last_name}"
+
+
+def get_improv_round_participations(round_obj):
+    if round_obj.round_number == 1:
+        return list(get_improv_participations(round_obj.event))
+
+    previous_round = ImprovChallengeRound.objects.filter(
+        event=round_obj.event,
+        round_number=round_obj.round_number - 1,
+    ).first()
+    if not previous_round:
+        return []
+
+    qualifier_ids = previous_round.qualifiers.values_list("participation_id", flat=True)
+    return list(
+        get_improv_participations(round_obj.event).filter(id__in=qualifier_ids)
+    )
+
+
+def build_improv_round_rows(round_obj):
+    rows = []
+    participations = get_improv_round_participations(round_obj)
+    selections = ImprovJudgeSelection.objects.filter(round=round_obj)
+
+    vote_counts = defaultdict(int)
+    rank_totals = defaultdict(int)
+    rank_counts = defaultdict(int)
+    for selection in selections:
+        if round_obj.is_final:
+            if selection.rank:
+                rank_totals[selection.participation_id] += selection.rank
+                rank_counts[selection.participation_id] += 1
+        else:
+            vote_counts[selection.participation_id] += 1
+
+    selected_qualifier_ids = set(
+        round_obj.qualifiers.values_list("participation_id", flat=True)
+    )
+
+    for participation in participations:
+        dancer_link = participation.dancer_links.first()
+        rows.append({
+            "participation": participation,
+            "name": get_improv_participant_name(participation),
+            "club": dancer_link.dancer.club if dancer_link else None,
+            "votes": vote_counts.get(participation.id, 0),
+            "rank_total": rank_totals.get(participation.id),
+            "rank_count": rank_counts.get(participation.id, 0),
+            "is_qualifier": participation.id in selected_qualifier_ids,
+        })
+
+    if round_obj.is_final:
+        rows.sort(key=lambda row: (row["rank_total"] is None, row["rank_total"] or 999999, row["name"]))
+    else:
+        rows.sort(key=lambda row: (-row["votes"], row["name"]))
+    return rows
 
 
 def user_organizes_event(user, event):
@@ -520,6 +594,233 @@ def download_event_music(request, event_id):
     response["Content-Disposition"] = f'attachment; filename="{city}_{date_str}_music.zip"'
     return response
 
+
+@staff_member_required
+def improv_challenge_dashboard(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if not event.allow_improv_challenge:
+        messages.error(request, _("Improv Challenge is not enabled for this event."))
+        return redirect("event_list")
+
+    config, _ = ImprovChallengeConfig.objects.get_or_create(event=event)
+    participants = list(get_improv_participations(event))
+    rounds = list(ImprovChallengeRound.objects.filter(event=event))
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "save_setup":
+            counts_raw = request.POST.get("round_counts", "")
+            try:
+                duration_minutes = max(0, int(request.POST.get("duration_minutes") or "0"))
+            except ValueError:
+                duration_minutes = 0
+
+            counts = []
+            for chunk in counts_raw.replace("\n", ",").split(","):
+                chunk = chunk.strip()
+                if not chunk:
+                    continue
+                try:
+                    counts.append(int(chunk))
+                except ValueError:
+                    counts = []
+                    break
+
+            if not participants:
+                messages.error(request, _("No Improv Challenge participants are registered yet."))
+            elif not counts:
+                messages.error(request, _("Enter qualifier counts, for example: 25,10,5."))
+            elif any(count <= 0 for count in counts):
+                messages.error(request, _("Qualifier counts must be positive numbers."))
+            elif counts[0] >= len(participants):
+                messages.error(request, _("The first qualifier count must be lower than the number of participants."))
+            elif any(next_count >= count for count, next_count in zip(counts, counts[1:])):
+                messages.error(request, _("Qualifier counts must get smaller each round."))
+            else:
+                with transaction.atomic():
+                    ImprovChallengeRound.objects.filter(event=event).delete()
+                    config.duration_minutes = duration_minutes
+                    config.current_round_number = 1
+                    config.save(update_fields=["duration_minutes", "current_round_number"])
+                    for index, count in enumerate(counts, start=1):
+                        ImprovChallengeRound.objects.create(
+                            event=event,
+                            round_number=index,
+                            target_count=count,
+                            is_final=False,
+                        )
+                    ImprovChallengeRound.objects.create(
+                        event=event,
+                        round_number=len(counts) + 1,
+                        target_count=counts[-1],
+                        is_final=True,
+                    )
+                messages.success(request, _("Improv Challenge rounds saved."))
+            return redirect("improv_challenge_dashboard", event_id=event.id)
+
+        if action == "set_current_round":
+            round_obj = get_object_or_404(
+                ImprovChallengeRound,
+                id=request.POST.get("round_id"),
+                event=event,
+            )
+            config.current_round_number = round_obj.round_number
+            config.save(update_fields=["current_round_number"])
+            messages.success(request, _("Current Improv Challenge round updated."))
+            return redirect("improv_challenge_dashboard", event_id=event.id)
+
+        if action == "save_qualifiers":
+            round_obj = get_object_or_404(
+                ImprovChallengeRound,
+                id=request.POST.get("round_id"),
+                event=event,
+                is_final=False,
+            )
+            selected_ids = [int(value) for value in request.POST.getlist("qualifiers") if value.isdigit()]
+            if len(selected_ids) != round_obj.target_count:
+                messages.error(
+                    request,
+                    _("Select exactly %(count)s participants to advance.") % {"count": round_obj.target_count},
+                )
+            else:
+                valid_ids = {participation.id for participation in get_improv_round_participations(round_obj)}
+                if any(selected_id not in valid_ids for selected_id in selected_ids):
+                    messages.error(request, _("Invalid qualifier selection."))
+                else:
+                    with transaction.atomic():
+                        ImprovRoundQualifier.objects.filter(round=round_obj).delete()
+                        for participation_id in selected_ids:
+                            ImprovRoundQualifier.objects.create(
+                                round=round_obj,
+                                participation_id=participation_id,
+                            )
+                        round_obj.finalized = True
+                        round_obj.save(update_fields=["finalized"])
+                        next_round = ImprovChallengeRound.objects.filter(
+                            event=event,
+                            round_number=round_obj.round_number + 1,
+                        ).first()
+                        if next_round:
+                            config.current_round_number = next_round.round_number
+                            config.save(update_fields=["current_round_number"])
+                    messages.success(request, _("Qualifiers saved."))
+            return redirect("improv_challenge_dashboard", event_id=event.id)
+
+    rounds = list(ImprovChallengeRound.objects.filter(event=event))
+    current_round = next((round_obj for round_obj in rounds if round_obj.round_number == config.current_round_number), None)
+    current_rows = build_improv_round_rows(current_round) if current_round else []
+    round_counts = ",".join(str(round_obj.target_count) for round_obj in rounds if not round_obj.is_final)
+
+    return render(request, "core/improv_challenge_dashboard.html", {
+        "event": event,
+        "config": config,
+        "participants": participants,
+        "rounds": rounds,
+        "current_round": current_round,
+        "current_rows": current_rows,
+        "round_counts": round_counts,
+    })
+
+
+@login_required
+def improv_challenge_judge(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if not event.allow_improv_challenge:
+        messages.error(request, _("Improv Challenge is not enabled for this event."))
+        return redirect("judge_view", event_id=event.id)
+
+    config, _ = ImprovChallengeConfig.objects.get_or_create(event=event)
+    current_round = ImprovChallengeRound.objects.filter(
+        event=event,
+        round_number=config.current_round_number,
+    ).first()
+
+    if not current_round:
+        return render(request, "core/improv_challenge_judge.html", {
+            "event": event,
+            "current_round": None,
+            "participants": [],
+            "rank_options": [],
+        })
+
+    participants = get_improv_round_participations(current_round)
+    existing = {
+        selection.participation_id: selection
+        for selection in ImprovJudgeSelection.objects.filter(round=current_round, judge=request.user)
+    }
+
+    if request.method == "POST":
+        if current_round.is_final:
+            ranks = {}
+            for participation in participants:
+                try:
+                    rank = int(request.POST.get(f"rank_{participation.id}") or "")
+                except ValueError:
+                    rank = None
+                if rank:
+                    ranks[participation.id] = rank
+
+            expected_ids = {participation.id for participation in participants}
+            expected_ranks = set(range(1, len(participants) + 1))
+            if set(ranks.keys()) != expected_ids or set(ranks.values()) != expected_ranks:
+                messages.error(request, _("Rank every finalist exactly once."))
+            else:
+                with transaction.atomic():
+                    ImprovJudgeSelection.objects.filter(round=current_round, judge=request.user).delete()
+                    for participation in participants:
+                        ImprovJudgeSelection.objects.create(
+                            round=current_round,
+                            judge=request.user,
+                            participation=participation,
+                            rank=ranks[participation.id],
+                        )
+                messages.success(request, _("Final rankings saved."))
+                return redirect("improv_challenge_judge", event_id=event.id)
+        else:
+            selected_ids = [int(value) for value in request.POST.getlist("selected") if value.isdigit()]
+            valid_ids = {participation.id for participation in participants}
+            if len(selected_ids) != current_round.target_count:
+                messages.error(
+                    request,
+                    _("Select exactly %(count)s participants.") % {"count": current_round.target_count},
+                )
+            elif any(selected_id not in valid_ids for selected_id in selected_ids):
+                messages.error(request, _("Invalid participant selection."))
+            else:
+                with transaction.atomic():
+                    ImprovJudgeSelection.objects.filter(round=current_round, judge=request.user).delete()
+                    for participation_id in selected_ids:
+                        ImprovJudgeSelection.objects.create(
+                            round=current_round,
+                            judge=request.user,
+                            participation_id=participation_id,
+                        )
+                messages.success(request, _("Selections saved."))
+                return redirect("improv_challenge_judge", event_id=event.id)
+
+        existing = {
+            selection.participation_id: selection
+            for selection in ImprovJudgeSelection.objects.filter(round=current_round, judge=request.user)
+        }
+
+    participant_rows = [
+        {
+            "participation": participation,
+            "name": get_improv_participant_name(participation),
+            "selection": existing.get(participation.id),
+        }
+        for participation in participants
+    ]
+
+    return render(request, "core/improv_challenge_judge.html", {
+        "event": event,
+        "current_round": current_round,
+        "participants": participant_rows,
+        "rank_options": list(range(1, len(participant_rows) + 1)),
+    })
+
+
 @staff_member_required
 def delete_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -838,6 +1139,20 @@ def get_music_duration(p):
     # Use uploaded music length + 30s transition buffer.
     # If no music is uploaded (or unreadable), fall back to 3 minutes.
     default_seconds = 180
+
+    if p.style.name == IMPROV_CHALLENGE_STYLE:
+        try:
+            config = p.event.improv_config
+            if config.duration_minutes:
+                participant_count = Participation.objects.filter(
+                    event=p.event,
+                    style__name=IMPROV_CHALLENGE_STYLE,
+                ).count()
+                if participant_count:
+                    return max(1, int((config.duration_minutes * 60) / participant_count))
+        except ImprovChallengeConfig.DoesNotExist:
+            pass
+        return default_seconds
 
     if not p.music_file:
         return default_seconds
@@ -1729,6 +2044,7 @@ def judge_view(request, event_id):
     # Prefetch dancers & clubs for efficiency
     participations = (
         Participation.objects.filter(event=event)
+        .exclude(style__name=IMPROV_CHALLENGE_STYLE)
         .select_related("style")
         .prefetch_related("dancer_links__dancer__club")
         .order_by("group_display_order", "display_order", "id")
