@@ -179,13 +179,18 @@ def get_start_list_category_label(style_name, group_type, age_group, difficulty)
     return " - ".join(parts)
 
 
-def get_improv_participations(event):
-    return (
+IMPROV_AGE_GROUPS = ("Mini Improv Challenge", "Improv Challenge 11+")
+
+
+def get_improv_participations(event, age_group=None):
+    queryset = (
         Participation.objects.filter(event=event, style__name=IMPROV_CHALLENGE_STYLE)
         .select_related("style")
         .prefetch_related("dancer_links__dancer__club")
-        .order_by("start_number", "display_order", "id")
     )
+    if age_group:
+        queryset = queryset.filter(age_group=age_group)
+    return queryset.order_by("start_number", "display_order", "id")
 
 
 def get_improv_participant_name(participation):
@@ -197,10 +202,11 @@ def get_improv_participant_name(participation):
 
 def get_improv_round_participations(round_obj):
     if round_obj.round_number == 1:
-        return list(get_improv_participations(round_obj.event))
+        return list(get_improv_participations(round_obj.event, round_obj.age_group))
 
     previous_round = ImprovChallengeRound.objects.filter(
         event=round_obj.event,
+        age_group=round_obj.age_group,
         round_number=round_obj.round_number - 1,
     ).first()
     if not previous_round:
@@ -208,7 +214,7 @@ def get_improv_round_participations(round_obj):
 
     qualifier_ids = previous_round.qualifiers.values_list("participation_id", flat=True)
     return list(
-        get_improv_participations(round_obj.event).filter(id__in=qualifier_ids)
+        get_improv_participations(round_obj.event, round_obj.age_group).filter(id__in=qualifier_ids)
     )
 
 
@@ -603,59 +609,114 @@ def improv_challenge_dashboard(request, event_id):
         return redirect("event_list")
 
     config, _ = ImprovChallengeConfig.objects.get_or_create(event=event)
-    participants = list(get_improv_participations(event))
-    rounds = list(ImprovChallengeRound.objects.filter(event=event))
+    participants_by_age = {
+        age_group: list(get_improv_participations(event, age_group))
+        for age_group in IMPROV_AGE_GROUPS
+    }
+    participants = [p for group_participants in participants_by_age.values() for p in group_participants]
 
     if request.method == "POST":
         action = request.POST.get("action")
 
         if action == "save_setup":
-            counts_raw = request.POST.get("round_counts", "")
+            setup_specs = [
+                ("Mini Improv Challenge", "mini_round_counts", "mini_duration_minutes"),
+                ("Improv Challenge 11+", "challenge_round_counts", "challenge_duration_minutes"),
+            ]
+            parsed_counts = {}
+            has_error = False
+
+            for age_group, field_name, _duration_field in setup_specs:
+                counts_raw = request.POST.get(field_name, "")
+                counts = []
+                for chunk in counts_raw.replace("\n", ",").split(","):
+                    chunk = chunk.strip()
+                    if not chunk:
+                        continue
+                    try:
+                        counts.append(int(chunk))
+                    except ValueError:
+                        has_error = True
+                        messages.error(
+                            request,
+                            _("%(age_group)s qualifier counts must be numbers separated by commas.") % {"age_group": age_group},
+                        )
+                        break
+
+                age_participants = participants_by_age[age_group]
+                if counts:
+                    if not age_participants:
+                        has_error = True
+                        messages.error(
+                            request,
+                            _("No participants are registered for %(age_group)s.") % {"age_group": age_group},
+                        )
+                    elif any(count <= 0 for count in counts):
+                        has_error = True
+                        messages.error(request, _("Qualifier counts must be positive numbers."))
+                    elif counts[0] >= len(age_participants):
+                        has_error = True
+                        messages.error(
+                            request,
+                            _("The first qualifier count for %(age_group)s must be lower than the number of participants.") % {"age_group": age_group},
+                        )
+                    elif any(next_count >= count for count, next_count in zip(counts, counts[1:])):
+                        has_error = True
+                        messages.error(
+                            request,
+                            _("Qualifier counts for %(age_group)s must get smaller each round.") % {"age_group": age_group},
+                        )
+                parsed_counts[age_group] = counts
+
             try:
-                duration_minutes = max(0, int(request.POST.get("duration_minutes") or "0"))
+                mini_duration = max(0, int(request.POST.get("mini_duration_minutes") or "0"))
             except ValueError:
-                duration_minutes = 0
+                mini_duration = 0
+            try:
+                challenge_duration = max(0, int(request.POST.get("challenge_duration_minutes") or "0"))
+            except ValueError:
+                challenge_duration = 0
 
-            counts = []
-            for chunk in counts_raw.replace("\n", ",").split(","):
-                chunk = chunk.strip()
-                if not chunk:
-                    continue
-                try:
-                    counts.append(int(chunk))
-                except ValueError:
-                    counts = []
-                    break
-
-            if not participants:
-                messages.error(request, _("No Improv Challenge participants are registered yet."))
-            elif not counts:
-                messages.error(request, _("Enter qualifier counts, for example: 25,10,5."))
-            elif any(count <= 0 for count in counts):
-                messages.error(request, _("Qualifier counts must be positive numbers."))
-            elif counts[0] >= len(participants):
-                messages.error(request, _("The first qualifier count must be lower than the number of participants."))
-            elif any(next_count >= count for count, next_count in zip(counts, counts[1:])):
-                messages.error(request, _("Qualifier counts must get smaller each round."))
-            else:
+            if not has_error:
                 with transaction.atomic():
                     ImprovChallengeRound.objects.filter(event=event).delete()
-                    config.duration_minutes = duration_minutes
-                    config.current_round_number = 1
-                    config.save(update_fields=["duration_minutes", "current_round_number"])
-                    for index, count in enumerate(counts, start=1):
+                    config.mini_duration_minutes = mini_duration
+                    config.challenge_duration_minutes = challenge_duration
+                    config.duration_minutes = mini_duration + challenge_duration
+
+                    first_current_age_group = ""
+                    for age_group, _field_name, _duration_field in setup_specs:
+                        counts = parsed_counts[age_group]
+                        if not counts:
+                            continue
+                        if not first_current_age_group:
+                            first_current_age_group = age_group
+                        for index, count in enumerate(counts, start=1):
+                            ImprovChallengeRound.objects.create(
+                                event=event,
+                                age_group=age_group,
+                                round_number=index,
+                                target_count=count,
+                                is_final=False,
+                            )
                         ImprovChallengeRound.objects.create(
                             event=event,
-                            round_number=index,
-                            target_count=count,
-                            is_final=False,
+                            age_group=age_group,
+                            round_number=len(counts) + 1,
+                            target_count=counts[-1],
+                            is_final=True,
                         )
-                    ImprovChallengeRound.objects.create(
-                        event=event,
-                        round_number=len(counts) + 1,
-                        target_count=counts[-1],
-                        is_final=True,
-                    )
+
+                    if first_current_age_group:
+                        config.current_age_group = first_current_age_group
+                        config.current_round_number = 1
+                    config.save(update_fields=[
+                        "duration_minutes",
+                        "mini_duration_minutes",
+                        "challenge_duration_minutes",
+                        "current_age_group",
+                        "current_round_number",
+                    ])
                 messages.success(request, _("Improv Challenge rounds saved."))
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
@@ -665,8 +726,9 @@ def improv_challenge_dashboard(request, event_id):
                 id=request.POST.get("round_id"),
                 event=event,
             )
+            config.current_age_group = round_obj.age_group
             config.current_round_number = round_obj.round_number
-            config.save(update_fields=["current_round_number"])
+            config.save(update_fields=["current_age_group", "current_round_number"])
             messages.success(request, _("Current Improv Challenge round updated."))
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
@@ -699,29 +761,48 @@ def improv_challenge_dashboard(request, event_id):
                         round_obj.save(update_fields=["finalized"])
                         next_round = ImprovChallengeRound.objects.filter(
                             event=event,
+                            age_group=round_obj.age_group,
                             round_number=round_obj.round_number + 1,
                         ).first()
                         if next_round:
+                            config.current_age_group = next_round.age_group
                             config.current_round_number = next_round.round_number
-                            config.save(update_fields=["current_round_number"])
+                            config.save(update_fields=["current_age_group", "current_round_number"])
                     messages.success(request, _("Qualifiers saved."))
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
     rounds = list(ImprovChallengeRound.objects.filter(event=event))
-    current_round = next((round_obj for round_obj in rounds if round_obj.round_number == config.current_round_number), None)
+    current_round = next(
+        (
+            round_obj for round_obj in rounds
+            if round_obj.age_group == config.current_age_group
+            and round_obj.round_number == config.current_round_number
+        ),
+        None,
+    )
     current_rows = build_improv_round_rows(current_round) if current_round else []
-    round_counts = ",".join(str(round_obj.target_count) for round_obj in rounds if not round_obj.is_final)
+    round_counts_by_age = {
+        age_group: ",".join(
+            str(round_obj.target_count)
+            for round_obj in rounds
+            if round_obj.age_group == age_group and not round_obj.is_final
+        )
+        for age_group in IMPROV_AGE_GROUPS
+    }
 
     return render(request, "core/improv_challenge_dashboard.html", {
         "event": event,
         "config": config,
         "participants": participants,
+        "participants_by_age": participants_by_age,
+        "mini_participant_count": len(participants_by_age["Mini Improv Challenge"]),
+        "challenge_participant_count": len(participants_by_age["Improv Challenge 11+"]),
         "rounds": rounds,
         "current_round": current_round,
         "current_rows": current_rows,
-        "round_counts": round_counts,
+        "mini_round_counts": round_counts_by_age["Mini Improv Challenge"],
+        "challenge_round_counts": round_counts_by_age["Improv Challenge 11+"],
     })
-
 
 @login_required
 def improv_challenge_judge(request, event_id):
@@ -733,6 +814,7 @@ def improv_challenge_judge(request, event_id):
     config, _ = ImprovChallengeConfig.objects.get_or_create(event=event)
     current_round = ImprovChallengeRound.objects.filter(
         event=event,
+        age_group=config.current_age_group,
         round_number=config.current_round_number,
     ).first()
 
@@ -1143,13 +1225,19 @@ def get_music_duration(p):
     if p.style.name == IMPROV_CHALLENGE_STYLE:
         try:
             config = p.event.improv_config
-            if config.duration_minutes:
+            duration_minutes = (
+                config.mini_duration_minutes
+                if p.age_group == "Mini Improv Challenge"
+                else config.challenge_duration_minutes
+            )
+            if duration_minutes:
                 participant_count = Participation.objects.filter(
                     event=p.event,
                     style__name=IMPROV_CHALLENGE_STYLE,
+                    age_group=p.age_group,
                 ).count()
                 if participant_count:
-                    return max(1, int((config.duration_minutes * 60) / participant_count))
+                    return max(1, int((duration_minutes * 60) / participant_count))
         except ImprovChallengeConfig.DoesNotExist:
             pass
         return default_seconds

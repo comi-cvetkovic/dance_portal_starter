@@ -3,15 +3,17 @@
 
 {% block title %}{% trans "Improv Challenge" %} - {{ event.name }}{% endblock %}
 
-{% block content %}
+{% block breadcrumbs %}
 <nav aria-label="breadcrumb" class="mb-3">
-  <ol class="breadcrumb">
+  <ol class="breadcrumb mb-0">
     <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
     <li class="breadcrumb-item"><a href="{% url 'event_list' %}">{% trans "Events" %}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{% trans "Improv Challenge" %}</li>
   </ol>
 </nav>
+{% endblock %}
 
+{% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
   <div>
     <h2 class="mb-1">{% trans "Improv Challenge" %} - {{ event.name }}</h2>
@@ -31,34 +33,60 @@
           {% csrf_token %}
           <input type="hidden" name="action" value="save_setup">
 
-          <div>
-            <label for="round_counts" class="form-label">{% trans "Qualifier Counts" %}</label>
+          <div class="improv-setup-section">
+            <h3 class="h6 mb-2">{% trans "Mini Improv Challenge" %}</h3>
+            <label for="mini_round_counts" class="form-label">{% trans "Qualifier Counts" %}</label>
             <input
               type="text"
-              id="round_counts"
-              name="round_counts"
+              id="mini_round_counts"
+              name="mini_round_counts"
               class="form-control"
-              value="{{ round_counts }}"
+              value="{{ mini_round_counts }}"
               placeholder="25,10,5"
             >
             <div class="form-text">
               {% trans "Example: 25,10,5 creates three selection rounds and a final ranking round with 5 dancers." %}
             </div>
-          </div>
 
-          <div>
-            <label for="duration_minutes" class="form-label">{% trans "Total Duration (minutes)" %}</label>
+            <label for="mini_duration_minutes" class="form-label mt-3">{% trans "Total Duration (minutes)" %}</label>
             <input
               type="number"
-              id="duration_minutes"
-              name="duration_minutes"
+              id="mini_duration_minutes"
+              name="mini_duration_minutes"
               class="form-control"
               min="0"
-              value="{{ config.duration_minutes }}"
+              value="{{ config.mini_duration_minutes }}"
+            >
+          </div>
+
+          <div class="improv-setup-section">
+            <h3 class="h6 mb-2">{% trans "Improv Challenge 11+" %}</h3>
+            <label for="challenge_round_counts" class="form-label">{% trans "Qualifier Counts" %}</label>
+            <input
+              type="text"
+              id="challenge_round_counts"
+              name="challenge_round_counts"
+              class="form-control"
+              value="{{ challenge_round_counts }}"
+              placeholder="25,10,5"
             >
             <div class="form-text">
-              {% trans "Used for the start-list time schedule. Leave 0 to use the normal default." %}
+              {% trans "Leave blank if this age group is not being run." %}
             </div>
+
+            <label for="challenge_duration_minutes" class="form-label mt-3">{% trans "Total Duration (minutes)" %}</label>
+            <input
+              type="number"
+              id="challenge_duration_minutes"
+              name="challenge_duration_minutes"
+              class="form-control"
+              min="0"
+              value="{{ config.challenge_duration_minutes }}"
+            >
+          </div>
+
+          <div class="form-text">
+            {% trans "Durations are used for the start-list time schedule. Leave 0 to use the normal default." %}
           </div>
 
           <button type="submit" class="btn btn-coral">{% trans "Save Improv Setup" %}</button>
@@ -69,8 +97,14 @@
     <div class="dp-card mt-4">
       <div class="card-header fw-semibold">{% trans "Participants" %}</div>
       <div class="card-body">
-        <div class="display-6">{{ participants|length }}</div>
-        <div class="text-muted">{% trans "registered for Improv Challenge" %}</div>
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{% trans "Mini Improv Challenge" %}</span>
+          <strong>{{ mini_participant_count }}</strong>
+        </div>
+        <div class="d-flex justify-content-between py-2">
+          <span>{% trans "Improv Challenge 11+" %}</span>
+          <strong>{{ challenge_participant_count }}</strong>
+        </div>
       </div>
     </div>
   </div>
@@ -91,9 +125,9 @@
                   class="btn btn-sm {% if current_round and current_round.id == round.id %}btn-coral{% else %}btn-coral-outline{% endif %}"
                 >
                   {% if round.is_final %}
-                    {% trans "Final" %}
+                    {{ round.age_group }} - {% trans "Final" %}
                   {% else %}
-                    {% trans "Round" %} {{ round.round_number }} -> {{ round.target_count }}
+                    {{ round.age_group }} - {% trans "Round" %} {{ round.round_number }} -> {{ round.target_count }}
                   {% endif %}
                 </button>
               </form>
@@ -110,9 +144,9 @@
         <span class="fw-semibold">
           {% if current_round %}
             {% if current_round.is_final %}
-              {% trans "Final Ranking" %}
+              {{ current_round.age_group }} - {% trans "Final Ranking" %}
             {% else %}
-              {% trans "Round" %} {{ current_round.round_number }}
+              {{ current_round.age_group }} - {% trans "Round" %} {{ current_round.round_number }}
             {% endif %}
           {% else %}
             {% trans "Current Round" %}
@@ -209,6 +243,13 @@
 <style>
   .improv-table-wrap {
     border-radius: 0 0 14px 14px;
+  }
+
+  .improv-setup-section {
+    padding: 1rem;
+    border: 1px solid rgba(215,111,84,.18);
+    border-radius: 14px;
+    background: #fff7f4;
   }
 
   .improv-table th,

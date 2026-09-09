@@ -17,9 +17,9 @@
     <div class="card-body d-flex flex-wrap align-items-center gap-2">
       <span class="badge rounded-pill text-bg-secondary">
         {% if current_round.is_final %}
-          {% trans "Final Round" %}
+          {{ current_round.age_group }} - {% trans "Final Round" %}
         {% else %}
-          {% trans "Round" %} {{ current_round.round_number }}
+          {{ current_round.age_group }} - {% trans "Round" %} {{ current_round.round_number }}
         {% endif %}
       </span>
       {% if current_round.is_final %}

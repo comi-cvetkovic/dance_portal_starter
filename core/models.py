@@ -226,6 +226,9 @@ class JudgeScore(models.Model):
 class ImprovChallengeConfig(models.Model):
     event = models.OneToOneField(Event, on_delete=models.CASCADE, related_name="improv_config")
     duration_minutes = models.PositiveIntegerField(default=0, verbose_name=_("Improv Challenge Duration (minutes)"))
+    mini_duration_minutes = models.PositiveIntegerField(default=0, verbose_name=_("Mini Improv Challenge Duration (minutes)"))
+    challenge_duration_minutes = models.PositiveIntegerField(default=0, verbose_name=_("Improv Challenge 11+ Duration (minutes)"))
+    current_age_group = models.CharField(max_length=30, blank=True, default="Mini Improv Challenge", verbose_name=_("Current Improv Age Group"))
     current_round_number = models.PositiveIntegerField(default=1, verbose_name=_("Current Round"))
 
     class Meta:
@@ -238,14 +241,15 @@ class ImprovChallengeConfig(models.Model):
 
 class ImprovChallengeRound(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="improv_rounds")
+    age_group = models.CharField(max_length=30, choices=Participation.AGE_GROUP_CHOICES, default="Mini Improv Challenge", verbose_name=_("Age Group"))
     round_number = models.PositiveIntegerField(verbose_name=_("Round Number"))
     target_count = models.PositiveIntegerField(verbose_name=_("Participants to Advance"))
     is_final = models.BooleanField(default=False, verbose_name=_("Final Round"))
     finalized = models.BooleanField(default=False, verbose_name=_("Finalized"))
 
     class Meta:
-        unique_together = ("event", "round_number")
-        ordering = ["round_number"]
+        unique_together = ("event", "age_group", "round_number")
+        ordering = ["age_group", "round_number"]
         verbose_name = _("Improv Challenge Round")
         verbose_name_plural = _("Improv Challenge Rounds")
 
