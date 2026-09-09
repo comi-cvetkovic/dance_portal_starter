@@ -116,21 +116,16 @@
         {% if rounds %}
           <div class="d-flex flex-wrap gap-2">
             {% for round in rounds %}
-              <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="set_current_round">
-                <input type="hidden" name="round_id" value="{{ round.id }}">
-                <button
-                  type="submit"
-                  class="btn btn-sm {% if current_round and current_round.id == round.id %}btn-coral{% else %}btn-coral-outline{% endif %}"
-                >
-                  {% if round.is_final %}
-                    {{ round.age_group }} - {% trans "Final" %}
-                  {% else %}
-                    {{ round.age_group }} - {% trans "Round" %} {{ round.round_number }} -> {{ round.target_count }}
-                  {% endif %}
-                </button>
-              </form>
+              <a
+                href="{% url 'improv_challenge_dashboard' event.id %}?round_id={{ round.id }}"
+                class="btn btn-sm {% if current_round and current_round.id == round.id %}btn-coral{% else %}btn-coral-outline{% endif %}"
+              >
+                {% if round.is_final %}
+                  {{ round.age_group }} - {% trans "Final" %}
+                {% else %}
+                  {{ round.age_group }} - {% trans "Round" %} {{ round.round_number }} -> {{ round.target_count }}
+                {% endif %}
+              </a>
             {% endfor %}
           </div>
         {% else %}

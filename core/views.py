@@ -615,6 +615,20 @@ def improv_challenge_dashboard(request, event_id):
     }
     participants = [p for group_participants in participants_by_age.values() for p in group_participants]
 
+    selected_round_id = request.GET.get("round_id")
+    if request.method == "GET" and selected_round_id:
+        round_obj = ImprovChallengeRound.objects.filter(
+            id=selected_round_id,
+            event=event,
+        ).first()
+        if round_obj:
+            config.current_age_group = round_obj.age_group
+            config.current_round_number = round_obj.round_number
+            config.save(update_fields=["current_age_group", "current_round_number"])
+        else:
+            messages.error(request, _("That Improv Challenge round could not be found."))
+        return redirect("improv_challenge_dashboard", event_id=event.id)
+
     if request.method == "POST":
         action = request.POST.get("action")
 
@@ -677,6 +691,7 @@ def improv_challenge_dashboard(request, event_id):
             except ValueError:
                 challenge_duration = 0
 
+            first_current_round_id = None
             if not has_error:
                 try:
                     with transaction.atomic():
@@ -693,13 +708,15 @@ def improv_challenge_dashboard(request, event_id):
                             if not first_current_age_group:
                                 first_current_age_group = age_group
                             for index, count in enumerate(counts, start=1):
-                                ImprovChallengeRound.objects.create(
+                                created_round = ImprovChallengeRound.objects.create(
                                     event=event,
                                     age_group=age_group,
                                     round_number=index,
                                     target_count=count,
                                     is_final=False,
                                 )
+                                if first_current_round_id is None:
+                                    first_current_round_id = created_round.id
                             ImprovChallengeRound.objects.create(
                                 event=event,
                                 age_group=age_group,
@@ -725,18 +742,22 @@ def improv_challenge_dashboard(request, event_id):
                         request,
                         _("Could not save Improv setup because of a database constraint. Please run the latest migrations and try again."),
                     )
+            if first_current_round_id:
+                return redirect(f"{reverse('improv_challenge_dashboard', args=[event.id])}?round_id={first_current_round_id}")
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
         if action == "set_current_round":
-            round_obj = get_object_or_404(
-                ImprovChallengeRound,
+            round_obj = ImprovChallengeRound.objects.filter(
                 id=request.POST.get("round_id"),
                 event=event,
-            )
-            config.current_age_group = round_obj.age_group
-            config.current_round_number = round_obj.round_number
-            config.save(update_fields=["current_age_group", "current_round_number"])
-            messages.success(request, _("Current Improv Challenge round updated."))
+            ).first()
+            if round_obj:
+                config.current_age_group = round_obj.age_group
+                config.current_round_number = round_obj.round_number
+                config.save(update_fields=["current_age_group", "current_round_number"])
+                messages.success(request, _("Current Improv Challenge round updated."))
+            else:
+                messages.error(request, _("That Improv Challenge round could not be found."))
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
         if action == "save_qualifiers":
