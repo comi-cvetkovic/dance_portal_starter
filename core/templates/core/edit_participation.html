@@ -109,7 +109,7 @@
       <form method="post" enctype="multipart/form-data" id="editParticipationForm">
         {% csrf_token %}
 
-        <div class="mb-3">
+        <div class="mb-3" id="group-type-section">
           <label for="id_group_type" class="form-label fw-semibold">
             {% trans "Group Type" %}
             <i class="bi bi-info-circle ms-1 text-muted"
@@ -122,8 +122,10 @@
 
         <hr>
         <div class="mb-3">
-          <label for="id_dancers" class="form-label fw-semibold">
-            {% trans "Select and/or Search Dancers:" %}
+          <label for="id_dancers" id="dancer-selection-label" class="form-label fw-semibold">
+            <span id="dancer-selection-label-text"
+                  data-default-label="{% trans 'Select and/or Search Dancers:' %}"
+                  data-improv-label="{% trans 'Dancer full name:' %}">{% trans "Select and/or Search Dancers:" %}</span>
             <i class="bi bi-info-circle ms-1 text-muted"
                data-bs-toggle="tooltip"
                data-bs-custom-class="dp-tooltip"
@@ -165,7 +167,7 @@
         </div>
 
         
-        <div class="mb-3">
+        <div class="mb-3" id="style-section">
           <label for="id_style" class="form-label fw-semibold">
             {% trans "Style" %}
             <i class="bi bi-info-circle ms-1 text-muted"
@@ -177,7 +179,7 @@
         </div>
 
         <hr>
-        <div class="mb-3">
+        <div class="mb-3" id="difficulty-section">
           <label for="id_difficulty" class="form-label fw-semibold">
             {% trans "Difficulty" %}
             <i class="bi bi-info-circle ms-1 text-muted"
@@ -189,7 +191,7 @@
         </div>
 
         <hr>
-        <div class="mb-3">
+        <div class="mb-3" id="age-group-section">
           <label for="id_age_group" class="form-label fw-semibold">
             {% trans "Age Group (auto-calculated)" %}
             <i class="bi bi-info-circle ms-1 text-muted"
@@ -202,7 +204,7 @@
         </div>
 
         <hr>
-        <div class="mb-3">
+        <div class="mb-3" id="choreographer-section">
           <label for="id_choreographer_name" class="form-label fw-semibold">
             {% trans "Choreographer Name" %}
             <i class="bi bi-info-circle ms-1 text-muted"
@@ -214,7 +216,7 @@
         </div>
 
         <hr>
-        <div class="mb-3">
+        <div class="mb-3" id="choreography-section">
           <label for="id_choreography_name" class="form-label fw-semibold">
             {% trans "Choreography Name" %}
             <i class="bi bi-info-circle ms-1 text-muted"
@@ -227,7 +229,7 @@
 
         <hr>
         {% if participation.music_file %}
-        <div class="mb-3">
+        <div class="mb-3" id="current-music-section">
           <label class="form-label fw-semibold">{% trans "Current Music File" %}</label><br>
           <audio controls class="mt-2 mb-2 w-100" style="max-width:400px;">
             <source src="{{ participation.music_file.url }}" type="audio/mpeg">
@@ -243,7 +245,7 @@
         </div>
         {% endif %}
 
-        <div class="mb-3">
+        <div class="mb-3" id="music-section">
           <label for="id_music_file" class="form-label fw-semibold">
             {% trans "Replace Music File (optional)" %}
             <i class="bi bi-info-circle ms-1 text-muted"
@@ -350,15 +352,26 @@ const dancerLimits = {
   'Solo':[1,1],'Duo':[2,2],'Trio':[3,3],
   'Group':[4,9],'Formation':[10,29],'Production':[30,200]
 };
+const improvChallengeStyleName = 'Improv Challenge';
 
 $(function(){
   const dancerSelect = $('#id_dancers');
   const dancerQuickSearch = $('#id_dancer_quick_search');
   const groupTypeSelect = $('#id_group_type');
+  const styleSelect = $('#id_style');
+  const dancerSelectionLabelText = $('#dancer-selection-label-text');
   const groupNameWrapper = $('#group-name-wrapper');
   const ageGroupField = $('#id_age_group');
   const avgAgeSpan = $('#avg-age-display');
   const dancerQuickSearchList = document.getElementById('id_dancer_quick_search_list');
+
+  function isImprovChallenge() {
+    return (styleSelect.find('option:selected').text() || '').trim() === improvChallengeStyleName;
+  }
+
+  function activeGroupType() {
+    return isImprovChallenge() ? 'Solo' : groupTypeSelect.val();
+  }
 
   function initSelect2Multi(max){
     dancerSelect.select2({width:'100%',allowClear:true,closeOnSelect:false,maximumSelectionLength:max,minimumResultsForSearch:Infinity});
@@ -404,7 +417,7 @@ $(function(){
     if (!matchedOption) return;
     const selectedId = matchedOption.getAttribute('data-id');
     if (!selectedId) return;
-    const type = groupTypeSelect.val();
+    const type = activeGroupType();
     let selected = dancerSelect.val() || [];
     if(!Array.isArray(selected)) selected=[selected];
     selected=selected.filter(v=>v&&v.trim()!=='');
@@ -418,12 +431,25 @@ $(function(){
     updateAgeGroup();
   }
   function updateGroupTypeSettings(preserveSelection=false){
-    const type=groupTypeSelect.val();
+    const improvMode = isImprovChallenge();
+    const type=activeGroupType();
     const [min,max]=dancerLimits[type]||[0,999];
     let selected=dancerSelect.val()||[];
     if(!Array.isArray(selected)) selected=[selected];
     selected=selected.filter(v=>v&&v.trim()!=='');
     dancerSelect.select2('destroy');
+
+    if (improvMode) {
+      groupTypeSelect.val('Solo');
+      $('#group-type-section').hide();
+      $('#difficulty-section, #choreographer-section, #choreography-section, #music-section, #current-music-section').hide();
+      $('#id_difficulty, #id_choreographer_name, #id_choreography_name, #id_group_name').val('');
+      $('#id_music_file').val('');
+      dancerSelectionLabelText.text(dancerSelectionLabelText.data('improv-label'));
+    } else {
+      $('#group-type-section, #difficulty-section, #choreographer-section, #choreography-section, #music-section, #current-music-section').show();
+      dancerSelectionLabelText.text(dancerSelectionLabelText.data('default-label'));
+    }
     if(type==='Solo'){
       dancerSelect.prop('multiple',false);
       initSelect2Single();
@@ -439,7 +465,7 @@ $(function(){
         dancerSelect.val(selected).trigger('change');
       }
     }
-    if(['Group','Formation','Production'].includes(type)){ groupNameWrapper.show(); }
+    if(!improvMode && ['Group','Formation','Production'].includes(type)){ groupNameWrapper.show(); }
     else{ groupNameWrapper.hide(); $('#id_group_name').val(''); }
     refreshCount();
   }
@@ -449,7 +475,7 @@ $(function(){
     if(ids.length===0){ ageGroupField.prop("value","").trigger("change"); avgAgeSpan.text(''); refreshCount(); return; }
     $.ajax({
       url:"{% url 'calculate_age_group' participation.event.id %}",
-      type:"POST", data:{"dancers[]":ids,group_type:groupTypeSelect.val(),csrfmiddlewaretoken:'{{ csrf_token }}'},
+      type:"POST", data:{"dancers[]":ids,group_type:activeGroupType(),style:styleSelect.val(),csrfmiddlewaretoken:'{{ csrf_token }}'},
       success:function(data){
         if(data.age_group){
           ageGroupField.prop("value",data.age_group).trigger("change");
@@ -462,7 +488,7 @@ $(function(){
     });
   }
   function validateGroupSize(){
-    const type=groupTypeSelect.val();
+    const type=activeGroupType();
     let selected=dancerSelect.val()||[];
     if(!Array.isArray(selected)) selected=[selected];
     const num=selected.filter(x=>x&&x.trim()!=='').length;
@@ -473,6 +499,7 @@ $(function(){
   $(document).on('click','#btn-select-all',function(){ dancerSelect.find('option').prop('selected',true); dancerSelect.trigger('change'); updateAgeGroup(); });
   $(document).on('click','#btn-clear',function(){ dancerSelect.val(null).trigger('change'); updateAgeGroup(); });
   groupTypeSelect.on('change',function(){ updateGroupTypeSettings(false); });
+  styleSelect.on('change',function(){ updateGroupTypeSettings(true); updateAgeGroup(); });
   dancerSelect.on('change',updateAgeGroup);
   $("form").on("submit",function(e){ if(!validateGroupSize()) e.preventDefault(); });
   dancerSelect.select2({width:'100%',allowClear:true,minimumResultsForSearch:Infinity});

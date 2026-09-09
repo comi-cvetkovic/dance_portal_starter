@@ -53,6 +53,7 @@ class Event(models.Model):
         default=True,
         verbose_name=_("Discard Highest/Lowest Judge Scores"),
     )
+    allow_improv_challenge = models.BooleanField(default=False, verbose_name=_("Enable Improv Challenge"))
     start_time = models.TimeField(null=True, blank=True, verbose_name=_("Start Time"))
     notice_image = models.ImageField(
         upload_to="event_posters/",
@@ -124,21 +125,24 @@ class Participation(models.Model):
         ('Youth', _("Youth (15-17)")),
         ('Adult', _("Adult (18 and up)")),
         ('Mixed Age', _("Mixed Age")),
+        ('Mini Improv Challenge', _("Mini Improv Challenge (up to 10)")),
+        ('Improv Challenge 11+', _("Improv Challenge 11+")),
     ]
 
     DIFFICULTY_CHOICES = [
+        ('', _("No difficulty")),
         ('A', _("Advanced")),
         ('B', _("Beginner/Basic")),
     ]
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name=_("Event"))
     group_type = models.CharField(max_length=20, choices=CHOREO_TYPE_CHOICES, verbose_name=_("Group Type"))
-    age_group = models.CharField(max_length=20, choices=AGE_GROUP_CHOICES, verbose_name=_("Age Group"))
+    age_group = models.CharField(max_length=30, choices=AGE_GROUP_CHOICES, verbose_name=_("Age Group"))
     style = models.ForeignKey("StyleCategory", on_delete=models.CASCADE, verbose_name=_("Style"))
-    choreographer_name = models.CharField(max_length=255, verbose_name=_("Choreographer Name"))
-    difficulty = models.CharField(max_length=1, choices=DIFFICULTY_CHOICES, verbose_name=_("Difficulty"))
+    choreographer_name = models.CharField(max_length=255, blank=True, verbose_name=_("Choreographer Name"))
+    difficulty = models.CharField(max_length=1, choices=DIFFICULTY_CHOICES, blank=True, default="", verbose_name=_("Difficulty"))
     display_order = models.PositiveIntegerField(null=True, blank=True, default=None, verbose_name=_("Display Order"))
-    choreography_name = models.CharField(max_length=255, default=_("Untitled"), verbose_name=_("Choreography Name"))
+    choreography_name = models.CharField(max_length=255, blank=True, default=_("Untitled"), verbose_name=_("Choreography Name"))
     group_name = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Group Name"))
     group_display_order = models.PositiveIntegerField(null=True, blank=True, default=0, verbose_name=_("Group Display Order"))
     music_file = models.FileField(upload_to='music_uploads/', null=True, blank=True, verbose_name=_("Music File"))

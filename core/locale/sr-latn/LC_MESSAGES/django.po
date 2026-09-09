@@ -1068,3 +1068,31 @@ msgstr "Startna lista još nije objavljena"
 
 msgid "Create New Event"
 msgstr "Napravi Novi Događaj"
+
+#: core/improv_challenge
+msgid "Enable Improv Challenge"
+msgstr "Ukljuci Improv Challenge"
+
+#: core/improv_challenge
+msgid "Adds a separate Improv Challenge registration option for this event."
+msgstr "Dodaje posebnu opciju za Improv Challenge registraciju za ovaj dogadjaj."
+
+#: core/improv_challenge
+msgid "Improv Challenge requires exactly 1 dancer."
+msgstr "Improv Challenge zahteva tacno 1 plesaca."
+
+#: core/improv_challenge
+msgid "Dancer full name:"
+msgstr "Puno ime plesaca:"
+
+#: core/improv_challenge
+msgid "No difficulty"
+msgstr "Bez tezine"
+
+#: core/improv_challenge
+msgid "Mini Improv Challenge (up to 10)"
+msgstr "Mini Improv Challenge (do 10 godina)"
+
+#: core/improv_challenge
+msgid "Improv Challenge 11+"
+msgstr "Improv Challenge 11+"

@@ -8,6 +8,8 @@ from mutagen.mp3 import MP3
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 
+IMPROV_CHALLENGE_STYLE = "Improv Challenge"
+
 
 class DancerForm(forms.ModelForm):
     date_of_birth = forms.DateField(
@@ -131,6 +133,7 @@ class EventForm(forms.ModelForm):
             'date', 'start_time',
             'organizer',
             'notice_image', 'is_published',
+            'allow_improv_challenge',
             'allow_registrations', 'diploma_template',
             'registration_start', 'registration_end', 'music_end'
         ]
@@ -142,6 +145,7 @@ class EventForm(forms.ModelForm):
             'organizer': _("Organizer"),
             'notice_image': _("Event Poster / Notice (optional)"),
             'is_published': _("Is Published"),
+            'allow_improv_challenge': _("Enable Improv Challenge"),
             'allow_registrations': _("Allow Registrations"),
             'diploma_template': _("Diploma Template"),
             'registration_start': _("Registration Start Date"),
@@ -213,9 +217,9 @@ class GroupParticipationForm(forms.Form):
         required=False,
         label=_("Age Group")
     )
-    difficulty = forms.ChoiceField(choices=Participation.DIFFICULTY_CHOICES, label=_("Difficulty"))
-    choreographer_name = forms.CharField(max_length=255, label=_("Choreographer Name"))
-    choreography_name = forms.CharField(max_length=255, required=True, label=_("Choreography Name"))
+    difficulty = forms.ChoiceField(choices=Participation.DIFFICULTY_CHOICES, required=False, label=_("Difficulty"))
+    choreographer_name = forms.CharField(max_length=255, required=False, label=_("Choreographer Name"))
+    choreography_name = forms.CharField(max_length=255, required=False, label=_("Choreography Name"))
     group_name = forms.CharField(
         max_length=255,
         required=False,
@@ -232,7 +236,10 @@ class GroupParticipationForm(forms.Form):
         if club:
             self.fields['dancers'].queryset = Dancer.objects.filter(club=club)
         if event:
-            self.fields['style'].queryset = StyleCategory.objects.filter(event=event)
+            styles = StyleCategory.objects.filter(event=event)
+            if not getattr(event, "allow_improv_challenge", False):
+                styles = styles.exclude(name=IMPROV_CHALLENGE_STYLE)
+            self.fields['style'].queryset = styles
 
     def clean_dancers(self):
         dancers = self.cleaned_data.get("dancers")
@@ -246,11 +253,26 @@ class GroupParticipationForm(forms.Form):
         cleaned_data = super().clean()
         dancers = cleaned_data.get("dancers")
         group_type = cleaned_data.get("group_type")
+        style = cleaned_data.get("style")
+        is_improv_challenge = bool(style and style.name == IMPROV_CHALLENGE_STYLE)
 
         # Force to list and drop blanks
         dancers = list(dancers) if dancers else []
         dancers = [d for d in dancers if getattr(d, "id", None)]  # drop None/empty
         cleaned_data["dancers"] = dancers
+
+        if is_improv_challenge:
+            if len(dancers) != 1:
+                raise forms.ValidationError(
+                    _("Improv Challenge requires exactly 1 dancer.")
+                )
+            cleaned_data["group_type"] = "Solo"
+            cleaned_data["difficulty"] = ""
+            cleaned_data["choreographer_name"] = ""
+            cleaned_data["choreography_name"] = ""
+            cleaned_data["group_name"] = ""
+            cleaned_data["music_file"] = None
+            return cleaned_data
 
         limits = {
             'Solo': (1, 1),
@@ -272,12 +294,29 @@ class GroupParticipationForm(forms.Form):
         if group_type in ['Group', 'Formation', 'Production'] and not cleaned_data.get('group_name'):
             raise forms.ValidationError("Group name is required for groups of 4 or more dancers.")
 
+        required_fields = {
+            "difficulty": _("Difficulty is required."),
+            "choreographer_name": _("Choreographer name is required."),
+            "choreography_name": _("Choreography name is required."),
+        }
+        for field_name, message in required_fields.items():
+            if not cleaned_data.get(field_name):
+                self.add_error(field_name, message)
+
         return cleaned_data
 
 
     def clean_music_file(self):
         music_file = self.cleaned_data.get("music_file")
         group_type = self.cleaned_data.get("group_type")
+        style_id = self.data.get(self.add_prefix("style"))
+
+        if style_id:
+            try:
+                if StyleCategory.objects.filter(id=style_id, name=IMPROV_CHALLENGE_STYLE).exists():
+                    return None
+            except (TypeError, ValueError):
+                pass
 
         if not music_file:
             return music_file

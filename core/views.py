@@ -20,6 +20,7 @@ from .forms import (
     SingleJudgeForm,
     ClubLoginForm,
     CeremonyForm,
+    IMPROV_CHALLENGE_STYLE,
 )
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
@@ -64,9 +65,32 @@ DEFAULT_STYLES = ['Show Dance', 'Contemporary/Modern Dance', 'Lyrical Jazz', 'Ja
                'K-Pop', 'Oriental Dance', 'Indian Classical', 'Bollywood', 'Character Ethnic', 'Majorette', 'Pom-Pom']
 
 STYLE_ORDER = DEFAULT_STYLES
-AGE_GROUP_ORDER = ['Baby', 'Mini Kids', 'Kids', 'Teen', 'Youth', 'Adult', 'Mixed Age']
+AGE_GROUP_ORDER = ['Baby', 'Mini Kids', 'Kids', 'Teen', 'Youth', 'Adult', 'Mixed Age', 'Mini Improv Challenge', 'Improv Challenge 11+']
 GROUP_TYPE_ORDER = ['Solo', 'Duo', 'Trio', 'Group', 'Formation', 'Production']
 logger = logging.getLogger(__name__)
+
+
+def ensure_improv_challenge_style(event):
+    if getattr(event, "allow_improv_challenge", False):
+        StyleCategory.objects.get_or_create(event=event, name=IMPROV_CHALLENGE_STYLE)
+
+
+def calculate_age_on_date(dancer, reference_date):
+    reference_date = reference_date or date.today()
+    return reference_date.year - dancer.date_of_birth.year - (
+        (reference_date.month, reference_date.day) < (dancer.date_of_birth.month, dancer.date_of_birth.day)
+    )
+
+
+def calculate_improv_age_group(dancers, reference_date=None):
+    dancer = next(iter(dancers), None)
+    if not dancer or not dancer.date_of_birth:
+        return "Improv Challenge 11+", None
+
+    age = calculate_age_on_date(dancer, reference_date)
+    if age <= 10:
+        return "Mini Improv Challenge", age
+    return "Improv Challenge 11+", age
 
 
 def user_organizes_event(user, event):
@@ -229,9 +253,20 @@ def get_order_index(value, order_list):
 def calculate_age_group_view(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     group_type = request.POST.get("group_type")
-
-    # ✅ Use dancers[] and strip blanks
+    style_id = request.POST.get("style")
     dancer_ids = [d for d in request.POST.getlist("dancers[]") if d]
+    dancers = Dancer.objects.filter(id__in=dancer_ids)
+
+    if style_id and StyleCategory.objects.filter(
+        id=style_id,
+        event=event,
+        name=IMPROV_CHALLENGE_STYLE,
+    ).exists():
+        age_group, age = calculate_improv_age_group(dancers, event.date)
+        return JsonResponse({
+            "age_group": age_group,
+            "avg_age": age or "",
+        })
 
     if group_type == "Production":
         return JsonResponse({
@@ -239,13 +274,12 @@ def calculate_age_group_view(request, event_id):
             "avg_age": "",
         })
 
-    dancers = Dancer.objects.filter(id__in=dancer_ids)
-
     age_group, avg_age = calculate_age_group(dancers)
     return JsonResponse({
         "age_group": age_group or "",
         "avg_age": avg_age or ""
     })
+
 
 def calculate_age_group(dancers):
     """Return (age_group_key, average_age) based on dancer DOB(s)."""
@@ -1000,6 +1034,7 @@ def create_event(request):
             # Add default styles for this event
             for style_name in DEFAULT_STYLES:
                 StyleCategory.objects.get_or_create(event=event, name=style_name)
+            ensure_improv_challenge_style(event)
 
             messages.success(request, _("Event created successfully."))
             return redirect('event_list')
@@ -1016,7 +1051,8 @@ def edit_event(request, event_id):
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
-            form.save()
+            event = form.save()
+            ensure_improv_challenge_style(event)
             messages.success(request, _("Event updated successfully."))
             return redirect('event_list')
         else:
@@ -1089,22 +1125,26 @@ def register_dancer(request, event_id):
         if form.is_valid():
             dancers = form.cleaned_data['dancers']
             group_type = form.cleaned_data['group_type']
-            if group_type == "Production":
+            style = form.cleaned_data['style']
+            is_improv_challenge = style.name == IMPROV_CHALLENGE_STYLE
+            if is_improv_challenge:
+                age_group, avg_age = calculate_improv_age_group(dancers, event.date)
+            elif group_type == "Production":
                 age_group, avg_age = "Mixed Age", None
             else:
                 age_group, avg_age = calculate_age_group(dancers)
 
             participation = Participation.objects.create(
                 event=event,
-                style=form.cleaned_data['style'],
-                group_type=form.cleaned_data['group_type'],
+                style=style,
+                group_type=group_type,
                 age_group=age_group,  # ✅ auto-assigned
                 difficulty=form.cleaned_data['difficulty'],
                 choreographer_name=form.cleaned_data['choreographer_name'],
                 choreography_name=form.cleaned_data['choreography_name'],
                 group_name=form.cleaned_data.get('group_name'),
                 # ⛔ only save music if window is open
-                music_file=form.cleaned_data.get('music_file') if event.music_open else None,
+                music_file=None if is_improv_challenge else form.cleaned_data.get('music_file') if event.music_open else None,
             )
 
             # save dancer links
@@ -1123,7 +1163,10 @@ def register_dancer(request, event_id):
     if form.is_bound and form.is_valid():
         dancers = form.cleaned_data.get('dancers')
         group_type = form.cleaned_data.get('group_type')
-        if group_type == "Production":
+        style = form.cleaned_data.get('style')
+        if style and style.name == IMPROV_CHALLENGE_STYLE:
+            age_group, avg_age = calculate_improv_age_group(dancers, event.date)
+        elif group_type == "Production":
             age_group, avg_age = "Mixed Age", None
         else:
             age_group, avg_age = calculate_age_group(dancers)
@@ -1384,13 +1427,17 @@ def edit_participation(request, participation_id):
         if form.is_valid():
             new_dancers = form.cleaned_data['dancers']
             group_type = form.cleaned_data['group_type']
-            if group_type == "Production":
+            style = form.cleaned_data['style']
+            is_improv_challenge = style.name == IMPROV_CHALLENGE_STYLE
+            if is_improv_challenge:
+                age_group, avg_age = calculate_improv_age_group(new_dancers, event.date)
+            elif group_type == "Production":
                 age_group, avg_age = "Mixed Age", None
             else:
                 age_group, avg_age = calculate_age_group(new_dancers)
 
-            participation.style = form.cleaned_data['style']
-            participation.group_type = form.cleaned_data['group_type']
+            participation.style = style
+            participation.group_type = group_type
             participation.age_group = age_group
             participation.difficulty = form.cleaned_data['difficulty']
             participation.choreographer_name = form.cleaned_data['choreographer_name']
@@ -1403,7 +1450,11 @@ def edit_participation(request, participation_id):
                 DancerParticipation.objects.get_or_create(participation=participation, dancer=dancer)
 
             # music (admin or within window)
-            if "remove_music" in request.POST:
+            if is_improv_challenge:
+                if participation.music_file:
+                    participation.music_file.delete(save=False)
+                participation.music_file = None
+            elif "remove_music" in request.POST:
                 if participation.music_file:
                     participation.music_file.delete(save=False)
                 participation.music_file = None
