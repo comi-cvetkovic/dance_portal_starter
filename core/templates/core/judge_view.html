@@ -6,11 +6,6 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">{% trans "Judging" %} &mdash; {{ event.name }}</h2>
-  {% if event.allow_improv_challenge %}
-    <a href="{% url 'improv_challenge_judge' event.id %}" class="btn btn-coral-outline">
-      {% trans "Improv Challenge" %}
-    </a>
-  {% endif %}
 </div>
 
 {% if all_scored %}
@@ -50,6 +45,92 @@
   <form method="post" id="judge-form">
     {% csrf_token %}
 
+    {% if is_improv_category %}
+      {% if current_improv_round %}
+        <div class="dp-card mb-3">
+          <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <span class="badge rounded-pill text-bg-secondary">
+                {% if current_improv_round.is_final %}
+                  {{ current_improv_round.age_group }} - {% trans "Final Round" %}
+                {% else %}
+                  {{ current_improv_round.age_group }} - {% trans "Round" %} {{ current_improv_round.round_number }}
+                {% endif %}
+              </span>
+              {% if current_improv_round.is_final %}
+                <span class="text-muted small">{% trans "Rank every finalist. Use each rank once." %}</span>
+              {% else %}
+                <span class="text-muted small">
+                  {% trans "Select exactly" %} {{ current_improv_round.target_count }} {% trans "participants to advance." %}
+                </span>
+                <span class="badge text-bg-light border ms-auto" id="selection-count">0 / {{ current_improv_round.target_count }}</span>
+              {% endif %}
+            </div>
+
+            <div class="alert alert-info mb-3">
+              {% if improv_has_saved %}
+                {% trans "Your choices are saved. Please wait here while the admin reviews the results and opens the next round." %}
+              {% else %}
+                {% trans "After saving, please wait here while the admin reviews the results and opens the next round." %}
+              {% endif %}
+            </div>
+
+            <div class="row g-3">
+              {% for row in improv_participant_rows %}
+                <div class="col-12 col-md-6 col-xl-4">
+                  <div class="improv-choice dp-card h-100">
+                    <div class="card-body">
+                      <div class="d-flex align-items-start gap-3">
+                        <div class="improv-start-number">{{ row.participation.start_number|default:"-" }}</div>
+                        <div class="flex-grow-1">
+                          <div class="fw-semibold">{{ row.name|default:"-" }}</div>
+                          {% if current_improv_round.is_final %}
+                            <label class="form-label small text-muted mt-2 mb-1" for="rank_{{ row.participation.id }}">
+                              {% trans "Rank" %}
+                            </label>
+                            <select name="rank_{{ row.participation.id }}" id="rank_{{ row.participation.id }}" class="form-select rank-select" {% if improv_has_saved %}disabled{% endif %}>
+                              <option value="">-</option>
+                              {% for rank in rank_options %}
+                                <option value="{{ rank }}" {% if row.selection and row.selection.rank == rank %}selected{% endif %}>
+                                  {{ rank }}
+                                </option>
+                              {% endfor %}
+                            </select>
+                          {% else %}
+                            <div class="form-check mt-3">
+                              <input
+                                class="form-check-input improv-select"
+                                type="checkbox"
+                                name="selected"
+                                value="{{ row.participation.id }}"
+                                id="selected_{{ row.participation.id }}"
+                                {% if row.selection %}checked{% endif %}
+                                {% if improv_has_saved %}disabled{% endif %}
+                              >
+                              <label class="form-check-label" for="selected_{{ row.participation.id }}">
+                                {% trans "Advance" %}
+                              </label>
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <div class="col-12">
+                  <div class="alert alert-warning mb-0">{% trans "No participants are available for this round." %}</div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="alert alert-warning">
+          {% trans "This Improv Challenge category is not open yet. Please wait for the admin." %}
+        </div>
+      {% endif %}
+    {% else %}
     {% for p in current_entries %}
       <div class="score-card dp-card mb-3">
         <div class="card-body">
@@ -168,23 +249,30 @@
         </div>
       </div>
     {% endfor %}
+    {% endif %}
 
     <!-- Pager / submit -->
     <div class="d-flex flex-wrap gap-2 justify-content-between justify-content-md-end mt-3">
       <div class="me-auto text-muted small d-none d-md-block">
         {% trans "Category" %} {{ current_index|add:1 }} / {{ total_categories }}
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <label for="jump-category" class="form-label small mb-0">{% trans "Go to" %}</label>
-        <input type="number" id="jump-category" class="form-control form-control-sm" min="1" max="{{ total_categories }}" style="width: 90px;" placeholder="1-{{ total_categories }}">
-        <button type="button" class="btn btn-coral btn-sm" onclick="return jumpToCategory(event);">{% trans "Go" %}</button>
-      </div>
-
-      {% if has_prev %}
-        <button type="submit" name="prev" class="btn btn-coral-outline">&larr; {% trans "Previous" %}</button>
+      {% if not is_improv_category or not improv_has_saved %}
+        <div class="d-flex align-items-center gap-2">
+          <label for="jump-category" class="form-label small mb-0">{% trans "Go to" %}</label>
+          <input type="number" id="jump-category" class="form-control form-control-sm" min="1" max="{{ total_categories }}" style="width: 90px;" placeholder="1-{{ total_categories }}">
+          <button type="button" class="btn btn-coral btn-sm" onclick="return jumpToCategory(event);">{% trans "Go" %}</button>
+        </div>
       {% endif %}
 
-      {% if has_next %}
+      {% if has_prev %}
+        {% if not is_improv_category or not improv_has_saved %}
+          <button type="submit" name="prev" class="btn btn-coral-outline">&larr; {% trans "Previous" %}</button>
+        {% endif %}
+      {% endif %}
+
+      {% if is_improv_category %}
+        <button type="submit" name="save_improv" class="btn btn-coral" {% if not current_improv_round or improv_has_saved %}disabled{% endif %}>{% trans "Save" %}</button>
+      {% elif has_next %}
         <button type="submit" name="next" class="btn btn-coral">{% if current_category_locked %}{% trans "Next" %}{% else %}{% trans "Save & Next" %}{% endif %} &rarr;</button>
       {% else %}
         <button type="submit" name="save_last" class="btn btn-coral" {% if current_category_locked %}disabled{% endif %}>{% trans "Save" %}</button>
@@ -244,6 +332,27 @@
   /* Avoid mid-word breaks in names */
   .score-card{ word-break: normal; overflow-wrap: break-word; }
 
+  .improv-choice {
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+
+  .improv-choice:has(.improv-select:checked) {
+    border-color: var(--brand-coral);
+    box-shadow: 0 0 0 3px rgba(215,111,84,.18);
+  }
+
+  .improv-start-number {
+    min-width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: #fff2ee;
+    color: #b34f3a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
   @media (max-width: 768px){
     .score-card .card-body{ padding: 1rem; }
   }
@@ -268,6 +377,25 @@ function jumpToCategory(e) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  {% if is_improv_category and improv_has_saved %}
+  setTimeout(() => window.location.reload(), 10000);
+  {% endif %}
+
+  const checkboxes = Array.from(document.querySelectorAll('.improv-select'));
+  const counter = document.getElementById('selection-count');
+  const target = {{ current_improv_round.target_count|default:0 }};
+
+  function updateImprovCount() {
+    if (!counter) return;
+    const selected = checkboxes.filter(box => box.checked).length;
+    counter.textContent = `${selected} / ${target}`;
+    counter.classList.toggle('text-bg-success', selected === target);
+    counter.classList.toggle('text-bg-light', selected !== target);
+  }
+
+  checkboxes.forEach(box => box.addEventListener('change', updateImprovCount));
+  updateImprovCount();
+
   // Initialize outputs and live update on input
   document.querySelectorAll('.score-slider').forEach(slider => {
     const out = document.getElementById(slider.dataset.output);

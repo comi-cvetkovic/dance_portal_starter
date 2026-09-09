@@ -95,6 +95,16 @@ def calculate_improv_age_group(dancers, reference_date=None):
     return "Improv Challenge 11+", age
 
 
+def get_default_participation_sort_key(participation):
+    return (
+        get_order_index(participation.age_group, AGE_GROUP_ORDER),
+        get_order_index(participation.group_type, GROUP_TYPE_ORDER),
+        get_order_index(participation.style.name, STYLE_ORDER),
+        0 if participation.difficulty == "B" else 1,
+        participation.id,
+    )
+
+
 def normalize_duplicate_value(value):
     return (value or "").strip().casefold()
 
@@ -799,7 +809,13 @@ def improv_challenge_dashboard(request, event_id):
                     messages.success(request, _("Qualifiers saved."))
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
-    rounds = list(ImprovChallengeRound.objects.filter(event=event))
+    rounds = sorted(
+        ImprovChallengeRound.objects.filter(event=event),
+        key=lambda round_obj: (
+            get_order_index(round_obj.age_group, IMPROV_AGE_GROUPS),
+            round_obj.round_number,
+        ),
+    )
     current_round = next(
         (
             round_obj for round_obj in rounds
@@ -982,8 +998,16 @@ def start_list(request, event_id):
     for c in ceremonies:
         timeline.append((c.display_order, "ceremony", c))
 
-    # ✅ safe sort (handles NULLs in display_order)
-    timeline.sort(key=lambda x: x[0] if x[0] is not None else 999999)
+    # Safe sort: respect saved manual order, otherwise use the default category order.
+    def timeline_sort_key(item):
+        display_order, entry_type, obj = item
+        if display_order is not None:
+            return (0, display_order)
+        if entry_type == "performance":
+            return (1, *get_default_participation_sort_key(obj))
+        return (1, 999999, 999999, 999999, 999999, obj.id)
+
+    timeline.sort(key=timeline_sort_key)
 
     for _, entry_type, obj in timeline:
         if entry_type == "performance":
@@ -1084,8 +1108,16 @@ def manage_start_list(request, event_id):
     for c in ceremonies:
         timeline.append((c.display_order, "ceremony", c))
 
-    # ✅ safe sort (handles NULLs in display_order)
-    timeline.sort(key=lambda x: x[0] if x[0] is not None else 999999)
+    # Safe sort: respect saved manual order, otherwise use the default category order.
+    def timeline_sort_key(item):
+        display_order, entry_type, obj = item
+        if display_order is not None:
+            return (0, display_order)
+        if entry_type == "performance":
+            return (1, *get_default_participation_sort_key(obj))
+        return (1, 999999, 999999, 999999, 999999, obj.id)
+
+    timeline.sort(key=timeline_sort_key)
 
     for _, entry_type, obj in timeline:
         if entry_type == "performance":
@@ -2160,7 +2192,6 @@ def judge_view(request, event_id):
     # Prefetch dancers & clubs for efficiency
     participations = (
         Participation.objects.filter(event=event)
-        .exclude(style__name=IMPROV_CHALLENGE_STYLE)
         .select_related("style")
         .prefetch_related("dancer_links__dancer__club")
         .order_by("group_display_order", "display_order", "id")
@@ -2200,6 +2231,51 @@ def judge_view(request, event_id):
 
     current_key = sorted_keys[current_index] if sorted_keys else None
     current_entries = grouped.get(current_key, [])
+    is_improv_category = bool(current_key and current_key[0] == IMPROV_CHALLENGE_STYLE)
+    current_improv_round = None
+    improv_participant_rows = []
+    improv_has_saved = False
+    rank_options = []
+
+    if is_improv_category:
+        try:
+            config = event.improv_config
+            if config.current_age_group == current_key[2]:
+                current_improv_round = ImprovChallengeRound.objects.filter(
+                    event=event,
+                    age_group=current_key[2],
+                    round_number=config.current_round_number,
+                ).first()
+        except ImprovChallengeConfig.DoesNotExist:
+            current_improv_round = None
+
+        if current_improv_round:
+            existing_improv = {
+                selection.participation_id: selection
+                for selection in ImprovJudgeSelection.objects.filter(
+                    round=current_improv_round,
+                    judge=request.user,
+                )
+            }
+            improv_participant_rows = [
+                {
+                    "participation": participation,
+                    "name": get_improv_participant_name(participation),
+                    "selection": existing_improv.get(participation.id),
+                }
+                for participation in get_improv_round_participations(current_improv_round)
+            ]
+            rank_options = list(range(1, len(improv_participant_rows) + 1))
+            if current_improv_round.is_final:
+                improv_has_saved = bool(improv_participant_rows) and all(
+                    row["selection"] and row["selection"].rank
+                    for row in improv_participant_rows
+                )
+            else:
+                improv_has_saved = (
+                    len(existing_improv) == current_improv_round.target_count
+                    and current_improv_round.target_count > 0
+                )
     lock_cutoff = _get_ceremony_lock_cutoff(event)
     current_category_order = category_order_map.get(current_key, 0) if current_key else 0
     current_category_locked = bool(
@@ -2211,6 +2287,59 @@ def judge_view(request, event_id):
     if request.method == "POST":
         if "review" in request.POST:
             return redirect(f"{reverse('judge_view', args=[event.id])}?group=0")
+
+        if is_improv_category:
+            if not current_improv_round:
+                messages.warning(request, _("This Improv Challenge round is not open yet. Please wait for the admin."))
+            elif current_improv_round.is_final:
+                ranks = {}
+                for row in improv_participant_rows:
+                    participation = row["participation"]
+                    try:
+                        rank = int(request.POST.get(f"rank_{participation.id}") or "")
+                    except ValueError:
+                        rank = None
+                    if rank:
+                        ranks[participation.id] = rank
+
+                expected_ids = {row["participation"].id for row in improv_participant_rows}
+                expected_ranks = set(range(1, len(improv_participant_rows) + 1))
+                if set(ranks.keys()) != expected_ids or set(ranks.values()) != expected_ranks:
+                    messages.error(request, _("Rank every finalist exactly once."))
+                else:
+                    with transaction.atomic():
+                        ImprovJudgeSelection.objects.filter(round=current_improv_round, judge=request.user).delete()
+                        for row in improv_participant_rows:
+                            participation = row["participation"]
+                            ImprovJudgeSelection.objects.create(
+                                round=current_improv_round,
+                                judge=request.user,
+                                participation=participation,
+                                rank=ranks[participation.id],
+                            )
+                    messages.success(request, _("Final rankings saved. Please wait while the admin reviews the results."))
+            else:
+                selected_ids = [int(value) for value in request.POST.getlist("selected") if value.isdigit()]
+                valid_ids = {row["participation"].id for row in improv_participant_rows}
+                if len(selected_ids) != current_improv_round.target_count:
+                    messages.error(
+                        request,
+                        _("Select exactly %(count)s participants.") % {"count": current_improv_round.target_count},
+                    )
+                elif any(selected_id not in valid_ids for selected_id in selected_ids):
+                    messages.error(request, _("Invalid participant selection."))
+                else:
+                    with transaction.atomic():
+                        ImprovJudgeSelection.objects.filter(round=current_improv_round, judge=request.user).delete()
+                        for participation_id in selected_ids:
+                            ImprovJudgeSelection.objects.create(
+                                round=current_improv_round,
+                                judge=request.user,
+                                participation_id=participation_id,
+                            )
+                    messages.success(request, _("Selections saved. Please wait while the admin reviews the results."))
+            return redirect(f"{reverse('judge_view', args=[event.id])}?group={current_index}")
+
         if not current_category_locked:
             # Save multi-criteria scores
             for p in current_entries:
@@ -2268,6 +2397,11 @@ def judge_view(request, event_id):
         "existing_scores": existing_scores,
         "all_scored": all_scored,
         "current_category_locked": current_category_locked,
+        "is_improv_category": is_improv_category,
+        "current_improv_round": current_improv_round,
+        "improv_participant_rows": improv_participant_rows,
+        "improv_has_saved": improv_has_saved,
+        "rank_options": rank_options,
     }
     return render(request, "core/judge_view.html", context)
 
