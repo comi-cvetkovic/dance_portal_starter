@@ -1125,6 +1125,27 @@ def edit_event(request, event_id):
 
 
 @login_required
+def event_list(request):
+    user = getattr(request, "user", None)
+    is_admin = bool(getattr(user, "is_authenticated", False) and (user.is_superuser or user.is_staff))
+    base_events = Event.objects.all() if is_admin else Event.objects.filter(is_published=True)
+    events = base_events.order_by("date", "id")
+    today = timezone.localdate()
+
+    for event in events:
+        event.has_judges = User.objects.filter(username__startswith=f"judge_{event.id}_").exists()
+        event.is_organizer_for_user = user_organizes_event(request.user, event)
+
+    upcoming_events = [event for event in events if event.date and event.date >= today]
+    previous_events = [event for event in events if event.date and event.date < today]
+
+    return render(request, 'core/event_list.html', {
+        'upcoming_events': upcoming_events,
+        'previous_events': previous_events,
+    })
+
+
+@login_required
 def register_dancer(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
