@@ -243,7 +243,7 @@ class StartListSlot(models.Model):
     display_order = models.PositiveIntegerField(default=0)
     is_ceremony = models.BooleanField(default=False)
     age_group = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=Participation.AGE_GROUP_CHOICES,
         blank=True,
         null=True,
