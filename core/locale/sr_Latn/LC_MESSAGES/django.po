@@ -1100,3 +1100,11 @@ msgstr "Improv Challenge 11+"
 #: core/improv_challenge
 msgid "Improv Challenge"
 msgstr "Improv Challenge"
+
+#: core/duplicate_participation_validation
+msgid "This dancer is already registered for Improv Challenge in this event."
+msgstr "Ovaj plesac je vec registrovan za Improv Challenge na ovom dogadjaju."
+
+#: core/duplicate_participation_validation
+msgid "This exact participation entry is already registered."
+msgstr "Ova tacna prijava je vec registrovana."

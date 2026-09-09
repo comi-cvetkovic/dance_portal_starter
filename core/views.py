@@ -93,6 +93,67 @@ def calculate_improv_age_group(dancers, reference_date=None):
     return "Improv Challenge 11+", age
 
 
+def normalize_duplicate_value(value):
+    return (value or "").strip().casefold()
+
+
+def duplicate_participation_exists(
+    event,
+    style,
+    group_type,
+    age_group,
+    difficulty,
+    choreography_name,
+    choreographer_name,
+    group_name,
+    dancers,
+    exclude_participation_id=None,
+):
+    dancer_ids = sorted(d.id for d in dancers)
+    if not dancer_ids:
+        return False
+
+    if style.name == IMPROV_CHALLENGE_STYLE:
+        query = DancerParticipation.objects.filter(
+            participation__event=event,
+            participation__style=style,
+            dancer_id=dancer_ids[0],
+        )
+        if exclude_participation_id:
+            query = query.exclude(participation_id=exclude_participation_id)
+        return query.exists()
+
+    candidates = (
+        Participation.objects.filter(
+            event=event,
+            style=style,
+            group_type=group_type,
+            age_group=age_group,
+            difficulty=difficulty or "",
+        )
+        .prefetch_related("dancer_links")
+    )
+    if exclude_participation_id:
+        candidates = candidates.exclude(id=exclude_participation_id)
+
+    expected_choreography = normalize_duplicate_value(choreography_name)
+    expected_choreographer = normalize_duplicate_value(choreographer_name)
+    expected_group_name = normalize_duplicate_value(group_name)
+
+    for candidate in candidates:
+        if normalize_duplicate_value(candidate.choreography_name) != expected_choreography:
+            continue
+        if normalize_duplicate_value(candidate.choreographer_name) != expected_choreographer:
+            continue
+        if normalize_duplicate_value(candidate.group_name) != expected_group_name:
+            continue
+        candidate_dancer_ids = sorted(link.dancer_id for link in candidate.dancer_links.all())
+        if candidate_dancer_ids == dancer_ids:
+            return True
+
+    return False
+
+
 def user_organizes_event(user, event):
     if not user.is_authenticated or user.is_superuser:
         return False
@@ -1057,40 +1118,16 @@ def edit_event(request, event_id):
             return redirect('event_list')
         else:
             messages.error(request, _("Please correct the errors below."))
-            print(form.errors)  # Optional: see in console/logs
     else:
         form = EventForm(instance=event)
 
     return render(request, 'core/edit_event.html', {'form': form, 'event': event})
-
-@login_required
-def event_list(request):
-    user = getattr(request, "user", None)
-    is_admin = bool(getattr(user, "is_authenticated", False) and (user.is_superuser or user.is_staff))
-    base_events = Event.objects.all() if is_admin else Event.objects.filter(is_published=True)
-    events = base_events.order_by("date", "id")
-    today = timezone.localdate()
-
-    # Attach a flag to each event indicating if its judge accounts exist
-    for event in events:
-        event.has_judges = User.objects.filter(username__startswith=f"judge_{event.id}_").exists()
-        event.is_organizer_for_user = user_organizes_event(request.user, event)
-
-    upcoming_events = [e for e in events if e.date and e.date >= today]
-    previous_events = [e for e in events if e.date and e.date < today]
-
-    return render(request, 'core/event_list.html', {
-        'upcoming_events': upcoming_events,
-        'previous_events': previous_events,
-    })
-
 
 
 @login_required
 def register_dancer(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
-    # ⛔ Block normal clubs if registration is closed
     if not request.user.is_superuser and not event.registration_open:
         messages.error(request, _("Registration is currently closed for this event."))
         return redirect("event_list")
@@ -1120,13 +1157,13 @@ def register_dancer(request, event_id):
     age_group = None
 
     if request.method == 'POST':
-        print("DEBUG dancers POST:", request.POST.getlist("dancers"))
         form = GroupParticipationForm(request.POST, request.FILES, club=selected_club, event=event)
         if form.is_valid():
             dancers = form.cleaned_data['dancers']
             group_type = form.cleaned_data['group_type']
             style = form.cleaned_data['style']
             is_improv_challenge = style.name == IMPROV_CHALLENGE_STYLE
+
             if is_improv_challenge:
                 age_group, avg_age = calculate_improv_age_group(dancers, event.date)
             elif group_type == "Production":
@@ -1134,32 +1171,46 @@ def register_dancer(request, event_id):
             else:
                 age_group, avg_age = calculate_age_group(dancers)
 
-            participation = Participation.objects.create(
+            if duplicate_participation_exists(
                 event=event,
                 style=style,
                 group_type=group_type,
-                age_group=age_group,  # ✅ auto-assigned
+                age_group=age_group,
                 difficulty=form.cleaned_data['difficulty'],
-                choreographer_name=form.cleaned_data['choreographer_name'],
                 choreography_name=form.cleaned_data['choreography_name'],
+                choreographer_name=form.cleaned_data['choreographer_name'],
                 group_name=form.cleaned_data.get('group_name'),
-                # ⛔ only save music if window is open
-                music_file=None if is_improv_challenge else form.cleaned_data.get('music_file') if event.music_open else None,
-            )
+                dancers=dancers,
+            ):
+                if is_improv_challenge:
+                    form.add_error(None, _("This dancer is already registered for Improv Challenge in this event."))
+                else:
+                    form.add_error(None, _("This exact participation entry is already registered."))
+                messages.error(request, _("Please correct the errors below."))
+            else:
+                participation = Participation.objects.create(
+                    event=event,
+                    style=style,
+                    group_type=group_type,
+                    age_group=age_group,
+                    difficulty=form.cleaned_data['difficulty'],
+                    choreographer_name=form.cleaned_data['choreographer_name'],
+                    choreography_name=form.cleaned_data['choreography_name'],
+                    group_name=form.cleaned_data.get('group_name'),
+                    music_file=None if is_improv_challenge else form.cleaned_data.get('music_file') if event.music_open else None,
+                )
 
-            # save dancer links
-            for dancer in dancers:
-                DancerParticipation.objects.create(participation=participation, dancer=dancer)
+                for dancer in dancers:
+                    DancerParticipation.objects.create(participation=participation, dancer=dancer)
 
-            if form.cleaned_data.get('music_file') and not event.music_open:
-                messages.warning(request, _("Music file was not saved because the upload period is closed."))
+                if form.cleaned_data.get('music_file') and not event.music_open:
+                    messages.warning(request, _("Music file was not saved because the upload period is closed."))
 
-            messages.success(request, _("Participation registered successfully."))
-            return redirect(f'{request.path}?club_id={club_id}')
+                messages.success(request, _("Participation registered successfully."))
+                return redirect(f'{request.path}?club_id={club_id}')
     else:
         form = GroupParticipationForm(club=selected_club, event=event)
 
-    # ✅ Pre-fill age group whenever dancers are selected
     if form.is_bound and form.is_valid():
         dancers = form.cleaned_data.get('dancers')
         group_type = form.cleaned_data.get('group_type')
@@ -1170,10 +1221,7 @@ def register_dancer(request, event_id):
             age_group, avg_age = "Mixed Age", None
         else:
             age_group, avg_age = calculate_age_group(dancers)
-    elif request.method == 'GET' and selected_club:
-        pass  # possible AJAX age calc
 
-    # Force field value & disable editing
     if age_group:
         form.fields['age_group'].initial = age_group
     form.fields['age_group'].disabled = True
@@ -1186,7 +1234,6 @@ def register_dancer(request, event_id):
         'is_superuser': request.user.is_superuser,
         'avg_age': avg_age,
     })
-
 
 @login_required
 def list_event_participants(request, event_id):
@@ -1435,6 +1482,28 @@ def edit_participation(request, participation_id):
                 age_group, avg_age = "Mixed Age", None
             else:
                 age_group, avg_age = calculate_age_group(new_dancers)
+
+            if duplicate_participation_exists(
+                event=event,
+                style=style,
+                group_type=group_type,
+                age_group=age_group,
+                difficulty=form.cleaned_data['difficulty'],
+                choreography_name=form.cleaned_data['choreography_name'],
+                choreographer_name=form.cleaned_data['choreographer_name'],
+                group_name=form.cleaned_data.get('group_name'),
+                dancers=new_dancers,
+                exclude_participation_id=participation.id,
+            ):
+                if is_improv_challenge:
+                    form.add_error(None, _("This dancer is already registered for Improv Challenge in this event."))
+                else:
+                    form.add_error(None, _("This exact participation entry is already registered."))
+                messages.error(request, _("Please correct the errors below."))
+                return render(request, "core/edit_participation.html", {
+                    "form": form,
+                    "participation": participation,
+                })
 
             participation.style = style
             participation.group_type = group_type
