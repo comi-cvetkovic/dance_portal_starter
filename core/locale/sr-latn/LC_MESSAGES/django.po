@@ -1096,3 +1096,7 @@ msgstr "Mini Improv Challenge (do 10 godina)"
 #: core/improv_challenge
 msgid "Improv Challenge 11+"
 msgstr "Improv Challenge 11+"
+
+#: core/improv_challenge
+msgid "Improv Challenge"
+msgstr "Improv Challenge"

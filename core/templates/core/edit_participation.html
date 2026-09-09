@@ -175,7 +175,12 @@
                data-bs-custom-class="dp-tooltip"
                title="{% trans 'Select the dance style category.' %}"></i>
           </label>
-          {{ form.style }}
+          <div class="style-selector-row">
+            {{ form.style }}
+            <button type="button" id="btn-improv-challenge" class="btn-improv-challenge d-none">
+              {% trans "Improv Challenge" %}
+            </button>
+          </div>
         </div>
 
         <hr>
@@ -292,6 +297,34 @@
   }
   .btn-mini:hover { background:#1f2937; transform:translateY(-1px); }
   .btn-mini:active { background:#111827; transform:translateY(0); }
+  .style-selector-row {
+    display:flex;
+    align-items:stretch;
+    gap:.75rem;
+    width:100%;
+  }
+  .style-selector-row select {
+    flex:1 1 auto;
+  }
+  .btn-improv-challenge {
+    border:1px solid #d76f54;
+    border-radius:.375rem;
+    background:#fff7f3;
+    color:#c45f45;
+    font-weight:700;
+    padding:.5rem 1rem;
+    white-space:nowrap;
+  }
+  .btn-improv-challenge.active,
+  .btn-improv-challenge:hover {
+    background:#d76f54;
+    color:#fff;
+  }
+  @media (max-width: 575.98px) {
+    .style-selector-row {
+      flex-direction:column;
+    }
+  }
   /* First quick-search input should show dropdown/autocomplete cue. */
   #id_dancer_quick_search {
     appearance: none;
@@ -367,6 +400,22 @@ $(function(){
 
   function isImprovChallenge() {
     return (styleSelect.find('option:selected').text() || '').trim() === improvChallengeStyleName;
+  }
+
+  function improvStyleOption() {
+    return styleSelect.find('option').filter(function () {
+      return ($(this).text() || '').trim() === improvChallengeStyleName;
+    }).first();
+  }
+
+  function syncImprovButton() {
+    const button = $('#btn-improv-challenge');
+    if (improvStyleOption().length) {
+      button.removeClass('d-none');
+    } else {
+      button.addClass('d-none');
+    }
+    button.toggleClass('active', isImprovChallenge());
   }
 
   function activeGroupType() {
@@ -467,6 +516,7 @@ $(function(){
     }
     if(!improvMode && ['Group','Formation','Production'].includes(type)){ groupNameWrapper.show(); }
     else{ groupNameWrapper.hide(); $('#id_group_name').val(''); }
+    syncImprovButton();
     refreshCount();
   }
   function updateAgeGroup(){
@@ -500,6 +550,11 @@ $(function(){
   $(document).on('click','#btn-clear',function(){ dancerSelect.val(null).trigger('change'); updateAgeGroup(); });
   groupTypeSelect.on('change',function(){ updateGroupTypeSettings(false); });
   styleSelect.on('change',function(){ updateGroupTypeSettings(true); updateAgeGroup(); });
+  $('#btn-improv-challenge').on('click', function () {
+    const option = improvStyleOption();
+    if (!option.length) return;
+    styleSelect.val(option.val()).trigger('change');
+  });
   dancerSelect.on('change',updateAgeGroup);
   $("form").on("submit",function(e){ if(!validateGroupSize()) e.preventDefault(); });
   dancerSelect.select2({width:'100%',allowClear:true,minimumResultsForSearch:Infinity});
