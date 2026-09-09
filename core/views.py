@@ -642,7 +642,7 @@ def improv_challenge_dashboard(request, event_id):
         messages.error(request, _("Improv Challenge is not enabled for this event."))
         return redirect("event_list")
 
-    config, _ = ImprovChallengeConfig.objects.get_or_create(event=event)
+    config, _created = ImprovChallengeConfig.objects.get_or_create(event=event)
     participants_by_age = {
         age_group: list(get_improv_participations(event, age_group))
         for age_group in IMPROV_AGE_GROUPS
@@ -886,7 +886,7 @@ def improv_challenge_judge(request, event_id):
         messages.error(request, _("Improv Challenge is not enabled for this event."))
         return redirect("judge_view", event_id=event.id)
 
-    config, _ = ImprovChallengeConfig.objects.get_or_create(event=event)
+    config, _created = ImprovChallengeConfig.objects.get_or_create(event=event)
     current_round = ImprovChallengeRound.objects.filter(
         event=event,
         age_group=config.current_age_group,
@@ -1055,7 +1055,7 @@ def start_list(request, event_id):
 
     timeline.sort(key=timeline_sort_key)
 
-    for _, entry_type, obj in timeline:
+    for _display_order, entry_type, obj in timeline:
         if entry_type == "performance":
             dancers = dancer_map.get(obj.id, [])
             club = dancers[0].club if dancers else None
@@ -1180,7 +1180,7 @@ def manage_start_list(request, event_id):
 
     timeline.sort(key=timeline_sort_key)
 
-    for _, entry_type, obj in timeline:
+    for _display_order, entry_type, obj in timeline:
         if entry_type == "performance":
             dancers = dancer_map.get(obj.id, [])
             club = dancers[0].club if dancers else None
