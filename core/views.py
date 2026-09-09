@@ -678,46 +678,53 @@ def improv_challenge_dashboard(request, event_id):
                 challenge_duration = 0
 
             if not has_error:
-                with transaction.atomic():
-                    ImprovChallengeRound.objects.filter(event=event).delete()
-                    config.mini_duration_minutes = mini_duration
-                    config.challenge_duration_minutes = challenge_duration
-                    config.duration_minutes = mini_duration + challenge_duration
+                try:
+                    with transaction.atomic():
+                        ImprovChallengeRound.objects.filter(event=event).delete()
+                        config.mini_duration_minutes = mini_duration
+                        config.challenge_duration_minutes = challenge_duration
+                        config.duration_minutes = mini_duration + challenge_duration
 
-                    first_current_age_group = ""
-                    for age_group, _field_name, _duration_field in setup_specs:
-                        counts = parsed_counts[age_group]
-                        if not counts:
-                            continue
-                        if not first_current_age_group:
-                            first_current_age_group = age_group
-                        for index, count in enumerate(counts, start=1):
+                        first_current_age_group = ""
+                        for age_group, _field_name, _duration_field in setup_specs:
+                            counts = parsed_counts[age_group]
+                            if not counts:
+                                continue
+                            if not first_current_age_group:
+                                first_current_age_group = age_group
+                            for index, count in enumerate(counts, start=1):
+                                ImprovChallengeRound.objects.create(
+                                    event=event,
+                                    age_group=age_group,
+                                    round_number=index,
+                                    target_count=count,
+                                    is_final=False,
+                                )
                             ImprovChallengeRound.objects.create(
                                 event=event,
                                 age_group=age_group,
-                                round_number=index,
-                                target_count=count,
-                                is_final=False,
+                                round_number=len(counts) + 1,
+                                target_count=counts[-1],
+                                is_final=True,
                             )
-                        ImprovChallengeRound.objects.create(
-                            event=event,
-                            age_group=age_group,
-                            round_number=len(counts) + 1,
-                            target_count=counts[-1],
-                            is_final=True,
-                        )
 
-                    if first_current_age_group:
-                        config.current_age_group = first_current_age_group
-                        config.current_round_number = 1
-                    config.save(update_fields=[
-                        "duration_minutes",
-                        "mini_duration_minutes",
-                        "challenge_duration_minutes",
-                        "current_age_group",
-                        "current_round_number",
-                    ])
-                messages.success(request, _("Improv Challenge rounds saved."))
+                        if first_current_age_group:
+                            config.current_age_group = first_current_age_group
+                            config.current_round_number = 1
+                        config.save(update_fields=[
+                            "duration_minutes",
+                            "mini_duration_minutes",
+                            "challenge_duration_minutes",
+                            "current_age_group",
+                            "current_round_number",
+                        ])
+                    messages.success(request, _("Improv Challenge rounds saved."))
+                except IntegrityError:
+                    logger.exception("Failed to save Improv Challenge setup", extra={"event_id": event.id})
+                    messages.error(
+                        request,
+                        _("Could not save Improv setup because of a database constraint. Please run the latest migrations and try again."),
+                    )
             return redirect("improv_challenge_dashboard", event_id=event.id)
 
         if action == "set_current_round":
