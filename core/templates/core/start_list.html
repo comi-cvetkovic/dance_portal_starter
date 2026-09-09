@@ -43,7 +43,7 @@
       {% else %}
       <tr class="table-secondary fw-semibold {% if group_key|join:'|' == highlight_key %}highlighted-group{% endif %}">
         <td colspan="5">
-          {{ group_key.0 }} – {{ group_key.1 }} – {{ group_key.2 }} – {{ group_key.3 }}
+          {{ group_entries.0.category_label }}
         </td>
       </tr>
       {% endif %}

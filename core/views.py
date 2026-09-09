@@ -154,6 +154,29 @@ def duplicate_participation_exists(
     return False
 
 
+def get_next_start_number(event):
+    max_start_number = Participation.objects.filter(event=event).aggregate(
+        Max("start_number")
+    )["start_number__max"]
+    if max_start_number is not None:
+        return max_start_number + 1
+
+    existing_count = Participation.objects.filter(event=event).count()
+    return 101 + existing_count
+
+
+def get_start_list_category_label(style_name, group_type, age_group, difficulty):
+    if style_name == IMPROV_CHALLENGE_STYLE:
+        if age_group == "Mini Improv Challenge":
+            return "Mini Impro Challenge"
+        return "Impro Challenge"
+
+    parts = [style_name, group_type, age_group]
+    if difficulty:
+        parts.append(difficulty)
+    return " - ".join(parts)
+
+
 def user_organizes_event(user, event):
     if not user.is_authenticated or user.is_superuser:
         return False
@@ -562,6 +585,7 @@ def start_list(request, event_id):
 
             start_time_str = current_time.strftime("%H:%M") if current_time else None
             dancer_names = [f"{d.first_name} {d.last_name}" for d in dancers]
+            category_label = get_start_list_category_label(obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
             grouped_entries[group_key].append({
                 "id": obj.id,
                 "style": obj.style.name,
@@ -577,7 +601,8 @@ def start_list(request, event_id):
                 "choreography_name": obj.choreography_name,
                 "club_name": club.club_name if club else "–",
                 "club_city": club.city if club else "–",
-                "global_row_number": global_counter,
+                "global_row_number": obj.start_number or global_counter,
+                "category_label": category_label,
                 "start_time": start_time_str,
                 "is_ceremony": False,
             })
@@ -662,6 +687,7 @@ def manage_start_list(request, event_id):
 
             start_time_str = current_time.strftime("%H:%M") if current_time else None
             dancer_names = [f"{d.first_name} {d.last_name}" for d in dancers]
+            category_label = get_start_list_category_label(obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
             grouped_entries[group_key].append({
                 "id": obj.id,
                 "style": obj.style.name,
@@ -677,7 +703,8 @@ def manage_start_list(request, event_id):
                 "choreography_name": obj.choreography_name,
                 "club_name": club.club_name if club else "–",
                 "club_city": club.city if club else "–",
-                "global_row_number": global_counter,
+                "global_row_number": obj.start_number or global_counter,
+                "category_label": category_label,
                 "start_time": start_time_str,
                 "is_ceremony": False,
             })
@@ -1214,6 +1241,7 @@ def register_dancer(request, event_id):
                     style=style,
                     group_type=group_type,
                     age_group=age_group,
+                    start_number=get_next_start_number(event),
                     difficulty=form.cleaned_data['difficulty'],
                     choreographer_name=form.cleaned_data['choreographer_name'],
                     choreography_name=form.cleaned_data['choreography_name'],

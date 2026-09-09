@@ -141,6 +141,7 @@ class Participation(models.Model):
     style = models.ForeignKey("StyleCategory", on_delete=models.CASCADE, verbose_name=_("Style"))
     choreographer_name = models.CharField(max_length=255, blank=True, verbose_name=_("Choreographer Name"))
     difficulty = models.CharField(max_length=1, choices=DIFFICULTY_CHOICES, blank=True, default="", verbose_name=_("Difficulty"))
+    start_number = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Start Number"))
     display_order = models.PositiveIntegerField(null=True, blank=True, default=None, verbose_name=_("Display Order"))
     choreography_name = models.CharField(max_length=255, blank=True, default=_("Untitled"), verbose_name=_("Choreography Name"))
     group_name = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Group Name"))
