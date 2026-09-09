@@ -267,6 +267,30 @@ def build_improv_round_rows(round_obj):
     return rows
 
 
+def get_active_improv_round(event, age_group):
+    try:
+        config = event.improv_config
+    except ImprovChallengeConfig.DoesNotExist:
+        return None
+
+    configured_round = None
+    if config.current_age_group == age_group:
+        configured_round = ImprovChallengeRound.objects.filter(
+            event=event,
+            age_group=age_group,
+            round_number=config.current_round_number,
+        ).first()
+
+    if configured_round and get_improv_round_participations(configured_round):
+        return configured_round
+
+    return (
+        ImprovChallengeRound.objects.filter(event=event, age_group=age_group)
+        .order_by("round_number")
+        .first()
+    )
+
+
 def user_organizes_event(user, event):
     if not user.is_authenticated or user.is_superuser:
         return False
@@ -997,10 +1021,25 @@ def start_list(request, event_id):
         timeline.append((p.display_order, "performance", p))
     for c in ceremonies:
         timeline.append((c.display_order, "ceremony", c))
+    improv_display_anchor = min(
+        (
+            p.display_order
+            for p in participations
+            if p.style.name == IMPROV_CHALLENGE_STYLE and p.display_order is not None
+        ),
+        default=None,
+    )
 
     # Safe sort: respect saved manual order, otherwise use the default category order.
     def timeline_sort_key(item):
         display_order, entry_type, obj = item
+        if entry_type == "performance" and obj.style.name == IMPROV_CHALLENGE_STYLE and improv_display_anchor is not None:
+            return (
+                0,
+                improv_display_anchor,
+                get_order_index(obj.age_group, IMPROV_AGE_GROUPS),
+                display_order if display_order is not None else 999999,
+            )
         if display_order is not None:
             return (0, display_order)
         if entry_type == "performance":
@@ -1107,10 +1146,25 @@ def manage_start_list(request, event_id):
         timeline.append((p.display_order, "performance", p))
     for c in ceremonies:
         timeline.append((c.display_order, "ceremony", c))
+    improv_display_anchor = min(
+        (
+            p.display_order
+            for p in participations
+            if p.style.name == IMPROV_CHALLENGE_STYLE and p.display_order is not None
+        ),
+        default=None,
+    )
 
     # Safe sort: respect saved manual order, otherwise use the default category order.
     def timeline_sort_key(item):
         display_order, entry_type, obj = item
+        if entry_type == "performance" and obj.style.name == IMPROV_CHALLENGE_STYLE and improv_display_anchor is not None:
+            return (
+                0,
+                improv_display_anchor,
+                get_order_index(obj.age_group, IMPROV_AGE_GROUPS),
+                display_order if display_order is not None else 999999,
+            )
         if display_order is not None:
             return (0, display_order)
         if entry_type == "performance":
@@ -2203,12 +2257,32 @@ def judge_view(request, event_id):
         group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)
         grouped[group_key].append(p)
 
+    group_order_lookup = {}
+    for key in grouped.keys():
+        group_order_lookup[key] = next(
+            (
+                p.group_display_order
+                for p in participations
+                if (p.style.name, p.group_type, p.age_group, p.difficulty) == key
+            ),
+            0,
+        ) or 0
+    improv_group_anchor = min(
+        (
+            order
+            for key, order in group_order_lookup.items()
+            if key[0] == IMPROV_CHALLENGE_STYLE
+        ),
+        default=None,
+    )
     sorted_keys = sorted(
         grouped.keys(),
-        key=lambda k: next(
-            (p.group_display_order for p in participations
-             if (p.style.name, p.group_type, p.age_group, p.difficulty) == k),
-            0
+        key=lambda k: (
+            improv_group_anchor if k[0] == IMPROV_CHALLENGE_STYLE and improv_group_anchor is not None else group_order_lookup[k],
+            get_order_index(k[2], AGE_GROUP_ORDER),
+            get_order_index(k[1], GROUP_TYPE_ORDER),
+            get_order_index(k[0], STYLE_ORDER),
+            0 if k[3] == "B" else 1,
         )
     )
     category_order_map = {}
@@ -2238,17 +2312,7 @@ def judge_view(request, event_id):
     rank_options = []
 
     if is_improv_category:
-        try:
-            config = event.improv_config
-            if config.current_age_group == current_key[2]:
-                current_improv_round = ImprovChallengeRound.objects.filter(
-                    event=event,
-                    age_group=current_key[2],
-                    round_number=config.current_round_number,
-                ).first()
-        except ImprovChallengeConfig.DoesNotExist:
-            current_improv_round = None
-
+        current_improv_round = get_active_improv_round(event, current_key[2])
         if current_improv_round:
             existing_improv = {
                 selection.participation_id: selection
