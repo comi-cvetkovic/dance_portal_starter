@@ -62,6 +62,7 @@ urlpatterns = [
     path("events/<int:event_id>/music/download-all/", views.download_event_music, name="download_event_music"),
     path("events/<int:event_id>/improv/", views.improv_challenge_dashboard, name="improv_challenge_dashboard"),
     path("events/<int:event_id>/improv/judge/", views.improv_challenge_judge, name="improv_challenge_judge"),
+    path("events/<int:event_id>/category-rounds/", views.category_rounds_dashboard, name="category_rounds_dashboard"),
 
     path('manage/clubs/pending/', views.pending_club_requests, name='pending_club_requests'),
 

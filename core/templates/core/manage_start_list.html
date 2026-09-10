@@ -188,6 +188,7 @@
         </tr>
 
         {% for entry in group_entries %}
+        {% if not entry.is_placeholder %}
         <tr data-id="{{ entry.id }}" class="draggable-row {% if entry.is_ceremony %}ceremony-row{% endif %}">
           <td class="drag-handle">☰</td>
           {% if entry.is_ceremony %}
@@ -208,6 +209,7 @@
             <td class="text-center">{{ entry.num_dancers }}</td>
           {% endif %}
         </tr>
+        {% endif %}
         {% endfor %}
       </tbody>
       {% endfor %}

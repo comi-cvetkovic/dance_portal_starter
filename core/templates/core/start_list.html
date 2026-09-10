@@ -49,6 +49,7 @@
       {% endif %}
 
       {% for entry in group_entries %}
+      {% if not entry.is_placeholder %}
       <tr class="{% if entry.is_ceremony %}ceremony-row{% endif %}">
         {% if entry.is_ceremony %}
           <td colspan="5"><strong>{{ entry.title }}</strong><br>{{ entry.start_time }}</td>
@@ -73,6 +74,7 @@
           <td class="text-center">{{ entry.num_dancers }}</td>
         {% endif %}
       </tr>
+      {% endif %}
       {% endfor %}
     </tbody>
     {% endfor %}

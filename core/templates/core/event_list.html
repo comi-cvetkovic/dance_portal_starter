@@ -77,6 +77,7 @@
                 <li><a class="dropdown-item" href="{% url 'register_dancer' event.id %}">{% trans "Register Dancers" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'manage_styles' event.id %}">{% trans "Manage Style Categories" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'category_rounds_dashboard' event.id %}">{% trans "Category Rounds" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'event_music' event.id %}">{% trans "Event Music" %}</a></li>
                 {% if event.allow_improv_challenge %}
                   <li><a class="dropdown-item" href="{% url 'improv_challenge_dashboard' event.id %}">{% trans "Improv Challenge" %}</a></li>
@@ -184,6 +185,7 @@
                 <li><a class="dropdown-item" href="{% url 'register_dancer' event.id %}">{% trans "Register Dancers" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'list_event_participants' event.id %}">{% trans "View Registered" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'manage_styles' event.id %}">{% trans "Manage Style Categories" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'category_rounds_dashboard' event.id %}">{% trans "Category Rounds" %}</a></li>
                 <li><a class="dropdown-item" href="{% url 'event_music' event.id %}">{% trans "Event Music" %}</a></li>
                 {% if event.allow_improv_challenge %}
                   <li><a class="dropdown-item" href="{% url 'improv_challenge_dashboard' event.id %}">{% trans "Improv Challenge" %}</a></li>

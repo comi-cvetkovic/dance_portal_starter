@@ -9,7 +9,7 @@ from .models import (
     Event, Participation, DanceClub, Dancer, StyleCategory, 
     DancerParticipation, EventPlaybackState, JudgeScore, StartListSlot,
     Diploma, ImprovChallengeConfig, ImprovChallengeRound, ImprovJudgeSelection,
-    ImprovRoundQualifier,
+    ImprovRoundQualifier, CategoryRound, CategoryRoundQualifier,
 )
 from .forms import (
     EventForm,
@@ -453,6 +453,85 @@ def compute_final_score(participation, scores, discard_extremes=True):
         return None
 
     return round(total_points / total_counts, 2)
+
+
+def get_round_stage_label(round_number, total_rounds):
+    if round_number == total_rounds:
+        return _("Final")
+    if round_number == total_rounds - 1:
+        return _("Semi-Final")
+    if round_number == total_rounds - 2:
+        return _("Quarter-Final")
+    return _("Round %(number)s") % {"number": round_number}
+
+
+def get_category_round_key(round_obj):
+    return (
+        round_obj.style_id,
+        round_obj.group_type,
+        round_obj.age_group,
+        round_obj.difficulty or "",
+    )
+
+
+def get_participation_category_key(participation):
+    return (
+        participation.style_id,
+        participation.group_type,
+        participation.age_group,
+        participation.difficulty or "",
+    )
+
+
+def get_category_round_participations(round_obj):
+    queryset = Participation.objects.filter(
+        event=round_obj.event,
+        style=round_obj.style,
+        group_type=round_obj.group_type,
+        age_group=round_obj.age_group,
+        difficulty=round_obj.difficulty,
+    ).select_related("style").prefetch_related("dancer_links__dancer__club")
+
+    if round_obj.round_number == 1:
+        return list(queryset.order_by("start_number", "display_order", "id"))
+
+    previous_round = CategoryRound.objects.filter(
+        event=round_obj.event,
+        style=round_obj.style,
+        group_type=round_obj.group_type,
+        age_group=round_obj.age_group,
+        difficulty=round_obj.difficulty,
+        round_number=round_obj.round_number - 1,
+    ).first()
+    if not previous_round or not previous_round.finalized:
+        return []
+
+    qualifier_ids = previous_round.qualifiers.values_list("participation_id", flat=True)
+    return list(queryset.filter(id__in=qualifier_ids).order_by("start_number", "display_order", "id"))
+
+
+def build_category_round_rows(round_obj, judge_scores=None):
+    if judge_scores is None:
+        judge_scores = JudgeScore.objects.filter(participation__event=round_obj.event)
+
+    selected_qualifier_ids = set(round_obj.qualifiers.values_list("participation_id", flat=True))
+    rows = []
+    for participation in get_category_round_participations(round_obj):
+        score = compute_final_score(
+            participation,
+            judge_scores.filter(participation=participation),
+            discard_extremes=round_obj.event.discard_extreme_scores,
+        )
+        dancers = [link.dancer for link in participation.dancer_links.all()]
+        rows.append({
+            "participation": participation,
+            "dancers": dancers,
+            "score": score,
+            "is_qualifier": participation.id in selected_qualifier_ids,
+        })
+
+    rows.sort(key=lambda row: (row["score"] is None, -(row["score"] or 0), row["participation"].start_number or 999999, row["participation"].id))
+    return rows
 
 
 def _get_ceremony_lock_cutoff(event):
@@ -1077,6 +1156,213 @@ def improv_challenge_judge(request, event_id):
 
 
 @staff_member_required
+def category_rounds_dashboard(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    participations = (
+        Participation.objects.filter(event=event)
+        .exclude(style__name=IMPROV_CHALLENGE_STYLE)
+        .select_related("style")
+        .prefetch_related("dancer_links__dancer__club")
+        .order_by("group_display_order", "display_order", "id")
+    )
+
+    category_map = OrderedDict()
+    for participation in participations:
+        key = get_participation_category_key(participation)
+        if key not in category_map:
+            category_map[key] = {
+                "key": key,
+                "style": participation.style,
+                "style_name": participation.style.name,
+                "group_type": participation.group_type,
+                "age_group": participation.age_group,
+                "difficulty": participation.difficulty or "",
+                "label": get_start_list_category_label(
+                    participation.style.name,
+                    participation.group_type,
+                    participation.age_group,
+                    participation.difficulty,
+                ),
+                "participant_count": 0,
+                "round_counts": "",
+            }
+        category_map[key]["participant_count"] += 1
+
+    rounds = list(
+        CategoryRound.objects.filter(event=event)
+        .select_related("style")
+        .order_by("style__name", "group_type", "age_group", "difficulty", "round_number")
+    )
+    rounds_by_key = defaultdict(list)
+    for round_obj in rounds:
+        rounds_by_key[get_category_round_key(round_obj)].append(round_obj)
+
+    for key, category in category_map.items():
+        category["rounds"] = rounds_by_key.get(key, [])
+        category["round_counts"] = ",".join(
+            str(round_obj.target_count)
+            for round_obj in category["rounds"]
+            if not round_obj.is_final
+        )
+
+    selected_round_id = request.GET.get("round_id")
+    if request.method == "GET" and selected_round_id:
+        selected_round = CategoryRound.objects.filter(id=selected_round_id, event=event).first()
+    else:
+        selected_round = rounds[0] if rounds else None
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "save_setup":
+            category_raw = request.POST.get("category_key", "")
+            try:
+                style_id, group_type, age_group, difficulty = category_raw.split("|", 3)
+                style = StyleCategory.objects.get(id=int(style_id), event=event)
+            except (ValueError, StyleCategory.DoesNotExist):
+                messages.error(request, _("Invalid category selected."))
+                return redirect("category_rounds_dashboard", event_id=event.id)
+
+            base_count = Participation.objects.filter(
+                event=event,
+                style=style,
+                group_type=group_type,
+                age_group=age_group,
+                difficulty=difficulty,
+            ).count()
+            counts = []
+            for chunk in request.POST.get("round_counts", "").replace("\n", ",").split(","):
+                chunk = chunk.strip()
+                if not chunk:
+                    continue
+                try:
+                    counts.append(int(chunk))
+                except ValueError:
+                    messages.error(request, _("Qualifier counts must be numbers separated by commas."))
+                    return redirect("category_rounds_dashboard", event_id=event.id)
+
+            if not counts:
+                CategoryRound.objects.filter(
+                    event=event,
+                    style=style,
+                    group_type=group_type,
+                    age_group=age_group,
+                    difficulty=difficulty,
+                ).delete()
+                messages.success(request, _("Category rounds removed."))
+                return redirect("category_rounds_dashboard", event_id=event.id)
+
+            if any(count <= 0 for count in counts):
+                messages.error(request, _("Qualifier counts must be positive numbers."))
+                return redirect("category_rounds_dashboard", event_id=event.id)
+            if counts[0] >= base_count:
+                messages.error(request, _("The first qualifier count must be lower than the number of entries in the category."))
+                return redirect("category_rounds_dashboard", event_id=event.id)
+            if any(next_count >= count for count, next_count in zip(counts, counts[1:])):
+                messages.error(request, _("Qualifier counts must get smaller each round."))
+                return redirect("category_rounds_dashboard", event_id=event.id)
+
+            with transaction.atomic():
+                CategoryRound.objects.filter(
+                    event=event,
+                    style=style,
+                    group_type=group_type,
+                    age_group=age_group,
+                    difficulty=difficulty,
+                ).delete()
+                for index, count in enumerate(counts, start=1):
+                    CategoryRound.objects.create(
+                        event=event,
+                        style=style,
+                        group_type=group_type,
+                        age_group=age_group,
+                        difficulty=difficulty,
+                        round_number=index,
+                        target_count=count,
+                        is_final=False,
+                    )
+                CategoryRound.objects.create(
+                    event=event,
+                    style=style,
+                    group_type=group_type,
+                    age_group=age_group,
+                    difficulty=difficulty,
+                    round_number=len(counts) + 1,
+                    target_count=counts[-1],
+                    is_final=True,
+                )
+
+            messages.success(request, _("Category rounds saved."))
+            return redirect("category_rounds_dashboard", event_id=event.id)
+
+        if action == "save_qualifiers":
+            round_obj = CategoryRound.objects.filter(
+                id=request.POST.get("round_id"),
+                event=event,
+                is_final=False,
+            ).first()
+            if not round_obj:
+                messages.error(request, _("That category round could not be found."))
+                return redirect("category_rounds_dashboard", event_id=event.id)
+
+            selected_ids = [int(value) for value in request.POST.getlist("qualifiers") if value.isdigit()]
+            valid_ids = {participation.id for participation in get_category_round_participations(round_obj)}
+            if len(selected_ids) != round_obj.target_count:
+                messages.error(request, _("Select exactly %(count)s participants to advance.") % {"count": round_obj.target_count})
+            elif any(selected_id not in valid_ids for selected_id in selected_ids):
+                messages.error(request, _("Invalid qualifier selection."))
+            else:
+                with transaction.atomic():
+                    CategoryRoundQualifier.objects.filter(round=round_obj).delete()
+                    for participation_id in selected_ids:
+                        CategoryRoundQualifier.objects.create(
+                            round=round_obj,
+                            participation_id=participation_id,
+                        )
+                    round_obj.finalized = True
+                    round_obj.save(update_fields=["finalized"])
+                messages.success(request, _("Qualifiers saved."))
+
+            return redirect(f"{reverse('category_rounds_dashboard', args=[event.id])}?round_id={round_obj.id}")
+
+    current_rows = build_category_round_rows(selected_round) if selected_round else []
+    if selected_round and not selected_round.finalized and not selected_round.is_final:
+        preselected_count = 0
+        for row in current_rows:
+            if row["score"] is not None and preselected_count < selected_round.target_count:
+                row["is_qualifier"] = True
+                preselected_count += 1
+
+    round_groups = []
+    for key, group_rounds in rounds_by_key.items():
+        first_round = group_rounds[0]
+        total_rounds = len(group_rounds)
+        round_groups.append({
+            "label": get_start_list_category_label(
+                first_round.style.name,
+                first_round.group_type,
+                first_round.age_group,
+                first_round.difficulty,
+            ),
+            "rounds": [
+                {
+                    "round": round_obj,
+                    "stage_label": get_round_stage_label(round_obj.round_number, total_rounds),
+                }
+                for round_obj in group_rounds
+            ],
+        })
+
+    return render(request, "core/category_rounds_dashboard.html", {
+        "event": event,
+        "categories": list(category_map.values()),
+        "round_groups": round_groups,
+        "current_round": selected_round,
+        "current_rows": current_rows,
+    })
+
+
+@staff_member_required
 def delete_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
@@ -1094,6 +1380,168 @@ def delete_event(request, event_id):
         return redirect("event_list")
 
     return redirect("event_list")
+
+
+def _build_start_list_grouped_entries(event, is_admin=False):
+    participations = list(
+        Participation.objects.filter(event=event)
+        .select_related("style")
+        .prefetch_related("dancer_links__dancer__club")
+    )
+    ceremonies = list(StartListSlot.objects.filter(event=event))
+
+    dancer_map = defaultdict(list)
+    for dp in DancerParticipation.objects.filter(
+        participation__in=participations
+    ).select_related("dancer", "dancer__club"):
+        dancer_map[dp.participation_id].append(dp.dancer)
+
+    normal_rounds_by_key = defaultdict(list)
+    for round_obj in CategoryRound.objects.filter(event=event).select_related("style"):
+        normal_rounds_by_key[get_category_round_key(round_obj)].append(round_obj)
+    for key in normal_rounds_by_key:
+        normal_rounds_by_key[key].sort(key=lambda round_obj: round_obj.round_number)
+
+    improv_rounds_by_age = defaultdict(list)
+    for round_obj in ImprovChallengeRound.objects.filter(event=event):
+        improv_rounds_by_age[round_obj.age_group].append(round_obj)
+    for age_group in improv_rounds_by_age:
+        improv_rounds_by_age[age_group].sort(key=lambda round_obj: round_obj.round_number)
+
+    grouped_entries = OrderedDict()
+    global_counter = 101
+    current_time = datetime.combine(datetime.today(), event.start_time) if event.start_time else None
+
+    def add_placeholder(group_key, category_label):
+        grouped_entries[group_key] = [{
+            "is_placeholder": True,
+            "category_label": category_label,
+        }]
+
+    def add_entry(group_key, category_label, participation, row_id=None):
+        nonlocal global_counter, current_time
+        dancers = dancer_map.get(participation.id, [])
+        club = dancers[0].club if dancers else None
+        if group_key not in grouped_entries:
+            grouped_entries[group_key] = []
+        if grouped_entries[group_key] and grouped_entries[group_key][0].get("is_placeholder"):
+            grouped_entries[group_key] = []
+
+        start_time_str = current_time.strftime("%H:%M") if current_time else None
+        dancer_names = [f"{d.first_name} {d.last_name}" for d in dancers]
+        grouped_entries[group_key].append({
+            "id": row_id or participation.id,
+            "style": participation.style.name,
+            "difficulty": participation.difficulty,
+            "group_type": participation.group_type,
+            "age_group": participation.age_group,
+            "dancers": participation.group_name if not is_admin and len(dancers) > 3 and participation.group_name else dancers,
+            "num_dancers": len(dancers),
+            "group_name": participation.group_name,
+            "dancer_names": dancer_names,
+            "dancer_names_text": ", ".join(dancer_names),
+            "choreographer": participation.choreographer_name,
+            "choreography_name": participation.choreography_name,
+            "club_name": club.club_name if club else "-",
+            "club_city": club.city if club else "-",
+            "global_row_number": participation.start_number or global_counter,
+            "category_label": category_label,
+            "start_time": start_time_str,
+            "is_ceremony": False,
+            "is_placeholder": False,
+        })
+        global_counter += 1
+        if current_time:
+            current_time += timedelta(seconds=get_music_duration(participation))
+
+    timeline = []
+    processed_normal_keys = set()
+    processed_improv_ages = set()
+    for participation in participations:
+        if participation.style.name == IMPROV_CHALLENGE_STYLE and participation.age_group in improv_rounds_by_age:
+            if participation.age_group not in processed_improv_ages:
+                processed_improv_ages.add(participation.age_group)
+                timeline.append((participation.display_order, "improv_rounds", participation.age_group, participation))
+            continue
+
+        category_key = get_participation_category_key(participation)
+        if category_key in normal_rounds_by_key:
+            if category_key not in processed_normal_keys:
+                processed_normal_keys.add(category_key)
+                timeline.append((participation.display_order, "normal_rounds", category_key, participation))
+            continue
+
+        timeline.append((participation.display_order, "performance", participation, participation))
+
+    for ceremony in ceremonies:
+        timeline.append((ceremony.display_order, "ceremony", ceremony, ceremony))
+
+    def timeline_sort_key(item):
+        display_order, entry_type, obj, anchor = item
+        if display_order is not None:
+            return (0, display_order)
+        if entry_type in {"performance", "normal_rounds", "improv_rounds"}:
+            return (1, *get_default_participation_sort_key(anchor))
+        return (1, 999999, 999999, 999999, 999999, anchor.id)
+
+    timeline.sort(key=timeline_sort_key)
+
+    for _display_order, entry_type, obj, anchor in timeline:
+        if entry_type == "performance":
+            group_key = (anchor.style.name, anchor.group_type, anchor.age_group, anchor.difficulty)
+            category_label = get_start_list_category_label(anchor.style.name, anchor.group_type, anchor.age_group, anchor.difficulty)
+            add_entry(group_key, category_label, anchor)
+
+        elif entry_type == "normal_rounds":
+            category_key = obj
+            rounds = normal_rounds_by_key[category_key]
+            total_rounds = len(rounds)
+            base_label = get_start_list_category_label(anchor.style.name, anchor.group_type, anchor.age_group, anchor.difficulty)
+            for round_obj in rounds:
+                stage_label = get_round_stage_label(round_obj.round_number, total_rounds)
+                category_label = f"{base_label} - {stage_label}"
+                group_key = (anchor.style.name, anchor.group_type, anchor.age_group, anchor.difficulty, str(stage_label))
+                round_participations = get_category_round_participations(round_obj)
+                if not round_participations:
+                    add_placeholder(group_key, category_label)
+                for participation in round_participations:
+                    add_entry(group_key, category_label, participation, row_id=f"round-{round_obj.id}-p-{participation.id}")
+
+        elif entry_type == "improv_rounds":
+            age_group = obj
+            rounds = improv_rounds_by_age[age_group]
+            total_rounds = len(rounds)
+            base_label = get_start_list_category_label(IMPROV_CHALLENGE_STYLE, "Solo", age_group, "")
+            for round_obj in rounds:
+                stage_label = get_round_stage_label(round_obj.round_number, total_rounds)
+                category_label = f"{base_label} - {stage_label}"
+                group_key = (IMPROV_CHALLENGE_STYLE, "Solo", age_group, "", str(stage_label))
+                round_participations = get_improv_round_participations(round_obj)
+                if not round_participations:
+                    add_placeholder(group_key, category_label)
+                for participation in round_participations:
+                    add_entry(group_key, category_label, participation, row_id=f"improv-round-{round_obj.id}-p-{participation.id}")
+
+        elif entry_type == "ceremony":
+            start_time_str = current_time.strftime("%H:%M") if current_time else None
+            end_time_str = (current_time + timedelta(minutes=anchor.duration_minutes)).strftime("%H:%M") if current_time else None
+            group_key = ("Ceremony", "", anchor.age_group or "", anchor.id)
+            grouped_entries[group_key] = [{
+                "id": f"ceremony-{anchor.id}",
+                "title": anchor.title,
+                "start_time": start_time_str,
+                "end_time": end_time_str,
+                "duration": anchor.duration_minutes,
+                "is_ceremony": True,
+                "age_group": anchor.age_group,
+                "is_placeholder": False,
+            }]
+            if current_time:
+                current_time += timedelta(minutes=anchor.duration_minutes)
+
+    return grouped_entries
+
+
 @login_required
 def start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -1102,110 +1550,6 @@ def start_list(request, event_id):
     show_entries = event.start_list_published or is_admin or is_organizer
     enable_auto_refresh = is_admin
 
-    participations = list(
-        Participation.objects.filter(event=event).select_related("style")
-    )
-    ceremonies = list(StartListSlot.objects.filter(event=event))
-
-    # Prefetch dancers
-    dancer_participations = DancerParticipation.objects.filter(
-        participation__in=participations
-    ).select_related("dancer", "dancer__club")
-
-    dancer_map = defaultdict(list)
-    for dp in dancer_participations:
-        dancer_map[dp.participation_id].append(dp.dancer)
-
-    grouped_entries = OrderedDict()
-    global_counter = 101
-    current_time = datetime.combine(datetime.today(), event.start_time) if event.start_time else None
-
-    # Unified timeline
-    timeline = []
-    for p in participations:
-        timeline.append((p.display_order, "performance", p))
-    for c in ceremonies:
-        timeline.append((c.display_order, "ceremony", c))
-    improv_display_anchor = min(
-        (
-            p.display_order
-            for p in participations
-            if p.style.name == IMPROV_CHALLENGE_STYLE and p.display_order is not None
-        ),
-        default=None,
-    )
-
-    # Safe sort: respect saved manual order, otherwise use the default category order.
-    def timeline_sort_key(item):
-        display_order, entry_type, obj = item
-        if entry_type == "performance" and obj.style.name == IMPROV_CHALLENGE_STYLE and improv_display_anchor is not None:
-            return (
-                0,
-                improv_display_anchor,
-                get_order_index(obj.age_group, IMPROV_AGE_GROUPS),
-                display_order if display_order is not None else 999999,
-            )
-        if display_order is not None:
-            return (0, display_order)
-        if entry_type == "performance":
-            return (1, *get_default_participation_sort_key(obj))
-        return (1, 999999, 999999, 999999, 999999, obj.id)
-
-    timeline.sort(key=timeline_sort_key)
-
-    for _display_order, entry_type, obj in timeline:
-        if entry_type == "performance":
-            dancers = dancer_map.get(obj.id, [])
-            club = dancers[0].club if dancers else None
-            group_key = (obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
-
-            if group_key not in grouped_entries:
-                grouped_entries[group_key] = []
-
-            start_time_str = current_time.strftime("%H:%M") if current_time else None
-            dancer_names = [f"{d.first_name} {d.last_name}" for d in dancers]
-            category_label = get_start_list_category_label(obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
-            grouped_entries[group_key].append({
-                "id": obj.id,
-                "style": obj.style.name,
-                "difficulty": obj.difficulty,
-                "group_type": obj.group_type,
-                "age_group": obj.age_group,
-                "dancers": obj.group_name if not is_admin and len(dancers) > 3 and obj.group_name else dancers,
-                "num_dancers": len(dancers),
-                "group_name": obj.group_name,
-                "dancer_names": dancer_names,
-                "dancer_names_text": ", ".join(dancer_names),
-                "choreographer": obj.choreographer_name,
-                "choreography_name": obj.choreography_name,
-                "club_name": club.club_name if club else "–",
-                "club_city": club.city if club else "–",
-                "global_row_number": obj.start_number or global_counter,
-                "category_label": category_label,
-                "start_time": start_time_str,
-                "is_ceremony": False,
-            })
-            global_counter += 1
-            if current_time:
-                current_time += timedelta(seconds=get_music_duration(obj))
-
-        elif entry_type == "ceremony":
-            start_time_str = current_time.strftime("%H:%M") if current_time else None
-            end_time_str = (current_time + timedelta(minutes=obj.duration_minutes)).strftime("%H:%M") if current_time else None
-            group_key = ("Ceremony", "", obj.age_group or "", obj.id)
-            grouped_entries[group_key] = [{
-                "id": f"ceremony-{obj.id}",
-                "title": obj.title,
-                "start_time": start_time_str,
-                "end_time": end_time_str,
-                "duration": obj.duration_minutes,
-                "is_ceremony": True,
-                "age_group": obj.age_group,
-            }]
-            if current_time:
-                current_time += timedelta(minutes=obj.duration_minutes)
-
-    # Highlight
     highlight_key = None
     try:
         highlight_key = EventPlaybackState.objects.get(event=event).current_highlight_key
@@ -1214,7 +1558,7 @@ def start_list(request, event_id):
 
     return render(request, "core/start_list.html", {
         "event": event,
-        "grouped_entries": grouped_entries if show_entries else {},
+        "grouped_entries": _build_start_list_grouped_entries(event, is_admin=is_admin) if show_entries else {},
         "is_admin": is_admin,
         "is_organizer": is_organizer,
         "is_published": event.start_list_published,
@@ -1228,109 +1572,6 @@ def start_list(request, event_id):
 def manage_start_list(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
-    participations = list(
-        Participation.objects.filter(event=event).select_related("style")
-    )
-    ceremonies = list(StartListSlot.objects.filter(event=event))
-
-    dancer_participations = DancerParticipation.objects.filter(
-        participation__in=participations
-    ).select_related("dancer", "dancer__club")
-
-    dancer_map = defaultdict(list)
-    for dp in dancer_participations:
-        dancer_map[dp.participation_id].append(dp.dancer)
-
-    grouped_entries = OrderedDict()
-    global_counter = 101
-    current_time = datetime.combine(datetime.today(), event.start_time) if event.start_time else None
-
-    # Unified timeline
-    timeline = []
-    for p in participations:
-        timeline.append((p.display_order, "performance", p))
-    for c in ceremonies:
-        timeline.append((c.display_order, "ceremony", c))
-    improv_display_anchor = min(
-        (
-            p.display_order
-            for p in participations
-            if p.style.name == IMPROV_CHALLENGE_STYLE and p.display_order is not None
-        ),
-        default=None,
-    )
-
-    # Safe sort: respect saved manual order, otherwise use the default category order.
-    def timeline_sort_key(item):
-        display_order, entry_type, obj = item
-        if entry_type == "performance" and obj.style.name == IMPROV_CHALLENGE_STYLE and improv_display_anchor is not None:
-            return (
-                0,
-                improv_display_anchor,
-                get_order_index(obj.age_group, IMPROV_AGE_GROUPS),
-                display_order if display_order is not None else 999999,
-            )
-        if display_order is not None:
-            return (0, display_order)
-        if entry_type == "performance":
-            return (1, *get_default_participation_sort_key(obj))
-        return (1, 999999, 999999, 999999, 999999, obj.id)
-
-    timeline.sort(key=timeline_sort_key)
-
-    for _display_order, entry_type, obj in timeline:
-        if entry_type == "performance":
-            dancers = dancer_map.get(obj.id, [])
-            club = dancers[0].club if dancers else None
-            group_key = (obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
-
-            if group_key not in grouped_entries:
-                grouped_entries[group_key] = []
-
-            start_time_str = current_time.strftime("%H:%M") if current_time else None
-            dancer_names = [f"{d.first_name} {d.last_name}" for d in dancers]
-            category_label = get_start_list_category_label(obj.style.name, obj.group_type, obj.age_group, obj.difficulty)
-            grouped_entries[group_key].append({
-                "id": obj.id,
-                "style": obj.style.name,
-                "difficulty": obj.difficulty,
-                "group_type": obj.group_type,
-                "age_group": obj.age_group,
-                "dancers": dancers,
-                "num_dancers": len(dancers),
-                "group_name": obj.group_name,
-                "dancer_names": dancer_names,
-                "dancer_names_text": ", ".join(dancer_names),
-                "choreographer": obj.choreographer_name,
-                "choreography_name": obj.choreography_name,
-                "club_name": club.club_name if club else "–",
-                "club_city": club.city if club else "–",
-                "global_row_number": obj.start_number or global_counter,
-                "category_label": category_label,
-                "start_time": start_time_str,
-                "is_ceremony": False,
-            })
-            global_counter += 1
-            if current_time:
-                current_time += timedelta(seconds=get_music_duration(obj))
-
-        elif entry_type == "ceremony":
-            start_time_str = current_time.strftime("%H:%M") if current_time else None
-            end_time_str = (current_time + timedelta(minutes=obj.duration_minutes)).strftime("%H:%M") if current_time else None
-            group_key = ("Ceremony", "", obj.age_group or "", obj.id)
-            grouped_entries[group_key] = [{
-                "id": f"ceremony-{obj.id}",
-                "title": obj.title,
-                "start_time": start_time_str,
-                "end_time": end_time_str,
-                "duration": obj.duration_minutes,
-                "is_ceremony": True,
-                "age_group": obj.age_group,
-            }]
-            if current_time:
-                current_time += timedelta(minutes=obj.duration_minutes)
-
-    # Highlight
     highlight_key = None
     try:
         highlight_key = EventPlaybackState.objects.get(event=event).current_highlight_key
@@ -1339,13 +1580,12 @@ def manage_start_list(request, event_id):
 
     return render(request, "core/manage_start_list.html", {
         "event": event,
-        "grouped_entries": grouped_entries,
+        "grouped_entries": _build_start_list_grouped_entries(event, is_admin=True),
         "is_admin": True,
         "is_published": event.start_list_published,
         "show_entries": True,
         "highlight_key": highlight_key,
     })
-
 
 @staff_member_required
 @require_POST
@@ -1376,6 +1616,8 @@ def publish_start_list(request, event_id):
                 except StartListSlot.DoesNotExist:
                     continue
             else:
+                if not str(pid).isdigit():
+                    continue
                 try:
                     p = Participation.objects.get(id=int(pid), event=event)
                     group_key = (p.style.name, p.group_type, p.age_group, p.difficulty)

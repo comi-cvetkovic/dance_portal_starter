@@ -285,6 +285,41 @@ class ImprovRoundQualifier(models.Model):
         return f"{self.participation} qualified from {self.round}"
 
 
+class CategoryRound(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="category_rounds")
+    style = models.ForeignKey(StyleCategory, on_delete=models.CASCADE, related_name="category_rounds")
+    group_type = models.CharField(max_length=20, choices=Participation.CHOREO_TYPE_CHOICES, verbose_name=_("Group Type"))
+    age_group = models.CharField(max_length=30, choices=Participation.AGE_GROUP_CHOICES, verbose_name=_("Age Group"))
+    difficulty = models.CharField(max_length=1, choices=Participation.DIFFICULTY_CHOICES, blank=True, default="", verbose_name=_("Difficulty"))
+    round_number = models.PositiveIntegerField(verbose_name=_("Round Number"))
+    target_count = models.PositiveIntegerField(verbose_name=_("Participants to Advance"))
+    is_final = models.BooleanField(default=False, verbose_name=_("Final Round"))
+    finalized = models.BooleanField(default=False, verbose_name=_("Finalized"))
+
+    class Meta:
+        unique_together = ("event", "style", "group_type", "age_group", "difficulty", "round_number")
+        ordering = ["event", "style", "group_type", "age_group", "difficulty", "round_number"]
+        verbose_name = _("Category Round")
+        verbose_name_plural = _("Category Rounds")
+
+    def __str__(self):
+        difficulty = f" {self.difficulty}" if self.difficulty else ""
+        return f"{self.style} - {self.group_type} - {self.age_group}{difficulty} - Round {self.round_number}"
+
+
+class CategoryRoundQualifier(models.Model):
+    round = models.ForeignKey(CategoryRound, on_delete=models.CASCADE, related_name="qualifiers")
+    participation = models.ForeignKey(Participation, on_delete=models.CASCADE, related_name="category_round_qualifications")
+
+    class Meta:
+        unique_together = ("round", "participation")
+        verbose_name = _("Category Round Qualifier")
+        verbose_name_plural = _("Category Round Qualifiers")
+
+    def __str__(self):
+        return f"{self.participation} qualified from {self.round}"
+
+
 class Diploma(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name=_("Event"))
     dancer = models.ForeignKey(Dancer, on_delete=models.CASCADE, verbose_name=_("Dancer"))

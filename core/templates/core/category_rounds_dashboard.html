@@ -1,0 +1,204 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Category Rounds" %} - {{ event.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'event_list' %}">{% trans "Events" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% trans "Category Rounds" %}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h2 class="mb-1">{% trans "Category Rounds" %} - {{ event.name }}</h2>
+    <p class="text-muted mb-0">
+      {% trans "Split normal categories into qualifier rounds and finals. Qualifiers are chosen from normal judge scores." %}
+    </p>
+  </div>
+  <a href="{% url 'event_list' %}" class="btn btn-coral-outline">{% trans "Back to Events" %}</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-5">
+    <div class="dp-card">
+      <div class="card-header fw-semibold">{% trans "Setup" %}</div>
+      <div class="card-body">
+        {% if categories %}
+          <div class="vstack gap-3">
+            {% for category in categories %}
+              <form method="post" class="category-round-setup">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_setup">
+                <input type="hidden" name="category_key" value="{{ category.style.id }}|{{ category.group_type }}|{{ category.age_group }}|{{ category.difficulty }}">
+                <div class="fw-semibold">{{ category.label }}</div>
+                <div class="text-muted small mb-2">
+                  {{ category.participant_count }} {% trans "entries" %}
+                </div>
+                <label class="form-label small" for="round_counts_{{ forloop.counter }}">
+                  {% trans "Qualifier Counts" %}
+                </label>
+                <div class="d-flex gap-2">
+                  <input
+                    type="text"
+                    id="round_counts_{{ forloop.counter }}"
+                    name="round_counts"
+                    class="form-control"
+                    value="{{ category.round_counts }}"
+                    placeholder="6"
+                  >
+                  <button type="submit" class="btn btn-coral">{% trans "Save" %}</button>
+                </div>
+                <div class="form-text">
+                  {% trans "Example: 6 creates a semi-final and final. 12,6 creates quarter-final, semi-final, and final. Leave blank to remove rounds." %}
+                </div>
+              </form>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-muted">{% trans "No normal categories are registered for this event." %}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-7">
+    <div class="dp-card mb-4">
+      <div class="card-header fw-semibold">{% trans "Configured Rounds" %}</div>
+      <div class="card-body">
+        {% if round_groups %}
+          <div class="vstack gap-3">
+            {% for group in round_groups %}
+              <div>
+                <div class="fw-semibold mb-2">{{ group.label }}</div>
+                <div class="d-flex flex-wrap gap-2">
+                  {% for item in group.rounds %}
+                    <a
+                      href="{% url 'category_rounds_dashboard' event.id %}?round_id={{ item.round.id }}"
+                      class="btn btn-sm {% if current_round and current_round.id == item.round.id %}btn-coral{% else %}btn-coral-outline{% endif %}"
+                    >
+                      {{ item.stage_label }}{% if not item.round.is_final %} -> {{ item.round.target_count }}{% endif %}
+                    </a>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-muted">{% trans "No category rounds configured yet." %}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dp-card">
+      <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <span class="fw-semibold">
+          {% if current_round %}
+            {{ current_round.style.name }} - {{ current_round.group_type }} - {{ current_round.age_group }}{% if current_round.difficulty %} - {{ current_round.difficulty }}{% endif %}
+          {% else %}
+            {% trans "Current Round" %}
+          {% endif %}
+        </span>
+        {% if current_round and not current_round.is_final %}
+          <span class="badge text-bg-light border">{% trans "Advance exactly" %} {{ current_round.target_count }}</span>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% if current_round %}
+          {% if current_round.is_final %}
+            <div class="alert alert-info m-3">
+              {% trans "The final list is populated from the previous saved qualifier round." %}
+            </div>
+          {% else %}
+            <div class="alert alert-info m-3">
+              {% trans "The highest scoring entries are preselected. Save qualifiers to populate the next round on the start list." %}
+            </div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save_qualifiers">
+            <input type="hidden" name="round_id" value="{{ current_round.id }}">
+            <div class="table-responsive">
+              <table class="table table-striped align-middle mb-0 category-round-table">
+                <thead>
+                  <tr>
+                    <th>{% trans "Start #" %}</th>
+                    <th>{% trans "Dancer(s)" %}</th>
+                    <th>{% trans "Choreography" %}</th>
+                    <th class="text-end">{% trans "Score" %}</th>
+                    {% if not current_round.is_final %}
+                      <th class="text-center">{% trans "Advance" %}</th>
+                    {% endif %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in current_rows %}
+                    <tr>
+                      <td>{{ row.participation.start_number|default:"-" }}</td>
+                      <td>
+                        {% for dancer in row.dancers %}
+                          {{ dancer.first_name }} {{ dancer.last_name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      </td>
+                      <td>{{ row.participation.choreography_name }}</td>
+                      <td class="text-end fw-semibold">{{ row.score|default:"-" }}</td>
+                      {% if not current_round.is_final %}
+                        <td class="text-center">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            name="qualifiers"
+                            value="{{ row.participation.id }}"
+                            {% if row.is_qualifier %}checked{% endif %}
+                          >
+                        </td>
+                      {% endif %}
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-4">
+                        {% trans "No entries are available for this round yet." %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% if not current_round.is_final %}
+              <div class="p-3 border-top text-end">
+                <button type="submit" class="btn btn-coral">{% trans "Save Qualifiers" %}</button>
+              </div>
+            {% endif %}
+          </form>
+        {% else %}
+          <div class="p-4 text-muted">{% trans "Configure a category round to begin." %}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .category-round-setup {
+    padding: 1rem;
+    border: 1px solid rgba(215,111,84,.18);
+    border-radius: 14px;
+    background: #fff7f4;
+  }
+
+  .category-round-table th,
+  .category-round-table td {
+    vertical-align: middle;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+</style>
+{% endblock %}
