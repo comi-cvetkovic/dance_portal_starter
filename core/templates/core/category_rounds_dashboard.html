@@ -30,36 +30,38 @@
       <div class="card-header fw-semibold">{% trans "Setup" %}</div>
       <div class="card-body">
         {% if categories %}
-          <div class="vstack gap-3">
-            {% for category in categories %}
-              <form method="post" class="category-round-setup">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="save_setup">
-                <input type="hidden" name="category_key" value="{{ category.style.id }}|{{ category.group_type }}|{{ category.age_group }}|{{ category.difficulty }}">
-                <div class="fw-semibold">{{ category.label }}</div>
-                <div class="text-muted small mb-2">
-                  {{ category.participant_count }} {% trans "entries" %}
-                </div>
-                <label class="form-label small" for="round_counts_{{ forloop.counter }}">
-                  {% trans "Qualifier Counts" %}
-                </label>
-                <div class="d-flex gap-2">
-                  <input
-                    type="text"
-                    id="round_counts_{{ forloop.counter }}"
-                    name="round_counts"
-                    class="form-control"
-                    value="{{ category.round_counts }}"
-                    placeholder="6"
-                  >
-                  <button type="submit" class="btn btn-coral">{% trans "Save" %}</button>
-                </div>
-                <div class="form-text">
-                  {% trans "Example: 6 creates a semi-final and final. 12,6 creates quarter-final, semi-final, and final. Leave blank to remove rounds." %}
-                </div>
-              </form>
-            {% endfor %}
-          </div>
+          <form method="post" class="category-round-setup">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save_setup">
+
+            <label class="form-label" for="category-round-select">{% trans "Category" %}</label>
+            <select id="category-round-select" name="category_key" class="form-select mb-3">
+              {% for category in categories %}
+                <option
+                  value="{{ category.style.id }}|{{ category.group_type }}|{{ category.age_group }}|{{ category.difficulty }}"
+                  data-counts="{{ category.round_counts }}"
+                  data-entries="{{ category.participant_count }}"
+                >
+                  {{ category.label }} ({{ category.participant_count }} {% trans "entries" %})
+                </option>
+              {% endfor %}
+            </select>
+
+            <label class="form-label" for="round-counts-input">{% trans "Qualifier Counts" %}</label>
+            <div class="d-flex flex-wrap gap-2">
+              <input
+                type="text"
+                id="round-counts-input"
+                name="round_counts"
+                class="form-control flex-grow-1"
+                placeholder="6"
+              >
+              <button type="submit" class="btn btn-coral">{% trans "Save" %}</button>
+            </div>
+            <div class="form-text" id="category-round-help">
+              {% trans "Example: 6 creates a semi-final and final. 12,6 creates quarter-final, semi-final, and final. Leave blank to remove rounds." %}
+            </div>
+          </form>
         {% else %}
           <div class="text-muted">{% trans "No normal categories are registered for this event." %}</div>
         {% endif %}
@@ -201,4 +203,22 @@
     overflow-wrap: anywhere;
   }
 </style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('category-round-select');
+  const countsInput = document.getElementById('round-counts-input');
+  if (!select || !countsInput) return;
+
+  function syncCounts() {
+    const selected = select.options[select.selectedIndex];
+    countsInput.value = selected?.dataset.counts || '';
+  }
+
+  select.addEventListener('change', syncCounts);
+  syncCounts();
+});
+</script>
 {% endblock %}
